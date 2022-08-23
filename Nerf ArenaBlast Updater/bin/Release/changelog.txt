@@ -3,6 +3,7 @@ Please provide feedback and report any bugs at https://www.nerfarena.net
 3.79:
 - Fixed an exception when trying to create an error report when the u[date URL cannot be reached.
 - Last update time now only updates when the check for updates does not throw an error.
+- An error message rather than a success message is now shown after an error finding the update URL.
 
 3.78:
 - Fixed advanced mode not saving if you exit with the standard toolbar X button.
