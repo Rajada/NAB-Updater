@@ -29,7 +29,7 @@ Public Class UpdaterMainForm
     Private cpVersion As String = String.Empty
     Private nodesToDelete As New List(Of TreeNode)
     Private filesToDelete As New List(Of String)
-    Private updaterVersion As String = "3.78"
+    Private updaterVersion As String = "3.79"
     Private updateDiff As Integer = 0
     Private newVersion As Boolean = False
     Private updateCount As Integer = 0
@@ -169,7 +169,11 @@ Public Class UpdaterMainForm
             myWebClient.DownloadFile(downPath, filePath)
         Catch ex As Exception
             Log("Warning: Could not reach the update server while checking for new versions", True)
-            MessageBox.Show("The update server did not respond at while checking for new versions. The host may be down, or you may need to check your internet connection. An error report follows:" & ControlChars.NewLine & ControlChars.NewLine & ex.ToString, "Server did not Respond", MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
+            If (ex.InnerException IsNot Nothing) Then
+                MessageBox.Show("The update server did not respond at while checking for new versions. The URL may be wrong, the host may be down, or you may need to check your internet connection." & ControlChars.NewLine & ControlChars.NewLine & "An error report follows:" & ControlChars.NewLine & ControlChars.NewLine & ex.InnerException.Message, "Server did not Respond", MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
+            Else
+                MessageBox.Show("The update server did not respond at while checking for new versions. The URL may be wrong, the host may be down, or you may need to check your internet connection." & ControlChars.NewLine & ControlChars.NewLine & "An error report follows:" & ControlChars.NewLine & ControlChars.NewLine & ex.Message, "Server did not Respond", MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
+            End If
             myWebClient.Dispose()
             Exit Sub
         End Try
@@ -398,9 +402,6 @@ Public Class UpdaterMainForm
             updateButton.Text = "Checking..."
             outputTextbox.Text = "Checking for updates..."
             Log("Checking for updates...", True)
-            lastUpdateLabel.Text = thisDate.ToShortDateString & ControlChars.NewLine & thisTime.ToShortTimeString
-            UpdateSettings("LastDate", thisDate.ToShortDateString)
-            UpdateSettings("LastTime", thisTime.ToShortTimeString)
             updateCount = 0
             querying = True
             DoUpdate(querying)
@@ -594,7 +595,11 @@ Public Class UpdaterMainForm
 
         Catch ex As HttpRequestException
             Log("Error: Could not reach the update server while checking for updates", True)
-            MessageBox.Show("The update server did not respond at " & parentNode.Tag.ToString & ". The host may be down, or you may need to check your internet connection. An error report follows:" & ControlChars.NewLine & ControlChars.NewLine & ex.InnerException.Message, "Server did not Respond", MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
+            If (ex.InnerException IsNot Nothing) Then
+                MessageBox.Show("The update server did not respond at " & parentNode.Tag.ToString & ". The URL may be wrong, the host may be down, or you may need to check your internet connection." & ControlChars.NewLine & ControlChars.NewLine & "An error report follows:" & ControlChars.NewLine & ControlChars.NewLine & ex.InnerException.Message, "Server did not Respond", MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
+            Else
+                MessageBox.Show("The update server did not respond at " & parentNode.Tag.ToString & ". The URL may be wrong, the host may be down, or you may need to check your internet connection." & ControlChars.NewLine & ControlChars.NewLine & "An error report follows:" & ControlChars.NewLine & ControlChars.NewLine & ex.Message, "Server did not Respond", MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
+            End If
             'updateFilesTreeView.Nodes.Clear()
             outputTextbox.Text = "Server error."
             'querying = False
@@ -605,7 +610,7 @@ Public Class UpdaterMainForm
             'DeselectAllToolStripMenuItem.Enabled = False
             'updateButton.Text = "Check for &Updates"
             'DoUpdate(querying)
-            'updateCount = -1
+            updateCount = -1
             Exit Function
         End Try
     End Function
@@ -621,12 +626,12 @@ Public Class UpdaterMainForm
         updateFilesTreeView.BeginUpdate()
         Log("Checking for base game updates...", True)
         Await PopulateTreeView(onlineBaseDirectory, updateFilesTreeView.Nodes(i))
+
         If (updateCount < 0) Then
             RecurseCountFiles(root, 0)
         Else
             updateCount = RecurseCountFiles(root, 0)
         End If
-
 
         CleanUpTree()
         If (root.Nodes.Count <= 0) Then
@@ -703,6 +708,7 @@ Public Class UpdaterMainForm
 
             updateDiff = updateCount
             updateProgressBar.Value = 0
+            UpdateLastTime()
         ElseIf (updateCount < 0) Then
             selectAllButton.Enabled = False
             SelectAllToolStripMenuItem.Enabled = False
@@ -729,6 +735,7 @@ Public Class UpdaterMainForm
             Log("No newer updates availible", True)
             MessageBox.Show("No newer updates available.", "Check Complete", MessageBoxButtons.OK, MessageBoxIcon.None)
             outputTextbox.Text = "No newer updates available."
+            UpdateLastTime()
             updateDiff = 0
             updateProgressBar.Value = 0
             updateButton.Enabled = True
@@ -738,6 +745,12 @@ Public Class UpdaterMainForm
         CheckForCP(False)
         cleanupCheckBox.Enabled = True
         revertCheckBox.Enabled = True
+    End Sub
+
+    Private Sub UpdateLastTime()
+        lastUpdateLabel.Text = thisDate.ToShortDateString & ControlChars.NewLine & thisTime.ToShortTimeString
+        UpdateSettings("LastDate", thisDate.ToShortDateString)
+        UpdateSettings("LastTime", thisTime.ToShortTimeString)
     End Sub
 
     Private Function RecurseCountFiles(treeNode As TreeNode, fileCount As Integer) As Integer
@@ -1026,7 +1039,7 @@ Public Class UpdaterMainForm
     End Sub
 
     Private Sub AboutToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles AboutToolStripMenuItem.Click
-        MessageBox.Show("Nerf ArenaBlast Updater " & updaterVersion & ControlChars.NewLine & ControlChars.NewLine & "© Jared Petersen 2018", "About Nerf ArenaBlast Updater", MessageBoxButtons.OK, MessageBoxIcon.None)
+        MessageBox.Show("Nerf ArenaBlast Updater " & updaterVersion & ControlChars.NewLine & ControlChars.NewLine & "© Jared Petersen " & Date.Today.Year, "About Nerf ArenaBlast Updater", MessageBoxButtons.OK, MessageBoxIcon.None)
     End Sub
 
     Private Sub ExitToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ExitToolStripMenuItem.Click
@@ -1104,10 +1117,6 @@ Public Class UpdaterMainForm
     End Sub
 
     Private Sub CheckForUpdatesToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles CheckForUpdatesToolStripMenuItem.Click
-        lastUpdateLabel.Text = thisDate.ToShortDateString & ControlChars.NewLine & thisTime.ToShortTimeString
-        UpdateSettings("LastDate", thisDate.ToShortDateString)
-        UpdateSettings("LastTime", thisTime.ToShortTimeString)
-
         querying = True
         DoUpdate(querying)
         QueryGameFiles(sender, e)
