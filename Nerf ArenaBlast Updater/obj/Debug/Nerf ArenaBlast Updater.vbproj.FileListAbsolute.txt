@@ -44,3 +44,18 @@ C:\Users\Rajada\Desktop\Projects\Nerf ArenaBlast Updater\Nerf ArenaBlast Updater
 C:\Users\Rajada\Desktop\Projects\Nerf ArenaBlast Updater\Nerf ArenaBlast Updater\bin\Debug\Nerf ArenaBlast Updater.exe.config
 C:\Users\Rajada\Desktop\Projects\Nerf ArenaBlast Updater\Nerf ArenaBlast Updater\bin\Debug\app.config
 C:\Users\Rajada\Desktop\Projects\Nerf ArenaBlast Updater\Nerf ArenaBlast Updater\obj\Debug\Nerf_ArenaBlast_Updater.ChangelogForm.resources
+E:\GitHub\NAB-Updater\Nerf ArenaBlast Updater\bin\Debug\app.config
+E:\GitHub\NAB-Updater\Nerf ArenaBlast Updater\bin\Debug\Nerf ArenaBlast Updater.exe.config
+E:\GitHub\NAB-Updater\Nerf ArenaBlast Updater\bin\Debug\Nerf ArenaBlast Updater.exe
+E:\GitHub\NAB-Updater\Nerf ArenaBlast Updater\bin\Debug\Nerf ArenaBlast Updater.pdb
+E:\GitHub\NAB-Updater\Nerf ArenaBlast Updater\bin\Debug\Nerf ArenaBlast Updater.xml
+E:\GitHub\NAB-Updater\Nerf ArenaBlast Updater\obj\Debug\Nerf ArenaBlast Updater.vbproj.AssemblyReference.cache
+E:\GitHub\NAB-Updater\Nerf ArenaBlast Updater\obj\Debug\Nerf ArenaBlast Updater.vbproj.SuggestedBindingRedirects.cache
+E:\GitHub\NAB-Updater\Nerf ArenaBlast Updater\obj\Debug\Nerf_ArenaBlast_Updater.ChangelogForm.resources
+E:\GitHub\NAB-Updater\Nerf ArenaBlast Updater\obj\Debug\Nerf_ArenaBlast_Updater.UpdaterMainForm.resources
+E:\GitHub\NAB-Updater\Nerf ArenaBlast Updater\obj\Debug\Nerf_ArenaBlast_Updater.Resources.resources
+E:\GitHub\NAB-Updater\Nerf ArenaBlast Updater\obj\Debug\Nerf ArenaBlast Updater.vbproj.GenerateResource.cache
+E:\GitHub\NAB-Updater\Nerf ArenaBlast Updater\obj\Debug\Nerf ArenaBlast Updater.vbproj.CoreCompileInputs.cache
+E:\GitHub\NAB-Updater\Nerf ArenaBlast Updater\obj\Debug\Nerf ArenaBlast Updater.exe
+E:\GitHub\NAB-Updater\Nerf ArenaBlast Updater\obj\Debug\Nerf ArenaBlast Updater.xml
+E:\GitHub\NAB-Updater\Nerf ArenaBlast Updater\obj\Debug\Nerf ArenaBlast Updater.pdb

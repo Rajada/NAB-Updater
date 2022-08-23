@@ -1,45 +1,67 @@
 Please provide feedback and report any bugs at https://www.nerfarena.net
 
-Nerf ArenaBlast Updater version 3.72:
+3.79:
+- Fixed an exception when trying to create an error report when the u[date URL cannot be reached.
+- Last update time now only updates when the check for updates does not throw an error.
 
+3.78:
+- Fixed advanced mode not saving if you exit with the standard toolbar X button.
+
+3.77:
+- Removed ability to resize the windows.
+- Custom Content checkbox will not become always enabled when you switch on advanced option checkboxes.
+- Fixed Custom Content checkbox not always enabling or disabling when checking for updates.
+- Advanced mode is now saved between boots.
+
+3.76:
+- Removed minimize and maximize on windows where it was not supported.
+
+3.75:
+- Select and deselect all menu items now enable and disable along with the buttons for these functions.
+- Improved logging events for new vs updated files and update success.
+
+3.74:
+- Added shortcut key for advanced mode.
+- Fixed application hanging if you cancelled during the initial search for the Nerf.ini file.
+- Fixed checkboxes being partially cut off by text.
+- Update list is no longer cleared if you cancel a base directory change.
+
+3.73:
+- Updated logging to log when a file is successfully updated.
+- Added advanced mode toggle. Advanced mode is now the home of all non-essential update functions.
+- Update list can still be scrolled after updates are completed. However, if you partially update, you must still re-check for updates.
+
+3.72:
 - Added missing scrollbar to changelog.
 - Re-aligned some controls.
 
-Nerf ArenaBlast Updater version 3.71:
-
+3.71:
 - Added missing "B" to filesize data.
 
-Nerf ArenaBlast Updater version 3.7:
-
+3.7:
 - Updater won't clear User.ini anymore.
 
-Nerf ArenaBlast Updater version 3.6:
-
+3.6:
 - Added logging!
 - Fixed some logical errors that could result in miscounting or clearing updates when the custom content checkbox is checked.
 
-Nerf ArenaBlast Updater version 3.5:
-
+3.5:
 - Fixed the check for new version toolstrip item not working.
 - If there is no newer version of the updater availible when you select the check for new version toolstrip item, you will be informed of this fact.
 
-Nerf ArenaBlast Updater version 3.4:
-
+3.4:
 - If the Nerf.ini needs to be refreshed, the updater will automatically refresh the file for you.
 
-Nerf ArenaBlast Updater version 3.3:
-
+3.3:
 - Fixed updater counting more available updates than there really are when subdirectories are involved.
 - Fixed changelog window not closing changelog file after reading from it.
 - Updater will no longer attempt to update if you had a settings read error.
 
-Nerf ArenaBlast Updater version 3.2:
-
+3.2:
 - Updater will no longer crash if the self-update check fails due to network issues.
 - Updater now outputs an error message instead of saying there are no updates if the check for updates fails due to network issues.
 
-Nerf ArenaBlast Updater version 3.1:
-
+3.1:
 - Updater now properly converts between timezones when checking for updates.
 
 Please provide feedback and report any bugs at https://www.nerfarena.net
