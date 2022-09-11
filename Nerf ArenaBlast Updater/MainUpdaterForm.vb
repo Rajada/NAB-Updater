@@ -6,6 +6,10 @@ Imports System.Text
 Imports System.Net
 Imports System.Reflection
 Imports Microsoft.VisualBasic.FileIO
+Imports System.Deployment.Application
+Imports System.Drawing.Drawing2D
+Imports System.ComponentModel.Design
+Imports System.Web.UI
 
 Public Class UpdaterMainForm
     ' Replace folder dialogue with file dialogue?
@@ -17,19 +21,25 @@ Public Class UpdaterMainForm
     Public homeDirectory As DirectoryInfo = New DirectoryInfo("C:\Program Files\Atari\Nerf\")
     Private iniDirectory As DirectoryInfo
     Private logDirectory As String = (Directory.GetCurrentDirectory() + "\NerfUpdater.Log")
+    Private onlineOldBaseDirectory As String = "https://www.update.nerfarena.net/original/basegame/"
+    Private onlineOldCustomDirectory As String = "https://www.update.nerfarena.net/original/community/"
     Private onlineBaseDirectory As String = "https://www.update.nerfarena.net/basegame/"
     Private onlineCustomDirectory As String = "https://www.update.nerfarena.net/community/"
+    Private selectedBaseDirectory As String = "https://www.update.nerfarena.net/basegame/"
+    Private selectedCustomDirectory As String = "https://www.update.nerfarena.net/community/"
     Private updaterDirectory As String = "https://www.update.nerfarena.net/nerfupdate/"
+    Private communityDirectory As String = "https://www.nerfarena.net/"
+    Private communityPackDirectory As String = "https://www.nerfarena.net/index.php/downloads/download/8-community-packs-and-utilities/4-nab-community-pack-lite"
+    Private communityPack300Directory As String = "https://www.nerfarena.net/"
     Private thisDate As Date
     Private thisTime As Date
     Private updateSuccess As Boolean = True
     Private baseFiles As FileInfo()
     Private customFiles As FileInfo()
     Private querying As Boolean = False
-    Private cpVersion As String = String.Empty
     Private nodesToDelete As New List(Of TreeNode)
     Private filesToDelete As New List(Of String)
-    Private updaterVersion As String = "3.79"
+    Private updaterVersion As String = "3.8"
     Private updateDiff As Integer = 0
     Private newVersion As Boolean = False
     Private updateCount As Integer = 0
@@ -39,6 +49,9 @@ Public Class UpdaterMainForm
     Private Aborting As Boolean = False
     Private Updating As Boolean = False
     Private BootAdvanced As Integer = 0
+    Private engineVersionNumber As Integer = -1
+    Private cpVersionString As String = String.Empty
+    Private hasCP As Boolean = False
 
     Dim resFilestream As Stream
     Dim Exeassembly As Assembly = Assembly.GetExecutingAssembly
@@ -67,6 +80,11 @@ Public Class UpdaterMainForm
         Next n
         n = WritePrivateProfileString(sSection, sKey, sTemp, sINIFile)
     End Sub
+
+    Public Function readIni(sINIFile As String, sSection As String, sKey As String, sReturn As StringBuilder, fallbackValue As String) As String
+        GetPrivateProfileString(sSection, sKey, "", sReturn, sReturn.Capacity, sINIFile)
+        Return sReturn.ToString
+    End Function
 
     Private Sub treeView_DrawNode(sender As Object, e As DrawTreeNodeEventArgs) Handles updateFilesTreeView.DrawNode
         e.DrawDefault = True
@@ -130,7 +148,6 @@ Public Class UpdaterMainForm
     End Sub
 
     Private Sub UpdaterMainForm_Loaded(sender As Object, e As EventArgs) Handles Me.Shown
-        GetLatestCommunityPackToolStripMenuItem.Enabled = False
         ShowLatestUpdateIDToolStripMenuItem.Enabled = False
         SelectAllToolStripMenuItem.Visible = False
         DeselectAllToolStripMenuItem.Visible = False
@@ -240,8 +257,8 @@ Public Class UpdaterMainForm
         If Not (My.Computer.FileSystem.FileExists(AppDomain.CurrentDomain.SetupInformation.ConfigurationFile)) Then
             iniDirectory = New DirectoryInfo(Path.Combine(homeDirectory.FullName, "System\Nerf.ini"))
             UpdateSettings("GamePath", homeDirectory.FullName)
-            UpdateSettings("BaseQueryURL", onlineBaseDirectory)
-            UpdateSettings("CommunityQueryURL", onlineCustomDirectory)
+            UpdateSettings("BaseQueryURL", selectedBaseDirectory)
+            UpdateSettings("CommunityQueryURL", selectedCustomDirectory)
             UpdateSettings("UpdateQueryURL", updaterDirectory)
             UpdateSettings("LastDate", "Never")
             UpdateSettings("LastTime", String.Empty)
@@ -251,8 +268,8 @@ Public Class UpdaterMainForm
             Try
                 homeDirectory = New DirectoryInfo(ConfigurationManager.AppSettings("GamePath"))
                 iniDirectory = New DirectoryInfo(Path.Combine(homeDirectory.FullName, "System\Nerf.ini"))
-                onlineBaseDirectory = ConfigurationManager.AppSettings("BaseQueryURL")
-                onlineCustomDirectory = ConfigurationManager.AppSettings("CommunityQueryURL")
+                selectedBaseDirectory = ConfigurationManager.AppSettings("BaseQueryURL")
+                selectedCustomDirectory = ConfigurationManager.AppSettings("CommunityQueryURL")
                 updaterDirectory = ConfigurationManager.AppSettings("UpdateQueryURL")
                 lastUpdateLabel.Text = ConfigurationManager.AppSettings("LastDate") & ControlChars.NewLine & ConfigurationManager.AppSettings("LastTime")
                 InitialAppend = CInt(ConfigurationManager.AppSettings("InitialAppend"))
@@ -275,6 +292,7 @@ Public Class UpdaterMainForm
         If (Not Aborting) Then
             UpdateSettings("GamePath", homeDirectory.FullName)
             updatePathLabel.Text = "Updating files at: " & homeDirectory.FullName
+            CheckEngineVersion()
             CheckForCP(True)
             updateFilesTreeView.Nodes.Clear()
             updateButton.Text = "Check for &Updates"
@@ -284,27 +302,79 @@ Public Class UpdaterMainForm
         End If
     End Sub
 
+    Private Sub CheckEngineVersion()
+        Dim engineVersion As StringBuilder = New StringBuilder(64)
+
+        Log("Detecting engine version...", True)
+        readIni(iniDirectory.ToString, "Engine.Engine", "GameEngine", engineVersion, "ERROR")
+
+        If (engineVersion.ToString = "Engine.GameEngine") Then
+            Log("Standard engine version detected", True)
+            engineVersionNumber = 1
+            selectedBaseDirectory = onlineOldBaseDirectory
+            selectedCustomDirectory = onlineOldCustomDirectory
+            UpdateSettings("BaseQueryURL", onlineOldBaseDirectory)
+            UpdateSettings("CommunityQueryURL", onlineOldCustomDirectory)
+            GetLatestCommunityPackToolStripMenuItem.Enabled = True
+        ElseIf (engineVersion.ToString = "EngineI.GameEngineI") Then
+            Log("Improved engine version detected", True)
+            engineVersionNumber = 2
+            selectedBaseDirectory = onlineBaseDirectory
+            selectedCustomDirectory = onlineCustomDirectory
+            UpdateSettings("BaseQueryURL", onlineBaseDirectory)
+            UpdateSettings("CommunityQueryURL", onlineCustomDirectory)
+            GetLatestCommunityPackToolStripMenuItem.Enabled = True
+        ElseIf (engineVersion.ToString = "ERROR") Then
+            Log("Could not detect engine version", True)
+            engineVersionNumber = -1
+            selectedBaseDirectory = onlineBaseDirectory
+            selectedCustomDirectory = onlineCustomDirectory
+            UpdateSettings("BaseQueryURL", onlineBaseDirectory)
+            UpdateSettings("CommunityQueryURL", onlineCustomDirectory)
+            GetLatestCommunityPackToolStripMenuItem.Enabled = False
+        Else
+            Log("Unknown engine version " + engineVersion.ToString + " detected", True)
+            engineVersionNumber = 0
+            selectedBaseDirectory = onlineBaseDirectory
+            selectedCustomDirectory = onlineCustomDirectory
+            UpdateSettings("BaseQueryURL", onlineBaseDirectory)
+            UpdateSettings("CommunityQueryURL", onlineCustomDirectory)
+            GetLatestCommunityPackToolStripMenuItem.Enabled = False
+        End If
+    End Sub
+
     Private Sub CheckForCP(ChangeStates As Boolean)
+        Log("Detecting Community Pack...", True)
+
         If (File.Exists(Path.Combine(homeDirectory.FullName, "System\CommunityPack.ini"))) Then
             customCheckBox.Enabled = True
             If (ChangeStates) Then
                 customCheckBox.Checked = True
             End If
-            Dim res As Integer
-            Dim sb As StringBuilder
+            Dim cpVersion As String
+            Dim sb As StringBuilder = New StringBuilder(64)
 
-            sb = New StringBuilder(500)
-            res = GetPrivateProfileString("Community Pack", "Version", "", sb, sb.Capacity, Path.Combine(homeDirectory.FullName, "System\CommunityPack.ini"))
-            cpVersion = sb.ToString
-            If (ChangeStates) Then
+            cpVersion = readIni(Path.Combine(homeDirectory.FullName, "System\CommunityPack.ini"), "Community Pack", "Version", sb, "ERROR")
+
+            If (cpVersion = "ERROR") Then
+                Log("Unknown Community Pack detected", True)
+                hasCP = False
+                cpVersionString = ""
+            Else
                 Log("Community Pack version " + cpVersion + " detected", True)
+                hasCP = True
+                cpVersionString = cpVersion
             End If
+
         Else
             customCheckBox.Enabled = False
+            Log("Community Pack not detected", True)
+            hasCP = False
+            cpVersionString = ""
+
             If (ChangeStates) Then
                 customCheckBox.Checked = False
             End If
-            cpVersion = String.Empty
         End If
     End Sub
 
@@ -363,6 +433,7 @@ Public Class UpdaterMainForm
         ChangedPath = ShowGamePathSelector(sender, e)
 
         If (ChangedPath) Then
+            Log("Update path changed to " + homeDirectory.ToString, True)
             CheckIniLocation(sender, e)
         End If
     End Sub
@@ -370,6 +441,7 @@ Public Class UpdaterMainForm
     Private Sub DoUpdate(isQuerying As Boolean)
         updateFilesTreeView.Enabled = Not isQuerying
         changeFilepathButton.Enabled = Not isQuerying
+        customCheckBox.Enabled = False
         cleanupCheckBox.Enabled = Not isQuerying
         revertCheckBox.Enabled = Not isQuerying
 
@@ -385,11 +457,12 @@ Public Class UpdaterMainForm
             DeselectAllToolStripMenuItem.Enabled = False
         End If
         If (Not isQuerying) Then
-            CheckForCP(False)
+            'CheckForCP(False)
+            customCheckBox.Enabled = hasCP
             updateButton.Enabled = True
         Else
             updateFilesTreeView.Nodes.Clear()
-            customCheckBox.Enabled = False
+            'customCheckBox.Enabled = False
             updateButton.Enabled = False
         End If
     End Sub
@@ -524,7 +597,7 @@ Public Class UpdaterMainForm
                     If Not (entry.FileName Like "*/") Then
                         If (entry.FileName Like "*.delete") Then
                             If (cleanupCheckBox.Checked) Then
-                                tempFilePath = Path.Combine(homeDirectory.FullName, dir.Replace(onlineBaseDirectory, "").Replace(onlineCustomDirectory, "").Replace("/", "\") + entry.FileName.Replace(".delete", ""))
+                                tempFilePath = Path.Combine(homeDirectory.FullName, dir.Replace(selectedBaseDirectory, "").Replace(selectedCustomDirectory, "").Replace("/", "\") + entry.FileName.Replace(".delete", ""))
                                 If Not (tempFilePath Like "*.*") Then
                                     tempFilePath = tempFilePath + "\"
                                     If (My.Computer.FileSystem.DirectoryExists(tempFilePath)) Then
@@ -547,7 +620,7 @@ Public Class UpdaterMainForm
                                 End If
                             End If
                         Else
-                            tempFilePath = Path.Combine(homeDirectory.FullName, dir.Replace(onlineBaseDirectory, "").Replace(onlineCustomDirectory, "").Replace("/", "\") + entry.FileName)
+                            tempFilePath = Path.Combine(homeDirectory.FullName, dir.Replace(selectedBaseDirectory, "").Replace(selectedCustomDirectory, "").Replace("/", "\") + entry.FileName)
 
                             If (My.Computer.FileSystem.FileExists(tempFilePath)) Then
                                 infoReader = My.Computer.FileSystem.GetFileInfo(tempFilePath)
@@ -622,10 +695,10 @@ Public Class UpdaterMainForm
         Dim tempCount As Integer = 0
 
         nodesToDelete.Clear()
-        root.Tag = onlineBaseDirectory
+        root.Tag = selectedBaseDirectory
         updateFilesTreeView.BeginUpdate()
-        Log("Checking for base game updates...", True)
-        Await PopulateTreeView(onlineBaseDirectory, updateFilesTreeView.Nodes(i))
+        Log("Checking for base game updates (" + ConfigurationManager.AppSettings("BaseQueryURL") + ")...", True)
+        Await PopulateTreeView(selectedBaseDirectory, updateFilesTreeView.Nodes(i))
 
         If (updateCount < 0) Then
             RecurseCountFiles(root, 0)
@@ -644,10 +717,10 @@ Public Class UpdaterMainForm
         End If
 
         If (customCheckBox.Checked) Then
-            root = updateFilesTreeView.Nodes.Add(CPSeperator.Replace("<ver>", cpVersion))
-            root.Tag = onlineCustomDirectory
-            Log("Checking for Community Pack updates...", True)
-            Await PopulateTreeView(onlineCustomDirectory, updateFilesTreeView.Nodes(i))
+            root = updateFilesTreeView.Nodes.Add(CPSeperator.Replace("<ver>", cpVersionString))
+            root.Tag = selectedCustomDirectory
+            Log("Checking for Community Pack updates (" + ConfigurationManager.AppSettings("CommunityQueryURL") + ")...", True)
+            Await PopulateTreeView(selectedCustomDirectory, updateFilesTreeView.Nodes(i))
             If (updateCount < 0) Then
                 RecurseCountFiles(root, 0)
             Else
@@ -742,7 +815,7 @@ Public Class UpdaterMainForm
             changeFilepathButton.Enabled = True
         End If
 
-        CheckForCP(False)
+        'CheckForCP(False)
         cleanupCheckBox.Enabled = True
         revertCheckBox.Enabled = True
     End Sub
@@ -856,8 +929,8 @@ Public Class UpdaterMainForm
             If node.Checked Then
 
                 actualOnlinePath = node.Tag.ToString
-                actualPath = actualOnlinePath.Replace(onlineBaseDirectory, "")
-                actualPath = actualPath.Replace(onlineCustomDirectory, "")
+                actualPath = actualOnlinePath.Replace(selectedBaseDirectory, "")
+                actualPath = actualPath.Replace(selectedCustomDirectory, "")
                 actualPath = actualPath.Replace("/", "\")
                 temp = actualPath
                 actualPath = Path.Combine(homeDirectory.FullName, temp)
@@ -1057,11 +1130,11 @@ Public Class UpdaterMainForm
     End Sub
 
     Private Sub VisitWebsiteToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles VisitWebsiteToolStripMenuItem.Click
-        Process.Start("https://www.nerfarena.net/index.php")
+        Process.Start(communityDirectory)
     End Sub
 
     Private Sub nerfNetPlugLabel_LinkClicked(sender As Object, e As LinkLabelLinkClickedEventArgs) Handles nerfNetPlugLabel.LinkClicked
-        Process.Start("https://www.nerfarena.net/index.php")
+        Process.Start(communityDirectory)
     End Sub
 
     Private Sub updateFilesTreeView_AfterCheck(sender As Object, e As TreeViewEventArgs) Handles updateFilesTreeView.AfterCheck
@@ -1171,7 +1244,13 @@ Public Class UpdaterMainForm
     End Sub
 
     Private Sub GetLatestCommunityPackToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles GetLatestCommunityPackToolStripMenuItem.Click
-        Process.Start("https://www.nerfarena.net/index.php/downloads/download/8-community-packs-and-utilities/1-nab-community-pack-full")
+        If (engineVersionNumber = 1) Then
+            Process.Start(communityPackDirectory)
+        ElseIf (engineVersionNumber = 2) Then
+            Process.Start(communityPack300Directory)
+        Else
+            Process.Start(communityPack300Directory)
+        End If
     End Sub
 
     Private Sub CheckForNewVersionToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles CheckForNewVersionToolStripMenuItem.Click

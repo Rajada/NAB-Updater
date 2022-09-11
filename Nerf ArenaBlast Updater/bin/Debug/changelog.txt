@@ -1,5 +1,10 @@
 Please provide feedback and report any bugs at https://www.nerfarena.net
 
+3.8:
+- Added engine version detection functionality so that the program can distinguish and appropriately update multiple versions of Nerf ArenaBlast.
+- Added Community Pack detection functionality so that community-made content can be updated.
+- Enabled the latest community pack toolbar item.
+
 3.79:
 - Fixed an exception when trying to create an error report when the update URL cannot be reached.
 - Last update time now only updates when the check for updates does not throw an error.
