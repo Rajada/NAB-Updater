@@ -1,5 +1,10 @@
 Please provide feedback and report any bugs at https://www.nerfarena.net
 
+3.81:
+
+- The program now warns you if you try to update while Nerf ArenaBlast is running.
+- The program shuts down with a warning if you attempt to open a second instance of the program. A third or greater instance is closed without a warning.
+
 3.8:
 - Added engine version detection functionality so that the program can distinguish and appropriately update multiple versions of Nerf ArenaBlast.
 - Added Community Pack detection functionality so that community-made content can be updated.

@@ -14,7 +14,6 @@ Imports System.Web.UI
 Public Class UpdaterMainForm
     ' Replace folder dialogue with file dialogue?
     ' Add tristate checkboxes.
-    ' Detect if game is running?
     Private Const BaseSeperator As String = "Base Game Files:"
     Private Const CPSeperator As String = "Community Pack <ver> Files:"
     Private Const MapsSeperator As String = "Maps:"
@@ -39,7 +38,7 @@ Public Class UpdaterMainForm
     Private querying As Boolean = False
     Private nodesToDelete As New List(Of TreeNode)
     Private filesToDelete As New List(Of String)
-    Private updaterVersion As String = "3.8"
+    Private updaterVersion As String = "3.81"
     Private updateDiff As Integer = 0
     Private newVersion As Boolean = False
     Private updateCount As Integer = 0
@@ -52,6 +51,7 @@ Public Class UpdaterMainForm
     Private engineVersionNumber As Integer = -1
     Private cpVersionString As String = String.Empty
     Private hasCP As Boolean = False
+    Private silentClose As Boolean = False
 
     Dim resFilestream As Stream
     Dim Exeassembly As Assembly = Assembly.GetExecutingAssembly
@@ -68,6 +68,51 @@ Public Class UpdaterMainForm
                  ByVal lpKeyName As String,
                  ByVal lpString As String,
                  ByVal lpFileName As String) As Integer
+
+    Public Function CheckForProcess(pName As String) As Integer
+        Dim psList() As Process
+        Dim pCount As Integer = 0
+        Try
+            psList = Process.GetProcesses()
+
+            For Each p As Process In psList
+                If (pName = p.ProcessName) Then
+                    pCount += 1
+                End If
+            Next p
+
+        Catch ex As Exception
+
+        End Try
+
+        Return pCount
+    End Function
+
+    Public Function CheckNABRunning(isCritical As Boolean) As Boolean
+        If (CheckForProcess("Nerf") > 0) Then
+            If (isCritical) Then
+                If (MessageBox.Show("We have detected that Nerf ArenaBlast is currently running. It is highly recommended that you close Nerf ArenaBlast before updating to ensure updates are applied correctly. Click OK to ignore this warning or click Cancel to abort updating.", "Nerf ArenaBlast Running", MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation) = DialogResult.Cancel) Then
+                    Return True
+                End If
+            Else
+                MessageBox.Show("We have detected that Nerf ArenaBlast is currently running. It is highly recommended that you close Nerf ArenaBlast before updating to ensure updates are applied correctly.", "Nerf ArenaBlast Running", MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
+            End If
+        End If
+        Return False
+    End Function
+
+    Public Function CheckUpdaterRunning() As Boolean
+        If (CheckForProcess("Nerf ArenaBlast Updater") > 2) Then
+            silentClose = True
+            Return True
+        ElseIf (CheckForProcess("Nerf ArenaBlast Updater") > 1) Then
+            MessageBox.Show("In order to ensure update success, please only run one instance of the Nerf ArenaBlast Updater at a time. This program will now close.", "Updater Already Running", MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
+            silentClose = True
+            Return True
+        End If
+        silentClose = False
+        Return False
+    End Function
 
     Public Sub writeINI(sINIFile As String, sSection As String, sKey As String, sValue As String)
         Dim n As Integer
@@ -122,6 +167,12 @@ Public Class UpdaterMainForm
 
     Private Sub UpdaterMainForm_Load(sender As Object, e As EventArgs) Handles Me.Load
         Text = "Nerf ArenaBlast Updater " + updaterVersion
+
+        If (CheckUpdaterRunning()) Then
+            Close()
+            Exit Sub
+        End If
+
         ServicePointManager.Expect100Continue = True
         ServicePointManager.DefaultConnectionLimit = 9999
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
@@ -138,7 +189,7 @@ Public Class UpdaterMainForm
         LoadConfigSettings()
         CheckIniLocation(sender, e)
         updateFilesTreeView.DrawMode = TreeViewDrawMode.OwnerDrawAll
-        'CheckForCP(True)
+        CheckNABRunning(False)
     End Sub
 
     Private Sub UpdaterMainForm_Closed(sender As Object, e As EventArgs) Handles Me.Closed
@@ -167,8 +218,10 @@ Public Class UpdaterMainForm
             Changelog.Close()
         End If
 
-        Log("Updater shutting down", True)
-        Log("Log closing " + thisDate.ToShortDateString + " at " + thisTime.ToShortTimeString, True)
+        If (Not silentClose) Then
+            Log("Updater shutting down", True)
+            Log("Log closing " + thisDate.ToShortDateString + " at " + thisTime.ToShortTimeString, True)
+        End If
     End Sub
 
     Private Async Sub CheckUpdaterVersion(ShowUpToDateMessage As Boolean)
@@ -457,12 +510,10 @@ Public Class UpdaterMainForm
             DeselectAllToolStripMenuItem.Enabled = False
         End If
         If (Not isQuerying) Then
-            'CheckForCP(False)
             customCheckBox.Enabled = hasCP
             updateButton.Enabled = True
         Else
             updateFilesTreeView.Nodes.Clear()
-            'customCheckBox.Enabled = False
             updateButton.Enabled = False
         End If
     End Sub
@@ -471,6 +522,7 @@ Public Class UpdaterMainForm
         updateButton.Focus()
 
         If (updateButton.Text = "Check for &Updates") Then
+            CheckNABRunning(False)
             updateSuccess = False
             updateButton.Text = "Checking..."
             outputTextbox.Text = "Checking for updates..."
@@ -483,31 +535,35 @@ Public Class UpdaterMainForm
             updateProgressBar.Value = 0
             updateProgressBar.Step = 1
             QueryGameFiles(sender, e)
-        ElseIf ((updateButton.Text = "&Update Selected") Or (updateButton.Text = "&Update All")) Then
-            Updating = True
-            updateButton.Text = "Updating..."
-            If (AdvancedMode) Then
-                outputTextbox.Text = "Updating selected files..."
-                Log("Updating selected files...", True)
+        ElseIf ((updateButton.Text = "&Update Selected") Or (updateButton.Text = "&Update")) Then
+            If (CheckNABRunning(True)) Then
+                MessageBox.Show("Updating has been aborted.", "Update Aborted", MessageBoxButtons.OK, MessageBoxIcon.None)
             Else
-                outputTextbox.Text = "Updating files..."
-                Log("Updating files...", True)
+                Updating = True
+                updateButton.Text = "Updating..."
+                If (AdvancedMode) Then
+                    outputTextbox.Text = "Updating selected files..."
+                    Log("Updating selected files...", True)
+                Else
+                    outputTextbox.Text = "Updating files..."
+                    Log("Updating files...", True)
+                End If
+                updateButton.Enabled = False
+                CopyFilesOver()
+                updateSuccess = True
+                'writeINI(iniDirectory.ToString, "Update", "UpdateID", "")
+                'Log("Update ID is " + "", True)
+                updateButton.Text = "Check for &Updates"
+                updateButton.Enabled = True
+                Log("Updates were successfull.", True)
+                MessageBox.Show("Updates were successful.", "Update Complete", MessageBoxButtons.OK, MessageBoxIcon.None)
+                outputTextbox.Text = "Updates successful."
+                updateProgressBar.Value = 0
+                selectAllButton.Enabled = False
+                SelectAllToolStripMenuItem.Enabled = False
+                deselectAllButton.Enabled = False
+                DeselectAllToolStripMenuItem.Enabled = False
             End If
-            updateButton.Enabled = False
-            CopyFilesOver()
-            updateSuccess = True
-            'writeINI(iniDirectory.ToString, "Update", "UpdateID", "")
-            'Log("Update ID is " + "", True)
-            updateButton.Text = "Check for &Updates"
-            updateButton.Enabled = True
-            Log("Updates were successfull.", True)
-            MessageBox.Show("Updates were successful.", "Update Complete", MessageBoxButtons.OK, MessageBoxIcon.None)
-            outputTextbox.Text = "Updates successful."
-            updateProgressBar.Value = 0
-            selectAllButton.Enabled = False
-            SelectAllToolStripMenuItem.Enabled = False
-            deselectAllButton.Enabled = False
-            DeselectAllToolStripMenuItem.Enabled = False
         End If
     End Sub
 
@@ -751,7 +807,7 @@ Public Class UpdaterMainForm
                 If (AdvancedMode) Then
                     updateButton.Text = "&Update Selected"
                 Else
-                    updateButton.Text = "&Update All"
+                    updateButton.Text = "&Update"
                 End If
             Else
                 updateButton.Text = "Check for &Updates"
@@ -815,7 +871,6 @@ Public Class UpdaterMainForm
             changeFilepathButton.Enabled = True
         End If
 
-        'CheckForCP(False)
         cleanupCheckBox.Enabled = True
         revertCheckBox.Enabled = True
     End Sub
@@ -1068,7 +1123,7 @@ Public Class UpdaterMainForm
             If (AdvancedMode) Then
                 updateButton.Text = "&Update Selected"
             Else
-                updateButton.Text = "&Update All"
+                updateButton.Text = "&Update"
             End If
         End If
 
@@ -1354,7 +1409,7 @@ Public Class UpdaterMainForm
             CheckForCP(True)
 
             If (updateCount > 0) Then
-                updateButton.Text = "&Update All"
+                updateButton.Text = "&Update"
             End If
         End If
     End Sub
@@ -1379,4 +1434,9 @@ Class MyTreeView
         End If
         MyBase.WndProc(m)
     End Sub
+
+    Private Declare Function FindWindow Lib "user32.dll" Alias "FindWindowA" (ByVal lpClassName As String, ByVal lpWindowName As String) As Long
+    Public Function FindWindowHandle(Caption As String) As Long
+        FindWindowHandle = FindWindow(vbNullString, Caption)
+    End Function
 End Class
