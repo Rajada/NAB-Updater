@@ -17,7 +17,7 @@ Public Class UpdaterMainForm
     Private Const BaseSeperator As String = "Base Game Files:"
     Private Const CPSeperator As String = "Community Pack <ver> Files:"
     Private Const MapsSeperator As String = "Maps:"
-    Public homeDirectory As DirectoryInfo = New DirectoryInfo("C:\Program Files\Atari\Nerf\")
+    Public homeDirectory As DirectoryInfo
     Private iniDirectory As DirectoryInfo
     Private logDirectory As String = (Directory.GetCurrentDirectory() + "\NerfUpdater.Log")
     Private onlineOldBaseDirectory As String = "https://www.update.nerfarena.net/original/basegame/"
@@ -38,7 +38,7 @@ Public Class UpdaterMainForm
     Private querying As Boolean = False
     Private nodesToDelete As New List(Of TreeNode)
     Private filesToDelete As New List(Of String)
-    Private updaterVersion As String = "3.81"
+    Private updaterVersion As String = "3.82"
     Private updateDiff As Integer = 0
     Private newVersion As Boolean = False
     Private updateCount As Integer = 0
@@ -52,6 +52,7 @@ Public Class UpdaterMainForm
     Private cpVersionString As String = String.Empty
     Private hasCP As Boolean = False
     Private silentClose As Boolean = False
+    Private Upgrading As Boolean = False
 
     Dim resFilestream As Stream
     Dim Exeassembly As Assembly = Assembly.GetExecutingAssembly
@@ -208,7 +209,9 @@ Public Class UpdaterMainForm
         End If
 
         If (BootAdvanced > 0) Then
-            Log("Booting in advanced mode", True)
+            If (Not Upgrading) Then
+                Log("Booting in advanced mode", True)
+            End If
             ToggleAdvanced(sender, e, True)
         End If
     End Sub
@@ -258,7 +261,8 @@ Public Class UpdaterMainForm
 
         If (Convert.ToDouble(latestVersion) > Convert.ToDouble(updaterVersion)) Then
             Log("Found a new version (" + latestVersion + "), your version (" + updaterVersion + ")", True)
-            If (MessageBox.Show("There is a newer version of the updater available. It is highly recommended that you use the newest version of the updater. Would you like to download it now?", "New Version", MessageBoxButtons.YesNo, MessageBoxIcon.None) = DialogResult.Yes) Then
+            If (MessageBox.Show("There is a newer version of the updater available (" & latestVersion & "). It is highly recommended that you use the newest version of the updater. Would you like to download it now?", "New Version", MessageBoxButtons.YesNo, MessageBoxIcon.None) = DialogResult.Yes) Then
+                Upgrading = True
                 changeFilepathButton.Enabled = False
                 updateFilesTreeView.Enabled = False
                 cleanupCheckBox.Enabled = False
@@ -296,10 +300,10 @@ Public Class UpdaterMainForm
             End If
             myWebClient.Dispose()
         Else
-            Log("No newer version available", True)
+            Log("No new version available", True)
             UpdateSettings("InitialAppend", "0")
             If (ShowUpToDateMessage) Then
-                MessageBox.Show("No newer version available.", "Version Check", MessageBoxButtons.OK, MessageBoxIcon.None)
+                MessageBox.Show("No new version available.", "Version Check", MessageBoxButtons.OK, MessageBoxIcon.None)
                 outputTextbox.Text = "."
             End If
         End If
@@ -308,8 +312,10 @@ Public Class UpdaterMainForm
     Private Sub LoadConfigSettings()
 
         If Not (My.Computer.FileSystem.FileExists(AppDomain.CurrentDomain.SetupInformation.ConfigurationFile)) Then
+            homeDirectory = New DirectoryInfo(Directory.GetParent(Directory.GetCurrentDirectory()).FullName)
             iniDirectory = New DirectoryInfo(Path.Combine(homeDirectory.FullName, "System\Nerf.ini"))
-            UpdateSettings("GamePath", homeDirectory.FullName)
+            Log("Instancing updater at " & homeDirectory.FullName, True)
+            UpdateSettings("GamePath", Directory.GetParent(Directory.GetCurrentDirectory()).FullName)
             UpdateSettings("BaseQueryURL", selectedBaseDirectory)
             UpdateSettings("CommunityQueryURL", selectedCustomDirectory)
             UpdateSettings("UpdateQueryURL", updaterDirectory)
@@ -510,8 +516,8 @@ Public Class UpdaterMainForm
             DeselectAllToolStripMenuItem.Enabled = False
         End If
         If (Not isQuerying) Then
-            customCheckBox.Enabled = hasCP
             updateButton.Enabled = True
+            customCheckBox.Enabled = hasCP
         Else
             updateFilesTreeView.Nodes.Clear()
             updateButton.Enabled = False
@@ -838,6 +844,7 @@ Public Class UpdaterMainForm
             updateDiff = updateCount
             updateProgressBar.Value = 0
             UpdateLastTime()
+            customCheckBox.Enabled = hasCP
         ElseIf (updateCount < 0) Then
             selectAllButton.Enabled = False
             SelectAllToolStripMenuItem.Enabled = False
@@ -853,6 +860,7 @@ Public Class UpdaterMainForm
             updateProgressBar.Value = 0
             updateButton.Enabled = True
             changeFilepathButton.Enabled = True
+            customCheckBox.Enabled = hasCP
         Else
             selectAllButton.Enabled = False
             SelectAllToolStripMenuItem.Enabled = False
@@ -861,14 +869,15 @@ Public Class UpdaterMainForm
             DoUpdate(querying)
             updateButton.Text = "Check for &Updates"
             updateSuccess = True
-            Log("No newer updates availible", True)
-            MessageBox.Show("No newer updates available.", "Check Complete", MessageBoxButtons.OK, MessageBoxIcon.None)
-            outputTextbox.Text = "No newer updates available."
+            Log("No new updates availible", True)
+            MessageBox.Show("No new updates available.", "Check Complete", MessageBoxButtons.OK, MessageBoxIcon.None)
+            outputTextbox.Text = "No new updates available."
             UpdateLastTime()
             updateDiff = 0
             updateProgressBar.Value = 0
             updateButton.Enabled = True
             changeFilepathButton.Enabled = True
+            customCheckBox.Enabled = hasCP
         End If
 
         cleanupCheckBox.Enabled = True

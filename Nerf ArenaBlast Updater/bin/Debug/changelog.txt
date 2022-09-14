@@ -1,5 +1,9 @@
 Please provide feedback and report any bugs at https://www.nerfarena.net
 
+3.82:
+
+- If there is no configuration file, the program will create one with the current directory as the base directory.
+
 3.81:
 
 - The program now warns you if you try to update while Nerf ArenaBlast is running.
