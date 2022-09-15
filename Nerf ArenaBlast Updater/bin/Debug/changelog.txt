@@ -1,5 +1,18 @@
 Please provide feedback and report any bugs at https://www.nerfarena.net
 
+3.83:
+
+- Fixed a bug that caused the last update time and date not to update properly.
+- Fixed a bug that caused folder deletions to not show up as an update in file cleanup mode.
+- Fixed a bug that caused the program not to compute folder deletions in update totals.
+- Fixed a bug that caused the Check for Updates toolbar item to behave differently from the button.
+- Fixed a bug that allowed you to update despite having 0 updates selected in advanced mode.
+- Fixed a bug that caused folder deletions to be skipped during updating.
+- Fixed a bug where some toolbar items could be enabled when they shouldn't be during updates.
+- Added Options toolbar item category.
+- Added Open Game Directory toolbar item.
+- Added support for GUI language loading. Languages coming soon.
+
 3.82:
 
 - If there is no configuration file, the program will create one with the current directory as the base directory.
