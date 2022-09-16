@@ -387,150 +387,6 @@
   <data name="MenuStrip1.Font" type="System.Drawing.Font, System.Drawing">
     <value>Tahoma, 9.75pt</value>
   </data>
-  <data name="ChangeBaseDirectoryToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>251, 22</value>
-  </data>
-  <data name="ChangeBaseDirectoryToolStripMenuItem.Text" xml:space="preserve">
-    <value>Change Base Directory</value>
-  </data>
-  <data name="ToolStripSeparator3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>248, 6</value>
-  </data>
-  <data name="CheckForUpdatesToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>251, 22</value>
-  </data>
-  <data name="CheckForUpdatesToolStripMenuItem.Text" xml:space="preserve">
-    <value>Check for &amp;Updates</value>
-  </data>
-  <data name="SelectAllToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>251, 22</value>
-  </data>
-  <data name="SelectAllToolStripMenuItem.Text" xml:space="preserve">
-    <value>&amp;Select All</value>
-  </data>
-  <data name="DeselectAllToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>251, 22</value>
-  </data>
-  <data name="DeselectAllToolStripMenuItem.Text" xml:space="preserve">
-    <value>&amp;Deselect All</value>
-  </data>
-  <data name="ToolStripSeparator4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>248, 6</value>
-  </data>
-  <data name="GetLatestCommunityPackToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>251, 22</value>
-  </data>
-  <data name="GetLatestCommunityPackToolStripMenuItem.Text" xml:space="preserve">
-    <value>&amp;Get the Latest Community Pack</value>
-  </data>
-  <data name="ToolStripSeparator1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>248, 6</value>
-  </data>
-  <data name="ExitToolStripMenuItem.ShortcutKeys" type="System.Windows.Forms.Keys, System.Windows.Forms">
-    <value>Alt+F4</value>
-  </data>
-  <data name="ExitToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>251, 22</value>
-  </data>
-  <data name="ExitToolStripMenuItem.Text" xml:space="preserve">
-    <value>E&amp;xit</value>
-  </data>
-  <data name="FileToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>39, 20</value>
-  </data>
-  <data name="FileToolStripMenuItem.Text" xml:space="preserve">
-    <value>&amp;File</value>
-  </data>
-  <data name="ViewHelpToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>148, 22</value>
-  </data>
-  <data name="ViewHelpToolStripMenuItem.Text" xml:space="preserve">
-    <value>V&amp;iew Help</value>
-  </data>
-  <data name="VisitWebsiteToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>148, 22</value>
-  </data>
-  <data name="VisitWebsiteToolStripMenuItem.Text" xml:space="preserve">
-    <value>Visit Website</value>
-  </data>
-  <data name="ToolStripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>145, 6</value>
-  </data>
-  <data name="AboutToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>148, 22</value>
-  </data>
-  <data name="AboutToolStripMenuItem.Text" xml:space="preserve">
-    <value>&amp;About...</value>
-  </data>
-  <data name="HelpToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>44, 20</value>
-  </data>
-  <data name="HelpToolStripMenuItem.Text" xml:space="preserve">
-    <value>&amp;Help</value>
-  </data>
-  <data name="CheckForNewVersionToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>204, 22</value>
-  </data>
-  <data name="CheckForNewVersionToolStripMenuItem.Text" xml:space="preserve">
-    <value>Chec&amp;k for New Version</value>
-  </data>
-  <data name="ViewChangelogToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>204, 22</value>
-  </data>
-  <data name="ViewChangelogToolStripMenuItem.Text" xml:space="preserve">
-    <value>View &amp;Changelog</value>
-  </data>
-  <data name="VersionToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>62, 20</value>
-  </data>
-  <data name="VersionToolStripMenuItem.Text" xml:space="preserve">
-    <value>&amp;Version</value>
-  </data>
-  <data name="InternationalEnglishDefaultToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>190, 22</value>
-  </data>
-  <data name="InternationalEnglishDefaultToolStripMenuItem.Text" xml:space="preserve">
-    <value>International English</value>
-  </data>
-  <data name="ToolStripSeparator5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>187, 6</value>
-  </data>
-  <data name="LanguageToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>196, 22</value>
-  </data>
-  <data name="LanguageToolStripMenuItem.Text" xml:space="preserve">
-    <value>&amp;Language</value>
-  </data>
-  <data name="OpenGameDirectoryToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>196, 22</value>
-  </data>
-  <data name="OpenGameDirectoryToolStripMenuItem.Text" xml:space="preserve">
-    <value>Open Game Directory</value>
-  </data>
-  <data name="OptionsToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>62, 20</value>
-  </data>
-  <data name="OptionsToolStripMenuItem.Text" xml:space="preserve">
-    <value>&amp;Options</value>
-  </data>
-  <data name="AdvancedModeToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>206, 22</value>
-  </data>
-  <data name="AdvancedModeToolStripMenuItem.Text" xml:space="preserve">
-    <value>Enable Adva&amp;nced Mode</value>
-  </data>
-  <data name="ShowLatestUpdateIDToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>206, 22</value>
-  </data>
-  <data name="ShowLatestUpdateIDToolStripMenuItem.Text" xml:space="preserve">
-    <value>Show &amp;Latest Update ID</value>
-  </data>
-  <data name="AdvancedToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>121, 20</value>
-  </data>
-  <data name="AdvancedToolStripMenuItem.Text" xml:space="preserve">
-    <value>Advanc&amp;ed Options</value>
-  </data>
   <data name="MenuStrip1.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 0</value>
   </data>
@@ -554,6 +410,150 @@
   </data>
   <data name="&gt;&gt;MenuStrip1.ZOrder" xml:space="preserve">
     <value>14</value>
+  </data>
+  <data name="FileToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>39, 20</value>
+  </data>
+  <data name="FileToolStripMenuItem.Text" xml:space="preserve">
+    <value>&amp;File</value>
+  </data>
+  <data name="ChangeBaseDirectoryToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>251, 22</value>
+  </data>
+  <data name="ChangeBaseDirectoryToolStripMenuItem.Text" xml:space="preserve">
+    <value>Change Base Directory</value>
+  </data>
+  <data name="ToolStripSeparator3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>248, 6</value>
+  </data>
+  <data name="CheckForUpdatesToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>251, 22</value>
+  </data>
+  <data name="CheckForUpdatesToolStripMenuItem.Text" xml:space="preserve">
+    <value>Check for &amp;Updates</value>
+  </data>
+  <data name="SelectAllToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>251, 22</value>
+  </data>
+  <data name="SelectAllToolStripMenuItem.Text" xml:space="preserve">
+    <value>&amp;Select All Updates</value>
+  </data>
+  <data name="DeselectAllToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>251, 22</value>
+  </data>
+  <data name="DeselectAllToolStripMenuItem.Text" xml:space="preserve">
+    <value>&amp;Deselect All Updates</value>
+  </data>
+  <data name="ToolStripSeparator4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>248, 6</value>
+  </data>
+  <data name="GetLatestCommunityPackToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>251, 22</value>
+  </data>
+  <data name="GetLatestCommunityPackToolStripMenuItem.Text" xml:space="preserve">
+    <value>&amp;Get the Latest Community Pack</value>
+  </data>
+  <data name="ToolStripSeparator1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>248, 6</value>
+  </data>
+  <data name="ExitToolStripMenuItem.ShortcutKeys" type="System.Windows.Forms.Keys, System.Windows.Forms">
+    <value>Alt+F4</value>
+  </data>
+  <data name="ExitToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>251, 22</value>
+  </data>
+  <data name="ExitToolStripMenuItem.Text" xml:space="preserve">
+    <value>E&amp;xit</value>
+  </data>
+  <data name="HelpToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>44, 20</value>
+  </data>
+  <data name="HelpToolStripMenuItem.Text" xml:space="preserve">
+    <value>&amp;Help</value>
+  </data>
+  <data name="ViewHelpToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="ViewHelpToolStripMenuItem.Text" xml:space="preserve">
+    <value>V&amp;iew Help</value>
+  </data>
+  <data name="VisitWebsiteToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="VisitWebsiteToolStripMenuItem.Text" xml:space="preserve">
+    <value>Visit Website</value>
+  </data>
+  <data name="ToolStripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>177, 6</value>
+  </data>
+  <data name="AboutToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="AboutToolStripMenuItem.Text" xml:space="preserve">
+    <value>&amp;About...</value>
+  </data>
+  <data name="VersionToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>62, 20</value>
+  </data>
+  <data name="VersionToolStripMenuItem.Text" xml:space="preserve">
+    <value>&amp;Version</value>
+  </data>
+  <data name="CheckForNewVersionToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>204, 22</value>
+  </data>
+  <data name="CheckForNewVersionToolStripMenuItem.Text" xml:space="preserve">
+    <value>Chec&amp;k for New Version</value>
+  </data>
+  <data name="ViewChangelogToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>204, 22</value>
+  </data>
+  <data name="ViewChangelogToolStripMenuItem.Text" xml:space="preserve">
+    <value>View &amp;Changelog</value>
+  </data>
+  <data name="OptionsToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>122, 20</value>
+  </data>
+  <data name="OptionsToolStripMenuItem.Text" xml:space="preserve">
+    <value>&amp;Options</value>
+  </data>
+  <data name="LanguageToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>196, 22</value>
+  </data>
+  <data name="LanguageToolStripMenuItem.Text" xml:space="preserve">
+    <value>&amp;Language</value>
+  </data>
+  <data name="InternationalEnglishDefaultToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>190, 22</value>
+  </data>
+  <data name="InternationalEnglishDefaultToolStripMenuItem.Text" xml:space="preserve">
+    <value>International English</value>
+  </data>
+  <data name="ToolStripSeparator5.Size" type="System.Drawing.Size, System.Drawing">
+    <value>187, 6</value>
+  </data>
+  <data name="OpenGameDirectoryToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>196, 22</value>
+  </data>
+  <data name="OpenGameDirectoryToolStripMenuItem.Text" xml:space="preserve">
+    <value>Open Game Directory</value>
+  </data>
+  <data name="AdvancedToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>121, 20</value>
+  </data>
+  <data name="AdvancedToolStripMenuItem.Text" xml:space="preserve">
+    <value>Advanc&amp;ed Options</value>
+  </data>
+  <data name="AdvancedModeToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>206, 22</value>
+  </data>
+  <data name="AdvancedModeToolStripMenuItem.Text" xml:space="preserve">
+    <value>Enable Adva&amp;nced Mode</value>
+  </data>
+  <data name="ShowLatestUpdateIDToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>206, 22</value>
+  </data>
+  <data name="ShowLatestUpdateIDToolStripMenuItem.Text" xml:space="preserve">
+    <value>Show &amp;Latest Update ID</value>
   </data>
   <data name="cleanupCheckBox.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
@@ -584,24 +584,6 @@
   </data>
   <data name="&gt;&gt;cleanupCheckBox.ZOrder" xml:space="preserve">
     <value>4</value>
-  </data>
-  <data name="lastUpdateLabel.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="lastUpdateLabel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 16</value>
-  </data>
-  <data name="lastUpdateLabel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>105, 39</value>
-  </data>
-  <data name="lastUpdateLabel.TabIndex" type="System.Int32, mscorlib">
-    <value>15</value>
-  </data>
-  <data name="lastUpdateLabel.Text" xml:space="preserve">
-    <value>Never</value>
-  </data>
-  <data name="lastUpdateLabel.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>TopCenter</value>
   </data>
   <data name="&gt;&gt;lastUpdateLabel.Name" xml:space="preserve">
     <value>lastUpdateLabel</value>
@@ -639,6 +621,36 @@
   <data name="&gt;&gt;GroupBox1.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
+  <data name="lastUpdateLabel.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="lastUpdateLabel.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 16</value>
+  </data>
+  <data name="lastUpdateLabel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>105, 39</value>
+  </data>
+  <data name="lastUpdateLabel.TabIndex" type="System.Int32, mscorlib">
+    <value>15</value>
+  </data>
+  <data name="lastUpdateLabel.Text" xml:space="preserve">
+    <value>Never</value>
+  </data>
+  <data name="lastUpdateLabel.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>TopCenter</value>
+  </data>
+  <data name="&gt;&gt;lastUpdateLabel.Name" xml:space="preserve">
+    <value>lastUpdateLabel</value>
+  </data>
+  <data name="&gt;&gt;lastUpdateLabel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;lastUpdateLabel.Parent" xml:space="preserve">
+    <value>GroupBox1</value>
+  </data>
+  <data name="&gt;&gt;lastUpdateLabel.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
   <data name="revertCheckBox.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -649,13 +661,13 @@
     <value>571, 195</value>
   </data>
   <data name="revertCheckBox.Size" type="System.Drawing.Size, System.Drawing">
-    <value>112, 17</value>
+    <value>82, 17</value>
   </data>
   <data name="revertCheckBox.TabIndex" type="System.Int32, mscorlib">
     <value>14</value>
   </data>
   <data name="revertCheckBox.Text" xml:space="preserve">
-    <value>Show File Reverts</value>
+    <value>File Reverts</value>
   </data>
   <data name="revertCheckBox.Visible" type="System.Boolean, mscorlib">
     <value>False</value>

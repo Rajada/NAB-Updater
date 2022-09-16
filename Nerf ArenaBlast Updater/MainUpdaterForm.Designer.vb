@@ -128,7 +128,7 @@ Partial Class UpdaterMainForm
         '
         Me.MenuStrip1.BackColor = System.Drawing.Color.WhiteSmoke
         resources.ApplyResources(Me.MenuStrip1, "MenuStrip1")
-        Me.MenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.FileToolStripMenuItem, Me.HelpToolStripMenuItem, Me.VersionToolStripMenuItem, Me.OptionsToolStripMenuItem, Me.AdvancedToolStripMenuItem})
+        Me.MenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.FileToolStripMenuItem, Me.OptionsToolStripMenuItem, Me.VersionToolStripMenuItem, Me.HelpToolStripMenuItem, Me.AdvancedToolStripMenuItem})
         Me.MenuStrip1.Name = "MenuStrip1"
         Me.MenuStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.System
         '
