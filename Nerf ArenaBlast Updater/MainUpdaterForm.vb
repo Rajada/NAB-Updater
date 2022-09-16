@@ -55,6 +55,7 @@ Public Class UpdaterMainForm
     Private locString_Window_AboutUpdater As String = "About Nerf ArenaBlast Updater"
     Private locString_Window_AdvancedDisable As String = "Disable Advanced Mode?"
     Private locString_Window_AdvancedEnable As String = "Enable Advanced Mode?"
+    Public locString_Window_Changelog As String = "Changelog"
     Private locString_Window_ConfigNotFound As String = "Updater Configuration File Not Found"
     Private locString_Window_ConfigNotRead As String = "Unable to Read Updater Configuration File"
     Private locString_Window_DeleteFolder As String = "Delete Folder?"
@@ -77,6 +78,7 @@ Public Class UpdaterMainForm
     ' Captions
     Private locString_Caption_AdvancedEnableWarning As String = "Are you sure you want to switch to advanced mode? Advanced mode contains options that can cause issues with your game if used incorrectly."
     Private locString_Caption_AdvancedDisableWarning As String = "If you disable advanced mode you will lose any selections made. Are you sure you wish to disable advanced mode?"
+    Public locString_Caption_ChangelogMissing As String = "Could not load changelog."
     Private locString_Caption_CleanupWarning As String = "This option shows files that have been flagged for removal by the server. If you have created files that you have named identically to one of these flagged names, they will be deleted permanently. Use caution, and only check files you are sure you want to delete. For your protection, the deletable files will not be checked by default."
     Private locString_Caption_ConfigNotFound As String = "Could not read updater configuration settings."
     Private locString_Caption_ConfigNotRead As String = "Could not read updater configuration settings. Please make sure you have permission to read and write to the game directory. You may wish to run the updater as an administrator."
@@ -1701,8 +1703,31 @@ Public Class UpdaterMainForm
         For Each LFI In FileArray
             If (LFI.Name Like (Lang + ".lang")) Then
                 ldi = New DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory().ToString, LFI.Name))
+
+                ' Windows
+                locString_Window_AboutUpdater = readIni(ldi.FullName, "Windows", "locString_Window_AboutUpdater", SB, "About Nerf ArenaBlast Updater")
+                locString_Window_AdvancedDisable = readIni(ldi.FullName, "Windows", "locString_Window_AdvancedDisable", SB, "Disable Advanced Mode?")
+                locString_Window_AdvancedEnable = readIni(ldi.FullName, "Windows", "locString_Window_AdvancedEnable", SB, "Enable Advanced Mode?")
+                locString_Window_Changelog = readIni(ldi.FullName, "Windows", "locString_Window_Changelog", SB, "Changelog")
+                locString_Window_ConfigNotFound = readIni(ldi.FullName, "Windows", "locString_Window_ConfigNotFound", SB, "Updater Configuration File Not Found")
+                locString_Window_ConfigNotRead = readIni(ldi.FullName, "Windows", "locString_Window_ConfigNotRead", SB, "Unable to Read Updater Configuration File")
+                locString_Window_DeleteFolder = readIni(ldi.FullName, "Windows", "locString_Window_DeleteFolder", SB, "Delete Folder?")
+                locString_Window_ErrorDownloading = readIni(ldi.FullName, "Windows", "locString_Window_ErrorDownloading", SB, "Error Downloading File")
+                locString_Window_ExitUpdater = readIni(ldi.FullName, "Windows", "locString_Window_ExitUpdater", SB, "Exit Updater?")
+                locString_Window_IniNotFound = readIni(ldi.FullName, "Windows", "locString_Window_IniNotFound", SB, "Nerf.ini File Not Found")
+                locString_Window_NABRunning = readIni(ldi.FullName, "Windows", "locString_Window_NABRunning", SB, "Nerf ArenaBlast Running")
+                locString_Window_NewVersionAvailable = readIni(ldi.FullName, "Windows", "locString_Window_NewVersionAvailable", SB, "New Version Available")
+                locString_Window_SelectInstall = readIni(ldi.FullName, "Windows", "locString_Window_SelectInstall", SB, "Select Nerf ArenaBlast Installation Location")
+                locString_Window_ServerNoResponse = readIni(ldi.FullName, "Windows", "locString_Window_ServerNoResponse", SB, "Server Did Not Respond")
+                locString_Window_UpdateAborted = readIni(ldi.FullName, "Windows", "locString_Window_UpdateAborted", SB, "Update Aborted")
+                locString_Window_UpdateCheckCancelled = readIni(ldi.FullName, "Windows", "locString_Window_UpdateCheckCancelled", SB, "Update Check Cancelled")
+                locString_Window_UpdateCheckComplete = readIni(ldi.FullName, "Windows", "locString_Window_UpdateCheckComplete", SB, "Update Check Complete")
+                locString_Window_UpdateComplete = readIni(ldi.FullName, "Windows", "locString_Window_UpdateComplete", SB, "Update Complete")
                 locString_Window_UpdaterName = readIni(ldi.FullName, "Windows", "locString_Window_UpdaterName", SB, "Nerf ArenaBlast Updater")
                 Me.Text = locString_Window_UpdaterName + " " + updaterVersion
+                locString_Window_UpdaterRunning = readIni(ldi.FullName, "Windows", "locString_Window_UpdaterRunning", SB, "Updater Already Running")
+                locString_Window_VersionCheckComplete = readIni(ldi.FullName, "Windows", "locString_Window_VersionCheckComplete", SB, "Version Check Complete")
+                locString_Window_Warning = readIni(ldi.FullName, "Windows", "locString_Window_Warning", SB, "Warning!")
                 Exit For
             End If
         Next LFI
