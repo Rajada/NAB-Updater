@@ -112,8 +112,8 @@ Public Class UpdaterMainForm
     Private locString_Output_Refreshing As String = "Refreshing"
     Private locString_Output_ServerError As String = "Server error!"
     Private locString_Output_UpdaterReady As String = "Updater is ready to go."
-    Private locString_Output_UpdatesPending As String = "updates pending"
-    Private locString_Output_UpdatesSelected As String = "updates selected"
+    Private locString_Output_UpdatesPending As String = "updates pending."
+    Private locString_Output_UpdatesSelected As String = "updates selected."
     Private locString_Output_UpdatesSuccessful As String = "Updates successful."
     Private locString_Output_UpdatingFiles As String = "Updating files..."
     Private locString_Output_UpdatingSelectedFiles As String = "Updating selected files..."
@@ -127,7 +127,7 @@ Public Class UpdaterMainForm
     Private locString_GUI_DeselectAll As String = "&Deselect All Updates"
     Private locString_GUI_Exit As String = "E&xit"
     Private locString_GUI_LastChecked As String = "Last Checked"
-    ' Private locString_GUI_Modified As String = "Modified"
+    Private locString_GUI_Modified As String = "Modified"
     Private locString_GUI_Never As String = "Never"
     Private locString_GUI_SelectAll As String = "&Select All Updates"
     Private locString_GUI_Update As String = "&Update"
@@ -788,6 +788,7 @@ Public Class UpdaterMainForm
     End Sub
 
     Public Class RemoteFileInfo
+        Private locString_GUI_Modified As String = "Modified"
         Public Property Url As String
         Public Property FileName As String
         Public Property FileSize As String
@@ -795,7 +796,7 @@ Public Class UpdaterMainForm
         Public Property Description As String
 
         Public Overrides Function ToString() As String
-            Return $"{FileName}".PadRight(20, "."c) & $"Modified: {LastModified}"
+            Return $"{FileName}".PadRight(20, "."c) & locString_GUI_Modified & $": {LastModified}"
         End Function
     End Class
 
@@ -1728,6 +1729,141 @@ Public Class UpdaterMainForm
                 locString_Window_UpdaterRunning = readIni(ldi.FullName, "Windows", "locString_Window_UpdaterRunning", SB, "Updater Already Running")
                 locString_Window_VersionCheckComplete = readIni(ldi.FullName, "Windows", "locString_Window_VersionCheckComplete", SB, "Version Check Complete")
                 locString_Window_Warning = readIni(ldi.FullName, "Windows", "locString_Window_Warning", SB, "Warning!")
+
+                ' Captions
+                locString_Caption_AdvancedEnableWarning = readIni(ldi.FullName, "Captions", "locString_Caption_AdvancedEnableWarning", SB, "Are you sure you want to switch to advanced mode? Advanced mode contains options that can cause issues with your game if used incorrectly.")
+                locString_Caption_AdvancedDisableWarning = readIni(ldi.FullName, "Captions", "locString_Caption_AdvancedDisableWarning", SB, "If you disable advanced mode you will lose any selections made. Are you sure you wish to disable advanced mode?")
+                locString_Caption_ChangelogMissing = readIni(ldi.FullName, "Captions", "locString_Caption_ChangelogMissing", SB, "Could not load changelog.")
+                locString_Caption_CleanupWarning = readIni(ldi.FullName, "Captions", "locString_Caption_CleanupWarning", SB, "This option shows files that have been flagged for removal by the server. If you have created files that you have named identically to one of these flagged names, they will be deleted permanently. Use caution, and only check files you are sure you want to delete. For your protection, the deletable files will not be checked by default.")
+                locString_Caption_ConfigNotFound = readIni(ldi.FullName, "Captions", "locString_Caption_ConfigNotFound", SB, "Could not read updater configuration settings.")
+                locString_Caption_ConfigNotRead = readIni(ldi.FullName, "Captions", "locString_Caption_ConfigNotRead", SB, "Could not read updater configuration settings. Please make sure you have permission to read and write to the game directory. You may wish to run the updater as an administrator.")
+                locString_Caption_DetectedNAB = readIni(ldi.FullName, "Captions", "locString_Caption_DetectedNAB", SB, "We have detected that Nerf ArenaBlast is currently running. It is highly recommended that you close Nerf ArenaBlast before updating to ensure updates are applied correctly.")
+                locString_Caption_DetectedNABCritical = readIni(ldi.FullName, "Captions", "locString_Caption_DetectedNABCritical", SB, "We have detected that Nerf ArenaBlast is currently running. It is highly recommended that you close Nerf ArenaBlast before updating to ensure updates are applied correctly. Click OK to ignore this warning or click Cancel to abort updating.")
+                locString_Caption_ErrorChecking = readIni(ldi.FullName, "Captions", "locString_Caption_ErrorChecking", SB, "Error checking for updates. Check has been cancelled.")
+                locString_Caption_ErrorDownloading = readIni(ldi.FullName, "Captions", "locString_Caption_ErrorDownloading", SB, "Error downloading file <url>.")
+                locString_Caption_ErrorReport = readIni(ldi.FullName, "Captions", "locString_Caption_ErrorReport", SB, "An error report follows.")
+                locString_Caption_ExitNoUpdate = readIni(ldi.FullName, "Captions", "locString_Caption_ExitNoUpdate", SB, "Are you sure you want to exit? The game will not be updated.")
+                locString_Caption_ExitMidUpdate = readIni(ldi.FullName, "Captions", "locString_Caption_ExitMidUpdate", SB, "Are you sure you want to exit? The game has not been fully updated. This may result in game instability and inability to play in multiplayer matches.")
+                locString_Caption_IniNotLocated = readIni(ldi.FullName, "Captions", "locString_Caption_IniNotLocated", SB, "The Nerf.ini file could not be located in the provided directory <dir>. If you have not done so, run the game once and then locate the Nerf root folder before updating.")
+                locString_Caption_NewVersionAvailable = readIni(ldi.FullName, "Captions", "locString_Caption_NewVersionAvailable", SB, "There is a newer version of the updater available (<ver>). It is highly recommended that you use the newest version of the updater. Would you like to install it now?")
+                locString_Caption_FolderDeletionWarning = readIni(ldi.FullName, "Captions", "locString_Caption_FolderDeletionWarning", SB, "<dir> is a folder that contains other files. Are you sure you wish to delete it?")
+                locString_Caption_NoNewUpdates = readIni(ldi.FullName, "Captions", "locString_Caption_NoNewUpdates", SB, "No new updates available at this time.")
+                locString_Caption_NoNewVersion = readIni(ldi.FullName, "Captions", "locString_Caption_NoNewVersion", SB, "No new version available at this time.")
+                locString_Caption_RevertWarning = readIni(ldi.FullName, "Captions", "locString_Caption_RevertWarning", SB, "This option shows all files on your system that are considered up to date by the server. Typically, this is every file, and there may be significant delay listing them all. If you have files you have modified or updated on purpose, you will lose the work you did to them when reverting to the server's version. Use caution, and only check files you are sure you want to revert. For your protection, the revertable files will not be checked by default.")
+                locString_Caption_ServerNoResponse = readIni(ldi.FullName, "Captions", "locString_Caption_ServerNoResponse", SB, "The update server did not respond at <url>. The URL may be wrong, the host may be down, or you may need to check your internet connection.")
+                locString_Caption_UpdateServerNoResponse = readIni(ldi.FullName, "Captions", "locString_Caption_UpdateServerNoResponse", SB, "The update server did not respond while checking for new versions. The URL may be wrong, the host may be down, or you may need to check your internet connection.")
+                locString_Caption_UpdatesWereSuccessful = readIni(ldi.FullName, "Captions", "locString_Caption_UpdatesWereSuccessful", SB, "Updates were successful.")
+                locString_Caption_UpdaterForceClose = readIni(ldi.FullName, "Captions", "locString_Caption_UpdaterForceClose", SB, "In order to ensure update success, please only run one instance of the Nerf ArenaBlast Updater at a time. This program will now close.")
+                locString_Caption_UpdatingAborted = readIni(ldi.FullName, "Captions", "locString_Caption_UpdatingAborted", SB, "Updating has been aborted.")
+
+                ' Outputs
+                locString_Output_CheckingForUpdates = readIni(ldi.FullName, "Outputs", "locString_Output_CheckingForUpdates", SB, "Checking for updates...")
+                locString_Output_DeletingDirectory = readIni(ldi.FullName, "Outputs", "locString_Output_DeletingDirectory", SB, "Deleting directory")
+                locString_Output_DeletingFile = readIni(ldi.FullName, "Outputs", "locString_Output_DeletingFile", SB, "Deleting file")
+                locString_Output_DownloadingFile = readIni(ldi.FullName, "Outputs", "locString_Output_DownloadingFile", SB, "Downloading file")
+                locString_Output_DownloadingNewVersion = readIni(ldi.FullName, "Outputs", "locString_Output_DownloadingNewVersion", SB, "Downloading new version...")
+                locString_Output_ErrorChecking = readIni(ldi.FullName, "Outputs", "locString_Output_ErrorChecking", SB, "Error checking for updates.")
+                locString_Output_NoNewUpdates = readIni(ldi.FullName, "Outputs", "locString_Output_NoNewUpdates", SB, "No new updates available.")
+                locString_Output_Refreshing = readIni(ldi.FullName, "Outputs", "locString_Output_Refreshing", SB, "Refreshing")
+                locString_Output_ServerError = readIni(ldi.FullName, "Outputs", "locString_Output_ServerError", SB, "Server error!")
+                locString_Output_UpdaterReady = readIni(ldi.FullName, "Outputs", "locString_Output_UpdaterReady", SB, "Updater is ready to go.")
+                locString_Output_UpdatesPending = readIni(ldi.FullName, "Outputs", "locString_Output_UpdatesPending", SB, "updates pending.")
+                locString_Output_UpdatesSelected = readIni(ldi.FullName, "Outputs", "locString_Output_UpdatesSelected", SB, "updates selected.")
+                locString_Output_UpdatesSuccessful = readIni(ldi.FullName, "Outputs", "locString_Output_UpdatesSuccessful", SB, "Updates successful.")
+                locString_Output_UpdatingFiles = readIni(ldi.FullName, "Outputs", "locString_Output_UpdatingFiles", SB, "Updating files...")
+                locString_Output_UpdatingSelectedFiles = readIni(ldi.FullName, "Outputs", "locString_Output_UpdatingSelectedFiles", SB, "Updating selected files...")
+
+                ' GUI
+                locString_GUI_BaseSeperator = readIni(ldi.FullName, "GUI", "locString_GUI_BaseSeperator", SB, "Base Game Files")
+                locString_GUI_Change = readIni(ldi.FullName, "GUI", "locString_GUI_Change", SB, "Change")
+                locString_GUI_CheckForUpdates = readIni(ldi.FullName, "GUI", "locString_GUI_CheckForUpdates", SB, "Check for &Updates")
+                locString_GUI_Checking = readIni(ldi.FullName, "GUI", "locString_GUI_Checking", SB, "Checking...")
+                locString_GUI_CPSeperator = readIni(ldi.FullName, "GUI", "locString_GUI_CPSeperator", SB, "Community Pack <ver> Files")
+                locString_GUI_DeselectAll = readIni(ldi.FullName, "GUI", "locString_GUI_DeselectAll", SB, "&Deselect All Updates")
+                locString_GUI_Exit = readIni(ldi.FullName, "GUI", "locString_GUI_Exit", SB, "E&xit")
+                locString_GUI_LastChecked = readIni(ldi.FullName, "GUI", "locString_GUI_LastChecked", SB, "Last Checked")
+                locString_GUI_Modified = readIni(ldi.FullName, "GUI", "locString_GUI_Modified", SB, "Modified")
+                locString_GUI_Never = readIni(ldi.FullName, "GUI", "locString_GUI_Never", SB, "Never")
+                locString_GUI_SelectAll = readIni(ldi.FullName, "GUI", "locString_GUI_SelectAll", SB, "&Select All Updates")
+                locString_GUI_Update = readIni(ldi.FullName, "GUI", "locString_GUI_Update", SB, "&Update")
+                locString_GUI_UpdateAvailable = readIni(ldi.FullName, "GUI", "locString_GUI_UpdateAvailable", SB, "update available")
+                locString_GUI_UpdatesAvailable = readIni(ldi.FullName, "GUI", "locString_GUI_UpdatesAvailable", SB, "updates available")
+                locString_GUI_UpdateSelected = readIni(ldi.FullName, "GUI", "locString_GUI_UpdateSelected", SB, "&Update Selected")
+                locString_GUI_Updating = readIni(ldi.FullName, "GUI", "locString_GUI_Updating", SB, "Updating...")
+                locString_GUI_UpdatingFilesAt = readIni(ldi.FullName, "GUI", "locString_GUI_UpdatingFilesAt", SB, "Updating files at")
+                locString_GUI_CustomContent = readIni(ldi.FullName, "GUI", "locString_GUI_CustomContent", SB, "Custom Content")
+                locString_GUI_FileCleanup = readIni(ldi.FullName, "GUI", "locString_GUI_FileCleanup", SB, "File Cleanup")
+                locString_GUI_FileReverts = readIni(ldi.FullName, "GUI", "locString_GUI_FileReverts", SB, "File Reverts")
+
+                ' Toolbars
+                locString_Toolbar_File = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_File", SB, "&File")
+                locString_Toolbar_ChangeDirectory = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_ChangeDirectory", SB, "Change Base Directory")
+                locString_Toolbar_CheckForUpdates = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_CheckForUpdates", SB, "Check for &Updates")
+                locString_Toolbar_GetCP = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_GetCP", SB, "&Get the Latest Community Pack")
+                locString_Toolbar_Options = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_Options", SB, "&Options")
+                locString_Toolbar_Language = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_Language", SB, "&Language")
+                locString_Toolbar_OpenDirectory = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_OpenDirectory", SB, "Open Game Directory")
+                locString_Toolbar_Version = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_Version", SB, "&Version")
+                locString_Toolbar_CheckVersion = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_CheckVersion", SB, "Chec&k for New Version")
+                locString_Toolbar_Changelog = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_Changelog", SB, "View &Changelog")
+                locString_Toolbar_Help = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_Help", SB, "&Help")
+                locString_Toolbar_ViewHelp = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_ViewHelp", SB, "V&iew Help")
+                locString_Toolbar_Website = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_Website", SB, "Visit Website")
+                locString_Toolbar_About = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_About", SB, "&About...")
+                locString_Toolbar_AdvancedOptions = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_AdvancedOptions", SB, "Advanc&ed Options")
+                locString_Toolbar_AdvancedEnable = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_AdvancedEnable", SB, "Enable Advanced M&ode")
+                locString_Toolbar_AdvancedDisable = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_AdvancedDisable", SB, "Disable Advanced M&ode")
+                locString_Toolbar_UpdateID = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_UpdateID", SB, "Show &Latest Update ID")
+
+                ' Log
+                locString_Log_BootAdvanced = readIni(ldi.FullName, "Log", "", SB, "Booting in advanced mode...")
+                locString_Log_BootSuccess = readIni(ldi.FullName, "Log", "", SB, "<app> <ver> booted successfully!")
+                locString_Log_CheckingForBaseUpdates = readIni(ldi.FullName, "Log", "", SB, "Checking for Community Pack updates at <url>...")
+                locString_Log_CheckingForCPUpdates = readIni(ldi.FullName, "Log", "", SB, "Checking for Community Pack updates at <url>...")
+                locString_Log_CheckingForUpdates = readIni(ldi.FullName, "Log", "", SB, "Checking for updates...")
+                locString_Log_CPDetected = readIni(ldi.FullName, "Log", "", SB, "Community Pack version <ver> detected.")
+                locString_Log_CPNotDetected = readIni(ldi.FullName, "Log", "", SB, "Community Pack not detected.")
+                locString_Log_CPUnknown = readIni(ldi.FullName, "Log", "", SB, "Warning: Unknown Community Pack detected.")
+                locString_Log_CreateFolder = readIni(ldi.FullName, "Log", "", SB, "Creating directory <dir>.")
+                locString_Log_DeleteEmptyFolder = readIni(ldi.FullName, "Log", "", SB, "Deleting directory <dir>.")
+                locString_Log_DeleteFile = readIni(ldi.FullName, "Log", "", SB, "Deleting <dir>.")
+                locString_Log_DeleteFullFolder = readIni(ldi.FullName, "Log", "", SB, "Deleting directory and contents <dir>.")
+                locString_Log_DetectedNABLangEnglish = readIni(ldi.FullName, "Log", "", SB, "Detected language in Nerf ArenaBlast as English.")
+                locString_Log_DetectedNABLangGerman = readIni(ldi.FullName, "Log", "", SB, "Detected language in Nerf ArenaBlast as German.")
+                locString_Log_DetectedNABLangItalian = readIni(ldi.FullName, "Log", "", SB, "Detected language in Nerf ArenaBlast as Italian.")
+                locString_Log_DetectingCP = readIni(ldi.FullName, "Log", "", SB, "Detecting Community Pack...")
+                locString_Log_DetectingEngine = readIni(ldi.FullName, "Log", "", SB, "Detecting engine version...")
+                locString_Log_DownloadingNewVersion = readIni(ldi.FullName, "Log", "", SB, "Downloading new version...")
+                locString_Log_DownloadNewFile = readIni(ldi.FullName, "Log", "", SB, "Downloading new file <url>.")
+                locString_Log_DownloadUpdatedFile = readIni(ldi.FullName, "Log", "", SB, "Downloading updated file <url>.")
+                locString_Log_EngineError = readIni(ldi.FullName, "Log", "", SB, "Error: Could not detect engine version.")
+                locString_Log_EngineImproved = readIni(ldi.FullName, "Log", "", SB, "Improved engine version detected.")
+                locString_Log_EngineStandard = readIni(ldi.FullName, "Log", "", SB, "Standard engine version detected.")
+                locString_Log_EngineUnknown = readIni(ldi.FullName, "Log", "", SB, "Warning: Unknown engine version <ver> detected.")
+                locString_Log_ErrorChecking = readIni(ldi.FullName, "Log", "", SB, "Error: Error checking for updates.")
+                locString_Log_ErrorDownloading = readIni(ldi.FullName, "Log", "", SB, "Error: Could not download file <url>.")
+                locString_Log_ErrorLoadingConfig = readIni(ldi.FullName, "Log", "", SB, "Error: Could not read updater configuration settings for loading.")
+                locString_Log_ErrorSavingConfig = readIni(ldi.FullName, "Log", "", SB, "Error: Could not read updater configuration settings for saving.")
+                locString_Log_ExitNoUpdate = readIni(ldi.FullName, "Log", "", SB, "Closing without updating.")
+                locString_Log_ExitMidUpdate = readIni(ldi.FullName, "Log", "", SB, "Warning: Closing without fully updating.")
+                locString_Log_FoundUpdate = readIni(ldi.FullName, "Log", "", SB, "Found <num> update.")
+                locString_Log_FoundUpdates = readIni(ldi.FullName, "Log", "", SB, "Found <num> updates.")
+                locString_Log_IniNotLocated = readIni(ldi.FullName, "Log", "", SB, "Warning: Could not locate Nerf.ini in <dir>.")
+                locString_Log_InstanceUpdater = readIni(ldi.FullName, "Log", "", SB, "Instancing updater at <dir>.")
+                locString_Log_LogClose = readIni(ldi.FullName, "Log", "", SB, "Log closed <date> at <time>.")
+                locString_Log_LogOpen = readIni(ldi.FullName, "Log", "", SB, "Log opened <date> at <time>.")
+                locString_Log_NewVersion = readIni(ldi.FullName, "Log", "", SB, "Found a new version (<ver1>), your version (<ver2>).")
+                locString_Log_NoNewVersion = readIni(ldi.FullName, "Log", "", SB, "No new version available at this time.")
+                locString_Log_NoNewUpdates = readIni(ldi.FullName, "Log", "", SB, "No new updates available at this time.")
+                locString_Log_PathChanged = readIni(ldi.FullName, "Log", "", SB, "Update path changed to <dir>.")
+                locString_Log_RefreshFile = readIni(ldi.FullName, "Log", "", SB, "Refreshing <dir>.")
+                locString_log_ServerNoResponse = readIni(ldi.FullName, "Log", "", SB, "Error: Could not reach the update server at <url>.")
+                locString_Log_Shutdown = readIni(ldi.FullName, "Log", "", SB, "Updater shutting down.")
+                locString_Log_UpdateFile = readIni(ldi.FullName, "Log", "", SB, "Updating file <dir>.")
+                locString_Log_UpdateServerNoResponse = readIni(ldi.FullName, "Log", "", SB, "Warning: Could not reach the update server while checking for new versions.")
+                locString_Log_UpdatesWereSuccessful = readIni(ldi.FullName, "Log", "", SB, "Updates were successful.")
+                locString_Log_UpdatingFiles = readIni(ldi.FullName, "Log", "", SB, "Updating files...")
+                locString_Log_UpdatingSelectedFiles = readIni(ldi.FullName, "Log", "", SB, "Updating selected files...")
                 Exit For
             End If
         Next LFI
