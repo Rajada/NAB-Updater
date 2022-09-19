@@ -296,7 +296,7 @@ Public Class UpdaterMainForm
     Private locString_GUI_DeselectAll As String = constString_GUI_DeselectAll
     Private locString_GUI_Exit As String = constString_GUI_Exit
     Private locString_GUI_LastChecked As String = constString_GUI_LastChecked
-    Private locString_GUI_Modified As String = constString_GUI_Modified
+    Public locString_GUI_Modified As String = constString_GUI_Modified
     Private locString_GUI_Never As String = constString_GUI_Never
     Private locString_GUI_SelectAll As String = constString_GUI_SelectAll
     Private locString_GUI_Update As String = constString_GUI_Update
@@ -992,7 +992,6 @@ Public Class UpdaterMainForm
     End Sub
 
     Public Class RemoteFileInfo
-        Private locString_GUI_Modified As String = "Modified"
         Public Property Url As String
         Public Property FileName As String
         Public Property FileSize As String
@@ -1000,7 +999,7 @@ Public Class UpdaterMainForm
         Public Property Description As String
 
         Public Overrides Function ToString() As String
-            Return $"{FileName}".PadRight(20, "."c) & locString_GUI_Modified & $": {LastModified}"
+            Return $"{FileName}".PadRight(20, "."c) & UpdaterMainForm.locString_GUI_Modified & $": {LastModified}"
         End Function
     End Class
 
