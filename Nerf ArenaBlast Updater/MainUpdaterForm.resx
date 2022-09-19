@@ -487,22 +487,22 @@
     <value>&amp;Version</value>
   </data>
   <data name="ViewHelpToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>148, 22</value>
   </data>
   <data name="ViewHelpToolStripMenuItem.Text" xml:space="preserve">
     <value>V&amp;iew Help</value>
   </data>
   <data name="VisitWebsiteToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>148, 22</value>
   </data>
   <data name="VisitWebsiteToolStripMenuItem.Text" xml:space="preserve">
     <value>Visit Website</value>
   </data>
   <data name="ToolStripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>177, 6</value>
+    <value>145, 6</value>
   </data>
   <data name="AboutToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>148, 22</value>
   </data>
   <data name="AboutToolStripMenuItem.Text" xml:space="preserve">
     <value>&amp;About...</value>
@@ -595,7 +595,7 @@
     <value>105, 39</value>
   </data>
   <data name="lastUpdateLabel.TabIndex" type="System.Int32, mscorlib">
-    <value>15</value>
+    <value>14</value>
   </data>
   <data name="lastUpdateLabel.Text" xml:space="preserve">
     <value>Never</value>
@@ -652,7 +652,7 @@
     <value>82, 17</value>
   </data>
   <data name="revertCheckBox.TabIndex" type="System.Int32, mscorlib">
-    <value>14</value>
+    <value>12</value>
   </data>
   <data name="revertCheckBox.Text" xml:space="preserve">
     <value>File Reverts</value>
@@ -1110,6 +1110,9 @@
         ACgATVOVAJKYxgClrcwAlayxACs7ZQAAAAAAAAAAAAAAAAAAAAAAAAAA+B8AAPAHAADAAwAAwAEAAIAB
         AACAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAACAAQAAwAEAAMADAADwBwAA+B8AAA==
 </value>
+  </data>
+  <data name="$this.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
   <data name="$this.MaximumSize" type="System.Drawing.Size, System.Drawing">
     <value>710, 400</value>
