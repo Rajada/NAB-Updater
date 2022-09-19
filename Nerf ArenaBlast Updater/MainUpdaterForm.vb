@@ -10,9 +10,10 @@ Imports Microsoft.VisualBasic.FileIO
 Public Class UpdaterMainForm
     ' Replace folder dialogue with file dialogue?
     ' Add tristate checkboxes.
-    ' Language support
     ' Checksumming
     ' Check if file modified
+    ' Modified string not ready yet
+    ' Implement all real-time language UI changers
     Public homeDirectory As DirectoryInfo
     Private iniDirectory As DirectoryInfo
     Private logDirectory As String = (Directory.GetCurrentDirectory() + "\NerfUpdater.Log")
@@ -29,12 +30,13 @@ Public Class UpdaterMainForm
     Private thisDate As Date
     Private thisTime As Date
     Private updateSuccess As Boolean = True
+    Private updateStatus As String = "Ready"
     Private baseFiles As FileInfo()
     Private customFiles As FileInfo()
     Private querying As Boolean = False
     Private nodesToDelete As New List(Of TreeNode)
     Private filesToDelete As New List(Of String)
-    Private updaterVersion As String = "3.83"
+    Private updaterVersion As String = "3.84"
     Private updateDiff As Integer = 0
     Private newVersion As Boolean = False
     Private updateCount As Integer = 0
@@ -52,15 +54,15 @@ Public Class UpdaterMainForm
 
     ' Strings
     ' Windows
-    Private locString_Window_AboutUpdater As String = "About Nerf ArenaBlast Updater"
+    Private locString_Window_AboutUpdater As String = "About <app>"
     Private locString_Window_AdvancedDisable As String = "Disable Advanced Mode?"
     Private locString_Window_AdvancedEnable As String = "Enable Advanced Mode?"
     Public locString_Window_Changelog As String = "Changelog"
-    Private locString_Window_ConfigNotFound As String = "Updater Configuration File Not Found"
-    Private locString_Window_ConfigNotRead As String = "Unable to Read Updater Configuration File"
+    Private locString_Window_ConfigNotFound As String = "<app> Configuration File Not Found"
+    Private locString_Window_ConfigNotRead As String = "Unable to Read <app> Configuration File"
     Private locString_Window_DeleteFolder As String = "Delete Folder?"
     Private locString_Window_ErrorDownloading As String = "Error Downloading File"
-    Private locString_Window_ExitUpdater As String = "Exit Updater?"
+    Private locString_Window_ExitUpdater As String = "Exit <app>?"
     Private locString_Window_IniNotFound As String = "Nerf.ini File Not Found"
     Private locString_Window_NABRunning As String = "Nerf ArenaBlast Running"
     Private locString_Window_NewVersionAvailable As String = "New Version Available"
@@ -71,7 +73,7 @@ Public Class UpdaterMainForm
     Private locString_Window_UpdateCheckComplete As String = "Update Check Complete"
     Private locString_Window_UpdateComplete As String = "Update Complete"
     Private locString_Window_UpdaterName As String = "Nerf ArenaBlast Updater"
-    Private locString_Window_UpdaterRunning As String = "Updater Already Running"
+    Private locString_Window_UpdaterRunning As String = "<app> Already Running"
     Private locString_Window_VersionCheckComplete As String = "Version Check Complete"
     Private locString_Window_Warning As String = "Warning!"
 
@@ -80,8 +82,8 @@ Public Class UpdaterMainForm
     Private locString_Caption_AdvancedDisableWarning As String = "If you disable advanced mode you will lose any selections made. Are you sure you wish to disable advanced mode?"
     Public locString_Caption_ChangelogMissing As String = "Could not load changelog."
     Private locString_Caption_CleanupWarning As String = "This option shows files that have been flagged for removal by the server. If you have created files that you have named identically to one of these flagged names, they will be deleted permanently. Use caution, and only check files you are sure you want to delete. For your protection, the deletable files will not be checked by default."
-    Private locString_Caption_ConfigNotFound As String = "Could not read updater configuration settings."
-    Private locString_Caption_ConfigNotRead As String = "Could not read updater configuration settings. Please make sure you have permission to read and write to the game directory. You may wish to run the updater as an administrator."
+    Private locString_Caption_ConfigNotFound As String = "Could not read <app> configuration settings."
+    Private locString_Caption_ConfigNotRead As String = "Could not read <app> configuration settings. Please make sure you have permission to read and write to the game directory. You may wish to run the <app> as an administrator."
     Private locString_Caption_DetectedNAB As String = "We have detected that Nerf ArenaBlast is currently running. It is highly recommended that you close Nerf ArenaBlast before updating to ensure updates are applied correctly."
     Private locString_Caption_DetectedNABCritical As String = "We have detected that Nerf ArenaBlast is currently running. It is highly recommended that you close Nerf ArenaBlast before updating to ensure updates are applied correctly. Click OK to ignore this warning or click Cancel to abort updating."
     Private locString_Caption_ErrorChecking As String = "Error checking for updates. Check has been cancelled."
@@ -90,7 +92,7 @@ Public Class UpdaterMainForm
     Private locString_Caption_ExitNoUpdate As String = "Are you sure you want to exit? The game will not be updated."
     Private locString_Caption_ExitMidUpdate As String = "Are you sure you want to exit? The game has not been fully updated. This may result in game instability and inability to play in multiplayer matches."
     Private locString_Caption_IniNotLocated As String = "The Nerf.ini file could not be located in the provided directory <dir>. If you have not done so, run the game once and then locate the Nerf root folder before updating."
-    Private locString_Caption_NewVersionAvailable As String = "There is a newer version of the updater available (<ver>). It is highly recommended that you use the newest version of the updater. Would you like to install it now?"
+    Private locString_Caption_NewVersionAvailable As String = "There is a newer version of the <app> available (<ver>). It is highly recommended that you use the newest version of the <app>. Would you like to install it now?"
     Private locString_Caption_FolderDeletionWarning As String = "<dir> is a folder that contains other files. Are you sure you wish to delete it?"
     Private locString_Caption_NoNewUpdates As String = "No new updates available at this time."
     Private locString_Caption_NoNewVersion As String = "No new version available at this time."
@@ -98,7 +100,7 @@ Public Class UpdaterMainForm
     Private locString_Caption_ServerNoResponse As String = "The update server did not respond at <url>. The URL may be wrong, the host may be down, or you may need to check your internet connection."
     Private locString_Caption_UpdateServerNoResponse As String = "The update server did not respond while checking for new versions. The URL may be wrong, the host may be down, or you may need to check your internet connection."
     Private locString_Caption_UpdatesWereSuccessful As String = "Updates were successful."
-    Private locString_Caption_UpdaterForceClose As String = "In order to ensure update success, please only run one instance of the Nerf ArenaBlast Updater at a time. This program will now close."
+    Private locString_Caption_UpdaterForceClose As String = "In order to ensure update success, please only run one instance of the <app> at a time. This program will now close."
     Private locString_Caption_UpdatingAborted As String = "Updating has been aborted."
 
     ' Outputs
@@ -111,7 +113,7 @@ Public Class UpdaterMainForm
     Private locString_Output_NoNewUpdates As String = "No new updates available."
     Private locString_Output_Refreshing As String = "Refreshing"
     Private locString_Output_ServerError As String = "Server error!"
-    Private locString_Output_UpdaterReady As String = "Updater is ready to go."
+    Private locString_Output_UpdaterReady As String = "<app> is ready to go."
     Private locString_Output_UpdatesPending As String = "updates pending."
     Private locString_Output_UpdatesSelected As String = "updates selected."
     Private locString_Output_UpdatesSuccessful As String = "Updates successful."
@@ -187,14 +189,17 @@ Public Class UpdaterMainForm
     Private locString_Log_EngineUnknown As String = "Warning: Unknown engine version <ver> detected."
     Private locString_Log_ErrorChecking As String = "Error: Error checking for updates."
     Private locString_Log_ErrorDownloading As String = "Error: Could not download file <url>."
-    Private locString_Log_ErrorLoadingConfig As String = "Error: Could not read updater configuration settings for loading."
-    Private locString_Log_ErrorSavingConfig As String = "Error: Could not read updater configuration settings for saving."
+    Private locString_Log_ErrorLoadingConfig As String = "Error: Could not read <app> configuration settings for loading."
+    Private locString_Log_ErrorSavingConfig As String = "Error: Could not read <app> configuration settings for saving."
     Private locString_Log_ExitNoUpdate As String = "Closing without updating."
     Private locString_Log_ExitMidUpdate As String = "Warning: Closing without fully updating."
     Private locString_Log_FoundUpdate As String = "Found <num> update."
     Private locString_Log_FoundUpdates As String = "Found <num> updates."
     Private locString_Log_IniNotLocated As String = "Warning: Could not locate Nerf.ini in <dir>."
-    Private locString_Log_InstanceUpdater As String = "Instancing updater at <dir>."
+    Private locString_Log_InstanceUpdater As String = "Instancing <app> at <dir>."
+    Private locString_Log_LangNotSet As String = "Failed to change language to <lang>, language not changed."
+    Private locString_Log_LangNotSetDef As String = "Failed to change language to <lang>, defaulting to International English."
+    Private locString_Log_LangSet As String = "Setting language to <lang>."
     Private locString_Log_LogClose As String = "Log closed <date> at <time>."
     Private locString_Log_LogOpen As String = "Log opened <date> at <time>."
     Private locString_Log_NewVersion As String = "Found a new version (<ver1>), your version (<ver2>)."
@@ -203,7 +208,7 @@ Public Class UpdaterMainForm
     Private locString_Log_PathChanged As String = "Update path changed to <dir>."
     Private locString_Log_RefreshFile As String = "Refreshing <dir>."
     Private locString_log_ServerNoResponse As String = "Error: Could not reach the update server at <url>."
-    Private locString_Log_Shutdown As String = "Updater shutting down."
+    Private locString_Log_Shutdown As String = "<app> shutting down."
     Private locString_Log_UpdateFile As String = "Updating file <dir>."
     Private locString_Log_UpdateServerNoResponse As String = "Warning: Could not reach the update server while checking for new versions."
     Private locString_Log_UpdatesWereSuccessful As String = "Updates were successful."
@@ -263,7 +268,7 @@ Public Class UpdaterMainForm
             silentClose = True
             Return True
         ElseIf (CheckForProcess("Nerf ArenaBlast Updater") > 1) Then
-            MessageBox.Show(locString_Caption_UpdaterForceClose, locString_Window_UpdaterRunning, MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
+            MessageBox.Show(locString_Caption_UpdaterForceClose.Replace("<app>", locString_Window_UpdaterName), locString_Window_UpdaterRunning.Replace("<app>", locString_Window_UpdaterName), MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
             silentClose = True
             Return True
         End If
@@ -303,14 +308,14 @@ Public Class UpdaterMainForm
     Private Sub PromptForExit(sender As Object, e As EventArgs)
 
         If (Not updateSuccess) Then
-            If (MessageBox.Show(locString_Caption_ExitNoUpdate, locString_Window_ExitUpdater, MessageBoxButtons.YesNo, MessageBoxIcon.None) = DialogResult.Yes) Then
+            If (MessageBox.Show(locString_Caption_ExitNoUpdate, locString_Window_ExitUpdater.Replace("<app>", locString_Window_UpdaterName), MessageBoxButtons.YesNo, MessageBoxIcon.None) = DialogResult.Yes) Then
                 Log(locString_Log_ExitNoUpdate, True)
                 Close()
                 Exit Sub
             End If
         Else
             If (updateDiff > 0) Then
-                If (MessageBox.Show(locString_Caption_ExitMidUpdate, locString_Window_ExitUpdater, MessageBoxButtons.YesNo, MessageBoxIcon.None) = DialogResult.Yes) Then
+                If (MessageBox.Show(locString_Caption_ExitMidUpdate, locString_Window_ExitUpdater.Replace("<app>", locString_Window_UpdaterName), MessageBoxButtons.YesNo, MessageBoxIcon.None) = DialogResult.Yes) Then
                     Log(locString_Log_ExitMidUpdate, True)
                     Close()
                     Exit Sub
@@ -319,6 +324,29 @@ Public Class UpdaterMainForm
                 Close()
                 Exit Sub
             End If
+        End If
+    End Sub
+    Private Sub SetUpdateStatus(StatusCode As String)
+        If (StatusCode = "") Then
+            StatusCode = updateStatus
+        Else
+            updateStatus = StatusCode
+        End If
+
+        If (StatusCode = "Ready") Then
+            updateButton.Text = locString_GUI_CheckForUpdates
+        ElseIf (StatusCode = "Checking") Then
+            updateButton.Text = locString_GUI_Checking
+        ElseIf (StatusCode = "Update") Then
+            If (AdvancedMode) Then
+                updateButton.Text = locString_GUI_UpdateSelected
+            Else
+                updateButton.Text = locString_GUI_Update
+            End If
+        ElseIf (StatusCode = "Updating") Then
+            updateButton.Text = locString_GUI_Updating
+        Else
+            updateButton.Text = locString_GUI_CheckForUpdates
         End If
     End Sub
 
@@ -340,7 +368,7 @@ Public Class UpdaterMainForm
     End Sub
 
     Private Sub MenuItemClicked(ByVal sender As System.Object, ByVal e As System.EventArgs)
-        SetLanguage(DirectCast(sender, ToolStripItem).Text)
+        SetLanguage(DirectCast(sender, ToolStripItem).Text, False)
     End Sub
 
     Private Sub UpdaterMainForm_Load(sender As Object, e As EventArgs) Handles Me.Load
@@ -361,7 +389,7 @@ Public Class UpdaterMainForm
         Try
             InitialAppend = CInt(ConfigurationManager.AppSettings("InitialAppend"))
         Catch err As ConfigurationErrorsException
-            Log(locString_Log_ErrorLoadingConfig, True)
+            Log(locString_Log_ErrorLoadingConfig.Replace("<app>", locString_Window_UpdaterName), True)
         End Try
 
         Log(locString_Log_LogOpen.Replace("<date>", thisDate.ToShortDateString).Replace("<time>", thisTime.ToShortTimeString), CBool(InitialAppend))
@@ -400,7 +428,7 @@ Public Class UpdaterMainForm
         End If
 
         If (Not silentClose) Then
-            Log(locString_Log_Shutdown, True)
+            Log(locString_Log_Shutdown.Replace("<app>", locString_Window_UpdaterName), True)
             Log(locString_Log_LogClose.Replace("<date>", thisDate.ToShortDateString).Replace("<time>", thisTime.ToShortTimeString), True)
         End If
     End Sub
@@ -439,7 +467,7 @@ Public Class UpdaterMainForm
 
         If (Convert.ToDouble(latestVersion) > Convert.ToDouble(updaterVersion)) Then
             Log(locString_Log_NewVersion.Replace("<ver1>", latestVersion).Replace("<ver2>", updaterVersion), True)
-            If (MessageBox.Show(locString_Caption_NewVersionAvailable.Replace("<ver>", latestVersion), locString_Window_NewVersionAvailable, MessageBoxButtons.YesNo, MessageBoxIcon.None) = DialogResult.Yes) Then
+            If (MessageBox.Show(locString_Caption_NewVersionAvailable.Replace("<app>", locString_Window_UpdaterName).Replace("<ver>", latestVersion), locString_Window_NewVersionAvailable, MessageBoxButtons.YesNo, MessageBoxIcon.None) = DialogResult.Yes) Then
                 Upgrading = True
                 changeFilepathButton.Enabled = False
                 ChangeBaseDirectoryToolStripMenuItem.Enabled = False
@@ -459,6 +487,7 @@ Public Class UpdaterMainForm
                 updateButton.Enabled = False
                 CheckForUpdatesToolStripMenuItem.Enabled = False
                 AdvancedModeToolStripMenuItem.Enabled = False
+                LanguageToolStripMenuItem.Enabled = False
 
                 Dim fileList = Await GetRemoteFileInfos(updaterDirectory)
 
@@ -518,13 +547,13 @@ Public Class UpdaterMainForm
             homeDirectory = New DirectoryInfo(Directory.GetParent(Directory.GetCurrentDirectory()).FullName)
             iniDirectory = New DirectoryInfo(Path.Combine(homeDirectory.FullName, "System\Nerf.ini"))
             Dim lang As String = DetectLanguage()
-            SetLanguage(lang)
-            Log(locString_Log_InstanceUpdater.Replace("<dir>", homeDirectory.FullName), True)
+            SetLanguage(lang, True)
+            Log(locString_Log_InstanceUpdater.Replace("<app>", locString_Window_UpdaterName).Replace("<dir>", homeDirectory.FullName), True)
             UpdateSettings("GamePath", Directory.GetParent(Directory.GetCurrentDirectory()).FullName)
             UpdateSettings("BaseQueryURL", selectedBaseDirectory)
             UpdateSettings("CommunityQueryURL", selectedCustomDirectory)
             UpdateSettings("UpdateQueryURL", updaterDirectory)
-            UpdateSettings("LastDate", "Never")
+            UpdateSettings("LastDate", locString_GUI_Never)
             UpdateSettings("LastTime", String.Empty)
             UpdateSettings("InitialAppend", "0")
             UpdateSettings("BootAdvanced", "0")
@@ -539,10 +568,10 @@ Public Class UpdaterMainForm
                 lastUpdateLabel.Text = ConfigurationManager.AppSettings("LastDate") & ControlChars.NewLine & ConfigurationManager.AppSettings("LastTime")
                 InitialAppend = CInt(ConfigurationManager.AppSettings("InitialAppend"))
                 BootAdvanced = CInt(ConfigurationManager.AppSettings("BootAdvanced"))
-                SetLanguage(ConfigurationManager.AppSettings("Language"))
+                SetLanguage(ConfigurationManager.AppSettings("Language"), True)
             Catch e As ConfigurationErrorsException
-                Log(locString_Log_ErrorLoadingConfig, True)
-                MessageBox.Show(locString_Caption_ConfigNotRead, locString_Window_ConfigNotRead, MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
+                Log(locString_Log_ErrorLoadingConfig.Replace("<app>", locString_Window_UpdaterName), True)
+                MessageBox.Show(locString_Caption_ConfigNotRead.Replace("<app>", locString_Window_UpdaterName), locString_Window_ConfigNotRead.Replace("<app>", locString_Window_UpdaterName), MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
                 Close()
                 Exit Sub
             End Try
@@ -557,16 +586,18 @@ Public Class UpdaterMainForm
         End While
         If (Not Aborting) Then
             UpdateSettings("GamePath", homeDirectory.FullName)
-            updatePathLabel.Text = locString_GUI_UpdatingFilesAt & homeDirectory.FullName
+            updatePathLabel.Text = locString_GUI_UpdatingFilesAt & " " & homeDirectory.FullName
             CheckEngineVersion()
             CheckForCP(True)
             updateFilesTreeView.Nodes.Clear()
-            updateButton.Text = locString_GUI_CheckForUpdates
-            outputTextbox.Text = locString_Output_UpdaterReady
+            SetUpdateStatus("Ready")
+            outputTextbox.Text = locString_Output_UpdaterReady.Replace("<app>", locString_Window_UpdaterName)
             querying = False
             DoUpdate(querying)
         End If
     End Sub
+
+
 
     Private Sub CheckEngineVersion()
         Dim engineVersion As StringBuilder = New StringBuilder(64)
@@ -656,8 +687,8 @@ Public Class UpdaterMainForm
             configFile.Save(ConfigurationSaveMode.Modified)
             ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name)
         Catch e As ConfigurationErrorsException
-            Log(locString_Log_ErrorSavingConfig, True)
-            MessageBox.Show(locString_Caption_ConfigNotFound, locString_Window_ConfigNotFound, MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
+            Log(locString_Log_ErrorSavingConfig.Replace("<app>", locString_Window_UpdaterName), True)
+            MessageBox.Show(locString_Caption_ConfigNotFound.Replace("<app>", locString_Window_UpdaterName), locString_Window_ConfigNotFound.Replace("<app>", locString_Window_UpdaterName), MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
         End Try
     End Sub
 
@@ -709,6 +740,7 @@ Public Class UpdaterMainForm
         changeFilepathButton.Enabled = Not isQuerying
         ChangeBaseDirectoryToolStripMenuItem.Enabled = Not isQuerying
         AdvancedModeToolStripMenuItem.Enabled = Not isQuerying
+        LanguageToolStripMenuItem.Enabled = Not isQuerying
         VersionToolStripMenuItem.Enabled = Not isQuerying
         customCheckBox.Enabled = False
         cleanupCheckBox.Enabled = Not isQuerying
@@ -739,10 +771,10 @@ Public Class UpdaterMainForm
     Private Sub updateButton_Click(sender As Object, e As EventArgs) Handles updateButton.Click
         updateButton.Focus()
 
-        If (updateButton.Text = locString_GUI_CheckForUpdates) Then
+        If (updateStatus = "Ready") Then
             CheckNABRunning(False)
             updateSuccess = False
-            updateButton.Text = locString_GUI_Checking
+            SetUpdateStatus("Checking")
             outputTextbox.Text = locString_Output_CheckingForUpdates
             Log(locString_Log_CheckingForUpdates, True)
             updateCount = 0
@@ -753,12 +785,12 @@ Public Class UpdaterMainForm
             updateProgressBar.Value = 0
             updateProgressBar.Step = 1
             QueryGameFiles(sender, e)
-        ElseIf ((updateButton.Text = locString_GUI_UpdateSelected) Or (updateButton.Text = locString_GUI_Update)) Then
+        ElseIf (updateStatus = "Update") Then
             If (CheckNABRunning(True)) Then
                 MessageBox.Show(locString_Caption_UpdatingAborted, locString_Window_UpdateAborted, MessageBoxButtons.OK, MessageBoxIcon.None)
             Else
                 Updating = True
-                updateButton.Text = locString_GUI_Updating
+                SetUpdateStatus("Update")
                 If (AdvancedMode) Then
                     outputTextbox.Text = locString_Output_UpdatingSelectedFiles
                     Log(locString_Log_UpdatingSelectedFiles, True)
@@ -772,7 +804,7 @@ Public Class UpdaterMainForm
                 updateSuccess = True
                 'writeINI(iniDirectory.ToString, "Update", "UpdateID", "")
                 'Log("Update ID is " + "", True)
-                updateButton.Text = locString_GUI_CheckForUpdates
+                SetUpdateStatus("Ready")
                 updateButton.Enabled = True
                 CheckForUpdatesToolStripMenuItem.Enabled = True
                 Log(locString_Log_UpdatesWereSuccessful, True)
@@ -958,7 +990,7 @@ Public Class UpdaterMainForm
             'SelectAllToolStripMenuItem.Enabled = False
             'deselectAllButton.Enabled = False
             'DeselectAllToolStripMenuItem.Enabled = False
-            'updateButton.Text = locGUICheckForUpdates
+            'setUpdateStatus(0)
             'DoUpdate(querying)
             updateCount = -1
             Exit Function
@@ -1025,19 +1057,16 @@ Public Class UpdaterMainForm
             Next
             querying = False
             If (updateCount > 0) Then
+                SetUpdateStatus("Update")
                 If (AdvancedMode) Then
-                    updateButton.Text = locString_GUI_UpdateSelected
-
                     If (tempCount <= 0) Then
                         updateButton.Enabled = False
                     Else
                         updateButton.Enabled = True
                     End If
-                Else
-                    updateButton.Text = locString_GUI_Update
                 End If
             Else
-                updateButton.Text = locString_GUI_CheckForUpdates
+                SetUpdateStatus("Ready")
             End If
             updateSuccess = False
             selectAllButton.Enabled = True
@@ -1072,7 +1101,7 @@ Public Class UpdaterMainForm
             deselectAllButton.Enabled = False
             DeselectAllToolStripMenuItem.Enabled = False
             DoUpdate(querying)
-            updateButton.Text = locString_GUI_CheckForUpdates
+            SetUpdateStatus("Ready")
             updateSuccess = True
             Log(locString_Log_ErrorChecking, True)
             MessageBox.Show(locString_Caption_ErrorChecking, locString_Window_UpdateCheckCancelled, MessageBoxButtons.OK, MessageBoxIcon.None)
@@ -1085,6 +1114,7 @@ Public Class UpdaterMainForm
             ChangeBaseDirectoryToolStripMenuItem.Enabled = True
             VersionToolStripMenuItem.Enabled = True
             AdvancedModeToolStripMenuItem.Enabled = True
+            LanguageToolStripMenuItem.Enabled = True
             customCheckBox.Enabled = hasCP
         Else
             selectAllButton.Enabled = False
@@ -1092,7 +1122,7 @@ Public Class UpdaterMainForm
             deselectAllButton.Enabled = False
             DeselectAllToolStripMenuItem.Enabled = False
             DoUpdate(querying)
-            updateButton.Text = locString_GUI_CheckForUpdates
+            SetUpdateStatus("Ready")
             updateSuccess = True
             Log(locString_Log_NoNewUpdates, True)
             MessageBox.Show(locString_Caption_NoNewUpdates, locString_Window_UpdateCheckComplete, MessageBoxButtons.OK, MessageBoxIcon.None)
@@ -1106,6 +1136,7 @@ Public Class UpdaterMainForm
             ChangeBaseDirectoryToolStripMenuItem.Enabled = True
             VersionToolStripMenuItem.Enabled = True
             AdvancedModeToolStripMenuItem.Enabled = True
+            LanguageToolStripMenuItem.Enabled = True
             customCheckBox.Enabled = hasCP
         End If
 
@@ -1370,16 +1401,12 @@ Public Class UpdaterMainForm
         End If
 
         If (totalCount <= 0) Then
-            updateButton.Text = locString_GUI_CheckForUpdates
+            SetUpdateStatus("Ready")
         Else
             If (selCount <= 0) Then
                 updateButton.Enabled = False
             Else
-                If (AdvancedMode) Then
-                    updateButton.Text = locString_GUI_UpdateSelected
-                Else
-                    updateButton.Text = locString_GUI_Update
-                End If
+                SetUpdateStatus("Update")
                 updateButton.Enabled = True
             End If
         End If
@@ -1424,7 +1451,7 @@ Public Class UpdaterMainForm
     End Sub
 
     Private Sub AboutToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles AboutToolStripMenuItem.Click
-        MessageBox.Show(locString_Window_UpdaterName & " " & updaterVersion & ControlChars.NewLine & ControlChars.NewLine & "© Jared Petersen " & Date.Today.Year, locString_Window_AboutUpdater, MessageBoxButtons.OK, MessageBoxIcon.None)
+        MessageBox.Show(locString_Window_UpdaterName & " " & updaterVersion & ControlChars.NewLine & ControlChars.NewLine & "© Jared Petersen " & Date.Today.Year, locString_Window_AboutUpdater.Replace("<app>", locString_Window_UpdaterName), MessageBoxButtons.OK, MessageBoxIcon.None)
     End Sub
 
     Private Sub ExitToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ExitToolStripMenuItem.Click
@@ -1504,7 +1531,7 @@ Public Class UpdaterMainForm
     Private Sub CheckForUpdatesToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles CheckForUpdatesToolStripMenuItem.Click
         CheckNABRunning(False)
         updateSuccess = False
-        updateButton.Text = locString_GUI_Checking
+        SetUpdateStatus("Checking")
         outputTextbox.Text = locString_Output_CheckingForUpdates
         Log(locString_Log_CheckingForUpdates, True)
         updateCount = 0
@@ -1547,16 +1574,16 @@ Public Class UpdaterMainForm
 
     Private Sub customCheckBox_CheckedChanged(sender As Object, e As EventArgs) Handles customCheckBox.CheckedChanged
         updateFilesTreeView.Nodes.Clear()
-        updateButton.Text = locString_GUI_CheckForUpdates
-        outputTextbox.Text = locString_Output_UpdaterReady
+        SetUpdateStatus("Ready")
+        outputTextbox.Text = locString_Output_UpdaterReady.Replace("<app>", locString_Window_UpdaterName)
         querying = False
         DoUpdate(querying)
     End Sub
 
     Private Sub cleanupCheckBox_CheckedChanged(sender As Object, e As EventArgs) Handles cleanupCheckBox.CheckedChanged
         updateFilesTreeView.Nodes.Clear()
-        updateButton.Text = locString_GUI_CheckForUpdates
-        outputTextbox.Text = locString_Output_UpdaterReady
+        SetUpdateStatus("Ready")
+        outputTextbox.Text = locString_Output_UpdaterReady.Replace("<app>", locString_Window_UpdaterName)
         querying = False
         DoUpdate(querying)
 
@@ -1581,8 +1608,8 @@ Public Class UpdaterMainForm
 
     Private Sub revertCheckBox_CheckedChanged(sender As Object, e As EventArgs) Handles revertCheckBox.CheckedChanged
         updateFilesTreeView.Nodes.Clear()
-        updateButton.Text = locString_GUI_CheckForUpdates
-        outputTextbox.Text = locString_Output_UpdaterReady
+        SetUpdateStatus("Ready")
+        outputTextbox.Text = locString_Output_UpdaterReady.Replace("<app>", locString_Window_UpdaterName)
         querying = False
         DoUpdate(querying)
 
@@ -1649,7 +1676,7 @@ Public Class UpdaterMainForm
                         End If
                     Next
                 End If
-                updateButton.Text = locString_GUI_UpdateSelected
+                SetUpdateStatus("Update")
             End If
         Else
             UpdateSettings("BootAdvanced", "0")
@@ -1673,7 +1700,7 @@ Public Class UpdaterMainForm
             DeselectAllToolStripMenuItem.Visible = False
 
             CheckForCP(True)
-            updateButton.Text = locString_GUI_CheckForUpdates
+            SetUpdateStatus("Ready")
             updateButton.Enabled = True
             CheckForUpdatesToolStripMenuItem.Enabled = True
             updateCount = 0
@@ -1706,10 +1733,13 @@ Public Class UpdaterMainForm
                 ldi = New DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory().ToString, LFI.Name))
 
                 ' Windows
-                locString_Window_AboutUpdater = readIni(ldi.FullName, "Windows", "locString_Window_AboutUpdater", SB, "About Nerf ArenaBlast Updater")
+                locString_Window_AboutUpdater = readIni(ldi.FullName, "Windows", "locString_Window_AboutUpdater", SB, "About <app>")
                 locString_Window_AdvancedDisable = readIni(ldi.FullName, "Windows", "locString_Window_AdvancedDisable", SB, "Disable Advanced Mode?")
                 locString_Window_AdvancedEnable = readIni(ldi.FullName, "Windows", "locString_Window_AdvancedEnable", SB, "Enable Advanced Mode?")
                 locString_Window_Changelog = readIni(ldi.FullName, "Windows", "locString_Window_Changelog", SB, "Changelog")
+                If (Changelog IsNot Nothing) Then
+                    Changelog.Text = locString_Window_Changelog
+                End If
                 locString_Window_ConfigNotFound = readIni(ldi.FullName, "Windows", "locString_Window_ConfigNotFound", SB, "Updater Configuration File Not Found")
                 locString_Window_ConfigNotRead = readIni(ldi.FullName, "Windows", "locString_Window_ConfigNotRead", SB, "Unable to Read Updater Configuration File")
                 locString_Window_DeleteFolder = readIni(ldi.FullName, "Windows", "locString_Window_DeleteFolder", SB, "Delete Folder?")
@@ -1753,7 +1783,7 @@ Public Class UpdaterMainForm
                 locString_Caption_ServerNoResponse = readIni(ldi.FullName, "Captions", "locString_Caption_ServerNoResponse", SB, "The update server did not respond at <url>. The URL may be wrong, the host may be down, or you may need to check your internet connection.")
                 locString_Caption_UpdateServerNoResponse = readIni(ldi.FullName, "Captions", "locString_Caption_UpdateServerNoResponse", SB, "The update server did not respond while checking for new versions. The URL may be wrong, the host may be down, or you may need to check your internet connection.")
                 locString_Caption_UpdatesWereSuccessful = readIni(ldi.FullName, "Captions", "locString_Caption_UpdatesWereSuccessful", SB, "Updates were successful.")
-                locString_Caption_UpdaterForceClose = readIni(ldi.FullName, "Captions", "locString_Caption_UpdaterForceClose", SB, "In order to ensure update success, please only run one instance of the Nerf ArenaBlast Updater at a time. This program will now close.")
+                locString_Caption_UpdaterForceClose = readIni(ldi.FullName, "Captions", "locString_Caption_UpdaterForceClose", SB, "In order to ensure update success, please only run one instance of the <app> at a time. This program will now close.")
                 locString_Caption_UpdatingAborted = readIni(ldi.FullName, "Captions", "locString_Caption_UpdatingAborted", SB, "Updating has been aborted.")
 
                 ' Outputs
@@ -1775,45 +1805,81 @@ Public Class UpdaterMainForm
 
                 ' GUI
                 locString_GUI_BaseSeperator = readIni(ldi.FullName, "GUI", "locString_GUI_BaseSeperator", SB, "Base Game Files")
+                ' Iterate tree?
                 locString_GUI_Change = readIni(ldi.FullName, "GUI", "locString_GUI_Change", SB, "Change")
+                changeFilepathButton.Text = locString_GUI_Change
                 locString_GUI_CheckForUpdates = readIni(ldi.FullName, "GUI", "locString_GUI_CheckForUpdates", SB, "Check for &Updates")
                 locString_GUI_Checking = readIni(ldi.FullName, "GUI", "locString_GUI_Checking", SB, "Checking...")
                 locString_GUI_CPSeperator = readIni(ldi.FullName, "GUI", "locString_GUI_CPSeperator", SB, "Community Pack <ver> Files")
+                ' Iterate tree?
                 locString_GUI_DeselectAll = readIni(ldi.FullName, "GUI", "locString_GUI_DeselectAll", SB, "&Deselect All Updates")
+                deselectAllButton.Text = locString_GUI_DeselectAll
                 locString_GUI_Exit = readIni(ldi.FullName, "GUI", "locString_GUI_Exit", SB, "E&xit")
+                exitButton.Text = locString_GUI_Exit
                 locString_GUI_LastChecked = readIni(ldi.FullName, "GUI", "locString_GUI_LastChecked", SB, "Last Checked")
+                lastCheckedBox.Text = locString_GUI_LastChecked
                 locString_GUI_Modified = readIni(ldi.FullName, "GUI", "locString_GUI_Modified", SB, "Modified")
+                ' Dunno
                 locString_GUI_Never = readIni(ldi.FullName, "GUI", "locString_GUI_Never", SB, "Never")
+                ' Dunno if done?
                 locString_GUI_SelectAll = readIni(ldi.FullName, "GUI", "locString_GUI_SelectAll", SB, "&Select All Updates")
+                selectAllButton.Text = locString_GUI_SelectAll
                 locString_GUI_Update = readIni(ldi.FullName, "GUI", "locString_GUI_Update", SB, "&Update")
                 locString_GUI_UpdateAvailable = readIni(ldi.FullName, "GUI", "locString_GUI_UpdateAvailable", SB, "update available")
+                ' Dunno
                 locString_GUI_UpdatesAvailable = readIni(ldi.FullName, "GUI", "locString_GUI_UpdatesAvailable", SB, "updates available")
+                ' Dunno
                 locString_GUI_UpdateSelected = readIni(ldi.FullName, "GUI", "locString_GUI_UpdateSelected", SB, "&Update Selected")
                 locString_GUI_Updating = readIni(ldi.FullName, "GUI", "locString_GUI_Updating", SB, "Updating...")
                 locString_GUI_UpdatingFilesAt = readIni(ldi.FullName, "GUI", "locString_GUI_UpdatingFilesAt", SB, "Updating files at")
+                updatePathLabel.Text = locString_GUI_UpdatingFilesAt & " " & homeDirectory.FullName
                 locString_GUI_CustomContent = readIni(ldi.FullName, "GUI", "locString_GUI_CustomContent", SB, "Custom Content")
+                customCheckBox.Text = locString_GUI_CustomContent
                 locString_GUI_FileCleanup = readIni(ldi.FullName, "GUI", "locString_GUI_FileCleanup", SB, "File Cleanup")
+                cleanupCheckBox.Text = locString_GUI_FileCleanup
                 locString_GUI_FileReverts = readIni(ldi.FullName, "GUI", "locString_GUI_FileReverts", SB, "File Reverts")
+                revertCheckBox.Text = locString_GUI_FileReverts
+
+                SetUpdateStatus("")
 
                 ' Toolbars
                 locString_Toolbar_File = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_File", SB, "&File")
-                locString_Toolbar_ChangeDirectory = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_ChangeDirectory", SB, "Change Base Directory")
+                FileToolStripMenuItem.Text = locString_Toolbar_File
                 locString_Toolbar_CheckForUpdates = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_CheckForUpdates", SB, "Check for &Updates")
+                ChangeBaseDirectoryToolStripMenuItem.Text = locString_Toolbar_CheckForUpdates
                 locString_Toolbar_GetCP = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_GetCP", SB, "&Get the Latest Community Pack")
+                GetLatestCommunityPackToolStripMenuItem.Text = locString_Toolbar_GetCP
                 locString_Toolbar_Options = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_Options", SB, "&Options")
+                OptionsToolStripMenuItem.Text = locString_Toolbar_Options
                 locString_Toolbar_Language = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_Language", SB, "&Language")
+                LanguageToolStripMenuItem.Text = locString_Toolbar_Language
                 locString_Toolbar_OpenDirectory = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_OpenDirectory", SB, "Open Game Directory")
+                OpenGameDirectoryToolStripMenuItem.Text = locString_Toolbar_OpenDirectory
                 locString_Toolbar_Version = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_Version", SB, "&Version")
+                VersionToolStripMenuItem.Text = locString_Toolbar_Version
                 locString_Toolbar_CheckVersion = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_CheckVersion", SB, "Chec&k for New Version")
+                CheckForNewVersionToolStripMenuItem.Text = locString_Toolbar_CheckVersion
                 locString_Toolbar_Changelog = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_Changelog", SB, "View &Changelog")
+                ViewChangelogToolStripMenuItem.Text = locString_Toolbar_Changelog
                 locString_Toolbar_Help = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_Help", SB, "&Help")
+                HelpToolStripMenuItem.Text = locString_Toolbar_Help
                 locString_Toolbar_ViewHelp = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_ViewHelp", SB, "V&iew Help")
+                ViewHelpToolStripMenuItem.Text = locString_Toolbar_ViewHelp
                 locString_Toolbar_Website = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_Website", SB, "Visit Website")
+                VisitWebsiteToolStripMenuItem.Text = locString_Toolbar_Website
                 locString_Toolbar_About = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_About", SB, "&About...")
+                AboutToolStripMenuItem.Text = locString_Toolbar_About
                 locString_Toolbar_AdvancedOptions = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_AdvancedOptions", SB, "Advanc&ed Options")
+                AdvancedToolStripMenuItem.Text = locString_Toolbar_AdvancedOptions
                 locString_Toolbar_AdvancedEnable = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_AdvancedEnable", SB, "Enable Advanced M&ode")
                 locString_Toolbar_AdvancedDisable = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_AdvancedDisable", SB, "Disable Advanced M&ode")
+                If (AdvancedMode) Then
+                    AdvancedModeToolStripMenuItem.Text = locString_Toolbar_AdvancedDisable
+                Else
+                    AdvancedModeToolStripMenuItem.Text = locString_Toolbar_AdvancedEnable
+                End If
                 locString_Toolbar_UpdateID = readIni(ldi.FullName, "Toolbar", "locString_Toolbar_UpdateID", SB, "Show &Latest Update ID")
+                ShowLatestUpdateIDToolStripMenuItem.Text = locString_Toolbar_UpdateID
 
                 ' Log
                 locString_Log_BootAdvanced = readIni(ldi.FullName, "Log", "", SB, "Booting in advanced mode...")
@@ -1890,31 +1956,34 @@ Public Class UpdaterMainForm
         End If
     End Sub
 
-    Private Sub SetLanguage(Lang As String)
+    Private Sub SetLanguage(Lang As String, ReloadonFail As Boolean)
         Dim LanguageDirectory As DirectoryInfo = New DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory(), Lang + ".lang"))
 
         If ((Lang = "") Or (Lang = "International English")) Then
+            Lang = "International English"
             UpdateSettings("Language", "International English")
-            Log("Setting language to International English", True)
+            Log(locString_Log_LangSet.Replace("<lang>", Lang), True)
             LoadLanguageStrings("International English")
             CheckboxLanguage("International English")
         Else
             If (My.Computer.FileSystem.FileExists(LanguageDirectory.FullName)) Then
                 UpdateSettings("Language", Lang)
-                Log("Setting language to " & Lang, True)
+                Log(locString_Log_LangSet.Replace("<lang>", Lang), True)
                 LoadLanguageStrings(Lang)
                 CheckboxLanguage(Lang)
-            Else
+            ElseIf (ReloadonFail) Then
                 UpdateSettings("Language", "International English")
-                Log("Failed to change language to " & Lang & ", defaulting to International English", True)
+                Log(locString_Log_LangNotSetDef.Replace("<lang>", Lang), True)
                 LoadLanguageStrings("International English")
                 CheckboxLanguage("International English")
+            Else
+                Log(locString_Log_LangNotSet.Replace("<lang>", Lang), True)
             End If
         End If
     End Sub
 
     Private Sub InternationalEnglishDefaultToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles InternationalEnglishDefaultToolStripMenuItem.Click
-        SetLanguage("International English")
+        SetLanguage("International English", False)
     End Sub
 End Class
 

@@ -43,30 +43,30 @@ Partial Class UpdaterMainForm
         Me.GetLatestCommunityPackToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator1 = New System.Windows.Forms.ToolStripSeparator()
         Me.ExitToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.HelpToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.ViewHelpToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.VisitWebsiteToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.ToolStripSeparator2 = New System.Windows.Forms.ToolStripSeparator()
-        Me.AboutToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.VersionToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.CheckForNewVersionToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.ViewChangelogToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.OptionsToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.LanguageToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.InternationalEnglishDefaultToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator5 = New System.Windows.Forms.ToolStripSeparator()
         Me.OpenGameDirectoryToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.VersionToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.CheckForNewVersionToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ViewChangelogToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.HelpToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ViewHelpToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.VisitWebsiteToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ToolStripSeparator2 = New System.Windows.Forms.ToolStripSeparator()
+        Me.AboutToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.AdvancedToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.AdvancedModeToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ShowLatestUpdateIDToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.cleanupCheckBox = New System.Windows.Forms.CheckBox()
-        Me.GroupBox1 = New System.Windows.Forms.GroupBox()
+        Me.lastCheckedBox = New System.Windows.Forms.GroupBox()
         Me.lastUpdateLabel = New System.Windows.Forms.Label()
         Me.revertCheckBox = New System.Windows.Forms.CheckBox()
         Me.outputTextbox = New System.Windows.Forms.Label()
         Me.updateFilesTreeView = New Nerf_ArenaBlast_Updater.MyTreeView()
         Me.MenuStrip1.SuspendLayout()
-        Me.GroupBox1.SuspendLayout()
+        Me.lastCheckedBox.SuspendLayout()
         Me.SuspendLayout()
         '
         'updateButton
@@ -183,48 +183,6 @@ Partial Class UpdaterMainForm
         Me.ExitToolStripMenuItem.Name = "ExitToolStripMenuItem"
         resources.ApplyResources(Me.ExitToolStripMenuItem, "ExitToolStripMenuItem")
         '
-        'HelpToolStripMenuItem
-        '
-        Me.HelpToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ViewHelpToolStripMenuItem, Me.VisitWebsiteToolStripMenuItem, Me.ToolStripSeparator2, Me.AboutToolStripMenuItem})
-        Me.HelpToolStripMenuItem.Name = "HelpToolStripMenuItem"
-        resources.ApplyResources(Me.HelpToolStripMenuItem, "HelpToolStripMenuItem")
-        '
-        'ViewHelpToolStripMenuItem
-        '
-        Me.ViewHelpToolStripMenuItem.Name = "ViewHelpToolStripMenuItem"
-        resources.ApplyResources(Me.ViewHelpToolStripMenuItem, "ViewHelpToolStripMenuItem")
-        '
-        'VisitWebsiteToolStripMenuItem
-        '
-        Me.VisitWebsiteToolStripMenuItem.Name = "VisitWebsiteToolStripMenuItem"
-        resources.ApplyResources(Me.VisitWebsiteToolStripMenuItem, "VisitWebsiteToolStripMenuItem")
-        '
-        'ToolStripSeparator2
-        '
-        Me.ToolStripSeparator2.Name = "ToolStripSeparator2"
-        resources.ApplyResources(Me.ToolStripSeparator2, "ToolStripSeparator2")
-        '
-        'AboutToolStripMenuItem
-        '
-        Me.AboutToolStripMenuItem.Name = "AboutToolStripMenuItem"
-        resources.ApplyResources(Me.AboutToolStripMenuItem, "AboutToolStripMenuItem")
-        '
-        'VersionToolStripMenuItem
-        '
-        Me.VersionToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.CheckForNewVersionToolStripMenuItem, Me.ViewChangelogToolStripMenuItem})
-        Me.VersionToolStripMenuItem.Name = "VersionToolStripMenuItem"
-        resources.ApplyResources(Me.VersionToolStripMenuItem, "VersionToolStripMenuItem")
-        '
-        'CheckForNewVersionToolStripMenuItem
-        '
-        Me.CheckForNewVersionToolStripMenuItem.Name = "CheckForNewVersionToolStripMenuItem"
-        resources.ApplyResources(Me.CheckForNewVersionToolStripMenuItem, "CheckForNewVersionToolStripMenuItem")
-        '
-        'ViewChangelogToolStripMenuItem
-        '
-        Me.ViewChangelogToolStripMenuItem.Name = "ViewChangelogToolStripMenuItem"
-        resources.ApplyResources(Me.ViewChangelogToolStripMenuItem, "ViewChangelogToolStripMenuItem")
-        '
         'OptionsToolStripMenuItem
         '
         Me.OptionsToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.LanguageToolStripMenuItem, Me.OpenGameDirectoryToolStripMenuItem})
@@ -252,6 +210,48 @@ Partial Class UpdaterMainForm
         Me.OpenGameDirectoryToolStripMenuItem.Name = "OpenGameDirectoryToolStripMenuItem"
         resources.ApplyResources(Me.OpenGameDirectoryToolStripMenuItem, "OpenGameDirectoryToolStripMenuItem")
         '
+        'VersionToolStripMenuItem
+        '
+        Me.VersionToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.CheckForNewVersionToolStripMenuItem, Me.ViewChangelogToolStripMenuItem})
+        Me.VersionToolStripMenuItem.Name = "VersionToolStripMenuItem"
+        resources.ApplyResources(Me.VersionToolStripMenuItem, "VersionToolStripMenuItem")
+        '
+        'CheckForNewVersionToolStripMenuItem
+        '
+        Me.CheckForNewVersionToolStripMenuItem.Name = "CheckForNewVersionToolStripMenuItem"
+        resources.ApplyResources(Me.CheckForNewVersionToolStripMenuItem, "CheckForNewVersionToolStripMenuItem")
+        '
+        'ViewChangelogToolStripMenuItem
+        '
+        Me.ViewChangelogToolStripMenuItem.Name = "ViewChangelogToolStripMenuItem"
+        resources.ApplyResources(Me.ViewChangelogToolStripMenuItem, "ViewChangelogToolStripMenuItem")
+        '
+        'HelpToolStripMenuItem
+        '
+        Me.HelpToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ViewHelpToolStripMenuItem, Me.VisitWebsiteToolStripMenuItem, Me.ToolStripSeparator2, Me.AboutToolStripMenuItem})
+        Me.HelpToolStripMenuItem.Name = "HelpToolStripMenuItem"
+        resources.ApplyResources(Me.HelpToolStripMenuItem, "HelpToolStripMenuItem")
+        '
+        'ViewHelpToolStripMenuItem
+        '
+        Me.ViewHelpToolStripMenuItem.Name = "ViewHelpToolStripMenuItem"
+        resources.ApplyResources(Me.ViewHelpToolStripMenuItem, "ViewHelpToolStripMenuItem")
+        '
+        'VisitWebsiteToolStripMenuItem
+        '
+        Me.VisitWebsiteToolStripMenuItem.Name = "VisitWebsiteToolStripMenuItem"
+        resources.ApplyResources(Me.VisitWebsiteToolStripMenuItem, "VisitWebsiteToolStripMenuItem")
+        '
+        'ToolStripSeparator2
+        '
+        Me.ToolStripSeparator2.Name = "ToolStripSeparator2"
+        resources.ApplyResources(Me.ToolStripSeparator2, "ToolStripSeparator2")
+        '
+        'AboutToolStripMenuItem
+        '
+        Me.AboutToolStripMenuItem.Name = "AboutToolStripMenuItem"
+        resources.ApplyResources(Me.AboutToolStripMenuItem, "AboutToolStripMenuItem")
+        '
         'AdvancedToolStripMenuItem
         '
         Me.AdvancedToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.AdvancedModeToolStripMenuItem, Me.ShowLatestUpdateIDToolStripMenuItem})
@@ -274,12 +274,12 @@ Partial Class UpdaterMainForm
         Me.cleanupCheckBox.Name = "cleanupCheckBox"
         Me.cleanupCheckBox.UseVisualStyleBackColor = True
         '
-        'GroupBox1
+        'lastCheckedBox
         '
-        Me.GroupBox1.Controls.Add(Me.lastUpdateLabel)
-        resources.ApplyResources(Me.GroupBox1, "GroupBox1")
-        Me.GroupBox1.Name = "GroupBox1"
-        Me.GroupBox1.TabStop = False
+        Me.lastCheckedBox.Controls.Add(Me.lastUpdateLabel)
+        resources.ApplyResources(Me.lastCheckedBox, "lastCheckedBox")
+        Me.lastCheckedBox.Name = "lastCheckedBox"
+        Me.lastCheckedBox.TabStop = False
         '
         'lastUpdateLabel
         '
@@ -312,7 +312,7 @@ Partial Class UpdaterMainForm
         Me.Controls.Add(Me.outputTextbox)
         Me.Controls.Add(Me.revertCheckBox)
         Me.Controls.Add(Me.updateFilesTreeView)
-        Me.Controls.Add(Me.GroupBox1)
+        Me.Controls.Add(Me.lastCheckedBox)
         Me.Controls.Add(Me.cleanupCheckBox)
         Me.Controls.Add(Me.nerfNetPlugLabel)
         Me.Controls.Add(Me.deselectAllButton)
@@ -331,7 +331,7 @@ Partial Class UpdaterMainForm
         Me.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide
         Me.MenuStrip1.ResumeLayout(False)
         Me.MenuStrip1.PerformLayout()
-        Me.GroupBox1.ResumeLayout(False)
+        Me.lastCheckedBox.ResumeLayout(False)
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -361,7 +361,7 @@ Partial Class UpdaterMainForm
   Friend WithEvents ToolStripSeparator3 As ToolStripSeparator
   Friend WithEvents ToolStripSeparator1 As ToolStripSeparator
   Friend WithEvents ToolStripSeparator2 As ToolStripSeparator
-  Friend WithEvents GroupBox1 As GroupBox
+  Friend WithEvents lastCheckedBox As GroupBox
   Friend WithEvents ToolStripSeparator4 As ToolStripSeparator
   Friend WithEvents GetLatestCommunityPackToolStripMenuItem As ToolStripMenuItem
   Friend WithEvents revertCheckBox As CheckBox

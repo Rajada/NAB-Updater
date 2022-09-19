@@ -1,5 +1,10 @@
 Please provide feedback and report any bugs at https://www.nerfarena.net
 
+3.84:
+
+- Finished implementing language support.
+- Language can no longer be changed during an update.
+
 3.83:
 
 - Fixed a bug that caused the last update time and date not to update properly.
