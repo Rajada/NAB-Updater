@@ -111,6 +111,7 @@ Public Class UpdaterMainForm
     Const constString_Output_DownloadingNewVersion As String = "Downloading new version..."
     Const constString_Output_ErrorChecking As String = "Error checking for updates."
     Const constString_Output_NoNewUpdates As String = "No new updates available."
+    Const constString_Output_NoNewVersion As String = "No new version available."
     Const constString_Output_Refreshing As String = "Refreshing"
     Const constString_Output_ServerError As String = "Server error!"
     Const constString_Output_UpdateAvailable As String = "update available"
@@ -276,6 +277,7 @@ Public Class UpdaterMainForm
     Private locString_Output_DownloadingNewVersion As String = constString_Output_DownloadingNewVersion
     Private locString_Output_ErrorChecking As String = constString_Output_ErrorChecking
     Private locString_Output_NoNewUpdates As String = constString_Output_NoNewUpdates
+    Private locString_Output_NoNewVersion As String = constString_Output_NoNewVersion
     Private locString_Output_Refreshing As String = constString_Output_Refreshing
     Private locString_Output_ServerError As String = constString_Output_ServerError
     Private locString_Output_UpdateAvailable As String = constString_Output_UpdateAvailable
@@ -656,6 +658,10 @@ Public Class UpdaterMainForm
                 CheckForUpdatesToolStripMenuItem.Enabled = False
                 AdvancedModeToolStripMenuItem.Enabled = False
                 LanguageToolStripMenuItem.Enabled = False
+                CheckForNewVersionToolStripMenuItem.Enabled = False
+                ViewChangelogToolStripMenuItem.Enabled = False
+                ExitToolStripMenuItem.Enabled = False
+                exitButton.Enabled = False
 
                 Dim fileList = Await GetRemoteFileInfos(updaterDirectory)
 
@@ -683,7 +689,9 @@ Public Class UpdaterMainForm
             UpdateSettings("InitialAppend", "0")
             If (ShowUpToDateMessage) Then
                 MessageBox.Show(locString_Caption_NoNewVersion, locString_Window_VersionCheckComplete, MessageBoxButtons.OK, MessageBoxIcon.None)
-                outputTextbox.Text = "."
+                If (updateCount <= 0) Then
+                    outputTextbox.Text = locString_Output_NoNewVersion
+                End If
             End If
         End If
     End Sub
@@ -1965,6 +1973,7 @@ Public Class UpdaterMainForm
                 locString_Output_DownloadingNewVersion = readIni(ldi.FullName, "Outputs", "locString_Output_DownloadingNewVersion", SB, constString_Output_DownloadingNewVersion)
                 locString_Output_ErrorChecking = readIni(ldi.FullName, "Outputs", "locString_Output_ErrorChecking", SB, constString_Output_ErrorChecking)
                 locString_Output_NoNewUpdates = readIni(ldi.FullName, "Outputs", "locString_Output_NoNewUpdates", SB, constString_Output_NoNewUpdates)
+                locString_Output_NoNewVersion = readIni(ldi.FullName, "Outputs", "locString_Output_NoNewVersion", SB, constString_Output_NoNewVersion)
                 locString_Output_Refreshing = readIni(ldi.FullName, "Outputs", "locString_Output_Refreshing", SB, constString_Output_Refreshing)
                 locString_Output_ServerError = readIni(ldi.FullName, "Outputs", "locString_Output_ServerError", SB, constString_Output_ServerError)
                 locString_Output_UpdateAvailable = readIni(ldi.FullName, "Outputs", "locString_Output_UpdateAvailable", SB, constString_Output_UpdateAvailable)

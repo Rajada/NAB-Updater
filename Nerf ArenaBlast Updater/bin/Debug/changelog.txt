@@ -4,6 +4,7 @@ Please provide feedback and report any bugs at https://www.nerfarena.net
 
 - Finished implementing language support.
 - Language can no longer be changed during an update.
+- Corrections to some International English language strings.
 
 3.83:
 
