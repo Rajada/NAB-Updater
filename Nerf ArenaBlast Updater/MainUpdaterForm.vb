@@ -1968,10 +1968,8 @@ Public Class UpdaterMainForm
                 locString_Output_Refreshing = readIni(ldi.FullName, "Outputs", "locString_Output_Refreshing", SB, constString_Output_Refreshing)
                 locString_Output_ServerError = readIni(ldi.FullName, "Outputs", "locString_Output_ServerError", SB, constString_Output_ServerError)
                 locString_Output_UpdateAvailable = readIni(ldi.FullName, "Outputs", "locString_Output_UpdateAvailable", SB, constString_Output_UpdateAvailable)
-                ' Dunno
                 locString_Output_UpdaterReady = readIni(ldi.FullName, "Outputs", "locString_Output_UpdaterReady", SB, constString_Output_UpdaterReady)
                 locString_Output_UpdatesAvailable = readIni(ldi.FullName, "Outputs", "locString_Output_UpdatesAvailable", SB, constString_Output_UpdatesAvailable)
-                ' Dunno
                 locString_Output_UpdatesPending = readIni(ldi.FullName, "Outputs", "locString_Output_UpdatesPending", SB, constString_Output_UpdatesPending)
                 locString_Output_UpdatesSelected = readIni(ldi.FullName, "Outputs", "locString_Output_UpdatesSelected", SB, constString_Output_UpdatesSelected)
                 locString_Output_UpdatesSuccessful = readIni(ldi.FullName, "Outputs", "locString_Output_UpdatesSuccessful", SB, constString_Output_UpdatesSuccessful)
@@ -1980,13 +1978,11 @@ Public Class UpdaterMainForm
 
                 ' GUI
                 locString_GUI_BaseSeperator = readIni(ldi.FullName, "GUI", "locString_GUI_BaseSeperator", SB, constString_GUI_BaseSeperator)
-                ' Iterate tree?
                 locString_GUI_Change = readIni(ldi.FullName, "GUI", "locString_GUI_Change", SB, constString_GUI_Change)
                 changeFilepathButton.Text = locString_GUI_Change
                 locString_GUI_CheckForUpdates = readIni(ldi.FullName, "GUI", "locString_GUI_CheckForUpdates", SB, constString_GUI_CheckForUpdates)
                 locString_GUI_Checking = readIni(ldi.FullName, "GUI", "locString_GUI_Checking", SB, constString_GUI_Checking)
                 locString_GUI_CPSeperator = readIni(ldi.FullName, "GUI", "locString_GUI_CPSeperator", SB, constString_GUI_CPSeperator)
-                ' Iterate tree?
                 locString_GUI_DeselectAll = readIni(ldi.FullName, "GUI", "locString_GUI_DeselectAll", SB, constString_GUI_DeselectAll)
                 deselectAllButton.Text = locString_GUI_DeselectAll
                 locString_GUI_Exit = readIni(ldi.FullName, "GUI", "locString_GUI_Exit", SB, constString_GUI_Exit)
@@ -1994,7 +1990,6 @@ Public Class UpdaterMainForm
                 locString_GUI_LastChecked = readIni(ldi.FullName, "GUI", "locString_GUI_LastChecked", SB, constString_GUI_LastChecked)
                 lastCheckedBox.Text = locString_GUI_LastChecked
                 locString_GUI_Modified = readIni(ldi.FullName, "GUI", "locString_GUI_Modified", SB, constString_GUI_Modified)
-                ' Dunno
                 locString_GUI_Never = readIni(ldi.FullName, "GUI", "locString_GUI_Never", SB, constString_GUI_Never)
                 locString_GUI_SelectAll = readIni(ldi.FullName, "GUI", "locString_GUI_SelectAll", SB, constString_GUI_SelectAll)
                 selectAllButton.Text = locString_GUI_SelectAll
