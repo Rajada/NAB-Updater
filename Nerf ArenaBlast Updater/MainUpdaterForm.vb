@@ -12,8 +12,6 @@ Public Class UpdaterMainForm
     ' Add tristate checkboxes.
     ' Checksumming
     ' Check if file modified
-    ' Modified string not ready yet
-    ' Implement all real-time language UI changers
     Public homeDirectory As DirectoryInfo
     Private iniDirectory As DirectoryInfo
     Private logDirectory As String = (Directory.GetCurrentDirectory() + "\NerfUpdater.Log")
