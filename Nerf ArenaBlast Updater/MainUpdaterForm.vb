@@ -6,6 +6,7 @@ Imports System.Text
 Imports System.Net
 Imports System.Reflection
 Imports Microsoft.VisualBasic.FileIO
+Imports System.Linq.Expressions
 
 Public Class UpdaterMainForm
     ' Replace folder dialogue with file dialogue?
@@ -34,7 +35,7 @@ Public Class UpdaterMainForm
     Private querying As Boolean = False
     Private nodesToDelete As New List(Of TreeNode)
     Private filesToDelete As New List(Of String)
-    Private updaterVersion As String = "3.84"
+    Private updaterVersion As String = "3.85"
     Private updateDiff As Integer = 0
     Private newVersion As Boolean = False
     Private updateCount As Integer = 0
@@ -46,6 +47,7 @@ Public Class UpdaterMainForm
     Private BootAdvanced As Integer = 0
     Private engineVersionNumber As Integer = -1
     Private cpVersionString As String = String.Empty
+    Private cpVariantString As String = String.Empty
     Private hasCP As Boolean = False
     Private silentClose As Boolean = False
     Private Upgrading As Boolean = False
@@ -170,7 +172,7 @@ Public Class UpdaterMainForm
     Const constString_Log_CheckingForBaseUpdates As String = "Checking for base game updates at <url>..."
     Const constString_Log_CheckingForCPUpdates As String = "Checking for Community Pack updates at <url>..."
     Const constString_Log_CheckingForUpdates As String = "Checking for updates..."
-    Const constString_Log_CPDetected As String = "Community Pack version <ver> detected."
+    Const constString_Log_CPDetected As String = "Community Pack version <ver><var> detected."
     Const constString_Log_CPNotDetected As String = "Community Pack not detected."
     Const constString_Log_CPUnknown As String = "Warning: Unknown Community Pack detected."
     Const constString_Log_CreateFolder As String = "Creating directory <dir>."
@@ -827,18 +829,29 @@ Public Class UpdaterMainForm
                 customCheckBox.Checked = True
             End If
             Dim cpVersion As String
+            Dim cpVariant As String
             Dim sb As StringBuilder = New StringBuilder(64)
 
             cpVersion = readIni(Path.Combine(homeDirectory.FullName, "System\CommunityPack.ini"), "Community Pack", "Version", sb, "ERROR")
+            cpVariant = readIni(Path.Combine(homeDirectory.FullName, "System\CommunityPack.ini"), "Community Pack", "Variant", sb, "ERROR")
 
             If (cpVersion = "ERROR") Then
                 Log(locString_Log_CPUnknown, True)
                 hasCP = False
                 cpVersionString = ""
+                cpVariantString = ""
             Else
-                Log(locString_Log_CPDetected.Replace("<ver>", cpVersion), True)
+                If (cpVariant = "ERROR") Then
+                    cpVariant = ""
+                ElseIf ((cpVariant <> "Full") And (cpVariant <> "Lite") And (cpVariant <> "Beta") And (cpVariant <> "Minimal")) Then
+                    cpVariant = ""
+                End If
+
+                Log(locString_Log_CPDetected.Replace("<ver>", cpVersion).Replace("<var>", (" " + cpVariant)), True)
+
                 hasCP = True
                 cpVersionString = cpVersion
+                cpVariantString = cpVariant
             End If
 
         Else
@@ -846,6 +859,7 @@ Public Class UpdaterMainForm
             Log(locString_Log_CPNotDetected, True)
             hasCP = False
             cpVersionString = ""
+            cpVariantString = ""
 
             If (ChangeStates) Then
                 customCheckBox.Checked = False
@@ -1083,14 +1097,14 @@ Public Class UpdaterMainForm
                     If Not (entry.FileName Like "*/") Then
                         If (entry.FileName Like "*.delete") Then
                             If (cleanupCheckBox.Checked) Then
-                                tempFilePath = Path.Combine(homeDirectory.FullName, dir.Replace(selectedBaseDirectory, "").Replace(selectedCustomDirectory, "").Replace("/", "\") + entry.FileName.Replace(".delete", ""))
+                                tempFilePath = Path.Combine(homeDirectory.FullName, SanitizeVariants(dir.Replace(selectedBaseDirectory, "").Replace(selectedCustomDirectory, "").Replace("/", "\") + entry.FileName.Replace(".delete", "")))
                                 If Not (tempFilePath Like "*.*") Then
                                     tempFilePath = tempFilePath + "\"
                                     If (My.Computer.FileSystem.DirectoryExists(tempFilePath)) Then
                                         updateProgressBar.Maximum += 1
                                         Dim folderNode As TreeNode = Nothing
                                         folderNode = parentNode.Nodes.Add(entry.FileName.Replace(".delete", ":"))
-                                        folderNode.Tag = dir + entry.FileName.Replace(".delete", "/")
+                                        folderNode.Tag = SanitizeVariants(dir) + entry.FileName.Replace(".delete", "/")
                                         folderNode.ForeColor = Color.Red
                                         updateProgressBar.PerformStep()
                                     End If
@@ -1099,14 +1113,14 @@ Public Class UpdaterMainForm
                                         updateProgressBar.Maximum += 1
                                         Dim fileNode As TreeNode = Nothing
                                         fileNode = parentNode.Nodes.Add(entry.FileName.Replace(".delete", ""))
-                                        fileNode.Tag = dir + entry.FileName.Replace(".delete", "")
+                                        fileNode.Tag = SanitizeVariants(dir) + entry.FileName.Replace(".delete", "")
                                         fileNode.ForeColor = Color.Red
                                         updateProgressBar.PerformStep()
                                     End If
                                 End If
                             End If
                         Else
-                            tempFilePath = Path.Combine(homeDirectory.FullName, dir.Replace(selectedBaseDirectory, "").Replace(selectedCustomDirectory, "").Replace("/", "\") + entry.FileName)
+                            tempFilePath = Path.Combine(homeDirectory.FullName, SanitizeVariants(dir.Replace(selectedBaseDirectory, "").Replace(selectedCustomDirectory, "").Replace("/", "\")) + entry.FileName)
 
                             If (My.Computer.FileSystem.FileExists(tempFilePath)) Then
                                 infoReader = My.Computer.FileSystem.GetFileInfo(tempFilePath)
@@ -1120,7 +1134,7 @@ Public Class UpdaterMainForm
                                 updateProgressBar.Maximum += 1
                                 Dim fileNode As TreeNode = Nothing
                                 fileNode = parentNode.Nodes.Add(entry.FileName + " (" + entry.FileSize + "B)")
-                                fileNode.Tag = dir + entry.FileName
+                                fileNode.Tag = SanitizeVariants(dir) + entry.FileName
                                 fileNode.ForeColor = Color.DarkOrchid
                                 updateProgressBar.PerformStep()
                             End If
@@ -1129,7 +1143,7 @@ Public Class UpdaterMainForm
                                 updateProgressBar.Maximum += 1
                                 Dim fileNode As TreeNode = Nothing
                                 fileNode = parentNode.Nodes.Add(entry.FileName + " (" + entry.FileSize + "B)")
-                                fileNode.Tag = dir + entry.FileName
+                                fileNode.Tag = SanitizeVariants(dir) + entry.FileName
                                 If File.Exists(tempFilePath) Then
                                     fileNode.ForeColor = Color.Blue
                                 Else
@@ -1145,9 +1159,17 @@ Public Class UpdaterMainForm
                         Dim folderNode As TreeNode = Nothing
                         Dim folderName As String = String.Empty
                         folderName = entry.FileName.Replace("/", "")
-                        folderNode = parentNode.Nodes.Add(folderName + ":")
-                        folderNode.Tag = dir + entry.FileName
-                        Await PopulateTreeView(folderNode.Tag.ToString, folderNode)
+                        If Not (CheckVariantString(folderName)) Then
+                            folderNode = parentNode.Nodes.Add(folderName + ":")
+                            folderNode.Tag = dir + entry.FileName
+                            Await PopulateTreeView(folderNode.Tag.ToString, folderNode)
+                        Else
+                            If RelevantVariant(cpVariantString, folderName) Then
+                                folderNode = parentNode
+                                folderNode.Tag = dir + entry.FileName
+                                Await PopulateTreeView(folderNode.Tag.ToString, folderNode)
+                            End If
+                        End If
                     End If
                 Next
             End If
@@ -1444,6 +1466,7 @@ Public Class UpdaterMainForm
                 actualPath = actualOnlinePath.Replace(selectedBaseDirectory, "")
                 actualPath = actualPath.Replace(selectedCustomDirectory, "")
                 actualPath = actualPath.Replace("/", "\")
+                actualPath = SanitizeVariants(actualPath)
                 temp = actualPath
                 actualPath = Path.Combine(homeDirectory.FullName, temp)
                 Dim actualDirectoryInfo As DirectoryInfo = New DirectoryInfo(actualPath)
@@ -2168,6 +2191,60 @@ Public Class UpdaterMainForm
     Private Sub InternationalEnglishDefaultToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles InternationalEnglishDefaultToolStripMenuItem.Click
         SetLanguage("International English", False)
     End Sub
+
+    Private Function SanitizeVariants(InputDir As String) As String
+        Return InputDir.Replace("Full\", "").Replace("Lite\", "")
+    End Function
+
+    Private Function CheckVariantString(InputFolder As String) As Boolean
+        If (InputFolder = "Full") Or (InputFolder = "Lite") Then
+            Return True
+        End If
+        Return False
+    End Function
+
+    Private Function RelevantVariant(VariantType As String, FolderVariant As String) As Boolean
+        If (VariantType = "Full") Then
+            If (FolderVariant = "Full") Then
+                Return True
+            ElseIf (FolderVariant = "Lite") Then
+                Return True
+            ElseIf (FolderVariant = "Beta") Then
+                Return False
+            End If
+            Return False
+        ElseIf (VariantType = "Lite") Then
+            If (FolderVariant = "Full") Then
+                Return False
+            ElseIf (FolderVariant = "Lite") Then
+                Return True
+            ElseIf (FolderVariant = "Beta") Then
+                Return False
+            End If
+            Return False
+        ElseIf (VariantType = "Beta") Then
+            If (FolderVariant = "Full") Then
+                Return True
+            ElseIf (FolderVariant = "Lite") Then
+                Return True
+            ElseIf (FolderVariant = "Beta") Then
+                Return True
+            End If
+            Return False
+        ElseIf (VariantType = "Minimal") Then
+            If (FolderVariant = "Full") Then
+                Return False
+            ElseIf (FolderVariant = "Lite") Then
+                Return False
+            ElseIf (FolderVariant = "Beta") Then
+                Return False
+            End If
+            Return False
+        End If
+        Return False
+    End Function
+
+
 End Class
 
 Class MyTreeView
