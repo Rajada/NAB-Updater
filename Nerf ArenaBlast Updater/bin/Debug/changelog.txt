@@ -1,6 +1,11 @@
 Please provide feedback and report any bugs at https://www.nerfarena.net
 
+3.86:
+
+- Added the ability to change Community Pack install type.
+
 3.85:
+
 - Implemented Community Pack variant detection. The updater can now distinguish between different types of Community Pack installs and update them appropriately. Note that for the time being you will be defaulted to a FULL Community Pack install, but this will change in the future when the next version of the Community Pack is released.
 
 3.84:

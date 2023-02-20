@@ -59,6 +59,7 @@ Partial Class UpdaterMainForm
         Me.AdvancedToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.AdvancedModeToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ShowLatestUpdateIDToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ChangeCommunityPackToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.cleanupCheckBox = New System.Windows.Forms.CheckBox()
         Me.lastCheckedBox = New System.Windows.Forms.GroupBox()
         Me.lastUpdateLabel = New System.Windows.Forms.Label()
@@ -254,7 +255,7 @@ Partial Class UpdaterMainForm
         '
         'AdvancedToolStripMenuItem
         '
-        Me.AdvancedToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.AdvancedModeToolStripMenuItem, Me.ShowLatestUpdateIDToolStripMenuItem})
+        Me.AdvancedToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.AdvancedModeToolStripMenuItem, Me.ShowLatestUpdateIDToolStripMenuItem, Me.ChangeCommunityPackToolStripMenuItem})
         Me.AdvancedToolStripMenuItem.Name = "AdvancedToolStripMenuItem"
         resources.ApplyResources(Me.AdvancedToolStripMenuItem, "AdvancedToolStripMenuItem")
         '
@@ -267,6 +268,11 @@ Partial Class UpdaterMainForm
         '
         Me.ShowLatestUpdateIDToolStripMenuItem.Name = "ShowLatestUpdateIDToolStripMenuItem"
         resources.ApplyResources(Me.ShowLatestUpdateIDToolStripMenuItem, "ShowLatestUpdateIDToolStripMenuItem")
+        '
+        'ChangeCommunityPackToolStripMenuItem
+        '
+        Me.ChangeCommunityPackToolStripMenuItem.Name = "ChangeCommunityPackToolStripMenuItem"
+        resources.ApplyResources(Me.ChangeCommunityPackToolStripMenuItem, "ChangeCommunityPackToolStripMenuItem")
         '
         'cleanupCheckBox
         '
@@ -379,4 +385,5 @@ Partial Class UpdaterMainForm
     Friend WithEvents OpenGameDirectoryToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents InternationalEnglishDefaultToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents ToolStripSeparator5 As ToolStripSeparator
+    Friend WithEvents ChangeCommunityPackToolStripMenuItem As ToolStripMenuItem
 End Class

@@ -6,7 +6,6 @@ Imports System.Text
 Imports System.Net
 Imports System.Reflection
 Imports Microsoft.VisualBasic.FileIO
-Imports System.Linq.Expressions
 
 Public Class UpdaterMainForm
     ' Replace folder dialogue with file dialogue?
@@ -35,19 +34,20 @@ Public Class UpdaterMainForm
     Private querying As Boolean = False
     Private nodesToDelete As New List(Of TreeNode)
     Private filesToDelete As New List(Of String)
-    Private updaterVersion As String = "3.85"
+    Private updaterVersion As String = "3.86"
     Private updateDiff As Integer = 0
     Private newVersion As Boolean = False
     Private updateCount As Integer = 0
     Private InitialAppend As Integer = 0
     Public Changelog As ChangelogForm
+    Public ChangeCP As ChangeCPForm
     Private AdvancedMode As Boolean = False
     Private Aborting As Boolean = False
     Private Updating As Boolean = False
     Private BootAdvanced As Integer = 0
     Private engineVersionNumber As Integer = -1
-    Private cpVersionString As String = String.Empty
-    Private cpVariantString As String = String.Empty
+    Public cpVersionString As String = String.Empty
+    Public cpVariantString As String = String.Empty
     Private hasCP As Boolean = False
     Private silentClose As Boolean = False
     Private Upgrading As Boolean = False
@@ -57,6 +57,7 @@ Public Class UpdaterMainForm
     Const constString_Window_AboutUpdater As String = "About <app>"
     Const constString_Window_AdvancedDisable As String = "Disable Advanced Mode?"
     Const constString_Window_AdvancedEnable As String = "Enable Advanced Mode?"
+    Const constString_Window_ChangeCP As String = "Change Community Pack Type"
     Const constString_Window_Changelog As String = "Changelog"
     Const constString_Window_ConfigNotFound As String = "<app> Configuration File Not Found"
     Const constString_Window_ConfigNotRead As String = "Unable to Read <app> Configuration File"
@@ -80,6 +81,7 @@ Public Class UpdaterMainForm
     ' Captions
     Const constString_Caption_AdvancedEnableWarning As String = "Are you sure you want to switch to advanced mode? Advanced mode contains options that can cause issues with your game if used incorrectly."
     Const constString_Caption_AdvancedDisableWarning As String = "If you disable advanced mode you will lose any selections made. Are you sure you want to disable advanced mode?"
+    Const constString_Caption_ChangeCPWarning As String = "If you change your Community Pack to a less complete version you may no longer receive updates for all community content. This may cause mismatched files which can cause your game to crash in multiplayer."
     Const constString_Caption_ChangelogMissing As String = "Could not load changelog."
     Const constString_Caption_CleanupWarning As String = "This option shows files that have been flagged for removal by the server. If you have created files that you have named identically to one of these flagged names, they will be deleted permanently. Use caution, and only check files you are sure you want to delete. For your protection, the deletable files will not be checked by default."
     Const constString_Caption_ConfigNotFound As String = "Could not read <app> configuration settings."
@@ -142,6 +144,9 @@ Public Class UpdaterMainForm
     Const constString_GUI_CustomContent As String = "Custom Content"
     Const constString_GUI_FileCleanup As String = "File Cleanup"
     Const constString_GUI_FileReverts As String = "File Reverts"
+    Const constString_GUI_SelectACP As String = "Select a Community Pack type below"
+    Const constString_GUI_Apply As String = "Apply"
+    Const constString_GUI_Other As String = "Other"
 
     ' Toolbars
     Const constString_Toolbar_File As String = "&File"
@@ -165,10 +170,12 @@ Public Class UpdaterMainForm
     Const constString_Toolbar_AdvancedEnable As String = "Enable Advanced M&ode"
     Const constString_Toolbar_AdvancedDisable As String = "Disable Advanced M&ode"
     Const constString_Toolbar_UpdateID As String = "Show &Latest Update ID"
+    Const constString_Toolbar_ChangeCP As String = "Change Community Pack"
 
     ' Log
     Const constString_Log_BootAdvanced As String = "Booting in advanced mode..."
     Const constString_Log_BootSuccess As String = "<app> <ver> booted successfully!"
+    Const constString_Log_ChangeCPType As String = "Changed Community Pack variant to <var>."
     Const constString_Log_CheckingForBaseUpdates As String = "Checking for base game updates at <url>..."
     Const constString_Log_CheckingForCPUpdates As String = "Checking for Community Pack updates at <url>..."
     Const constString_Log_CheckingForUpdates As String = "Checking for updates..."
@@ -223,6 +230,7 @@ Public Class UpdaterMainForm
     Private locString_Window_AboutUpdater As String = constString_Window_AboutUpdater
     Private locString_Window_AdvancedDisable As String = constString_Window_AdvancedDisable
     Private locString_Window_AdvancedEnable As String = constString_Window_AdvancedEnable
+    Public locString_Window_ChangeCP As String = constString_Window_ChangeCP
     Public locString_Window_Changelog As String = constString_Window_Changelog
     Private locString_Window_ConfigNotFound As String = constString_Window_ConfigNotFound
     Private locString_Window_ConfigNotRead As String = constString_Window_ConfigNotRead
@@ -246,6 +254,7 @@ Public Class UpdaterMainForm
     ' Captions
     Private locString_Caption_AdvancedEnableWarning As String = constString_Caption_AdvancedEnableWarning
     Private locString_Caption_AdvancedDisableWarning As String = constString_Caption_AdvancedDisableWarning
+    Private locString_Caption_ChangeCPWarning As String = constString_Caption_ChangeCPWarning
     Public locString_Caption_ChangelogMissing As String = constString_Caption_ChangelogMissing
     Private locString_Caption_CleanupWarning As String = constString_Caption_CleanupWarning
     Private locString_Caption_ConfigNotFound As String = constString_Caption_ConfigNotFound
@@ -308,6 +317,9 @@ Public Class UpdaterMainForm
     Private locString_GUI_CustomContent As String = constString_GUI_CustomContent
     Private locString_GUI_FileCleanup As String = constString_GUI_FileCleanup
     Private locString_GUI_FileReverts As String = constString_GUI_FileReverts
+    Private locString_GUI_SelectACP As String = constString_GUI_SelectACP
+    Private locString_GUI_Apply As String = constString_GUI_Apply
+    Private locString_GUI_Other As String = constString_GUI_Other
 
     ' Toolbars
     Private locString_Toolbar_File As String = constString_Toolbar_File
@@ -331,10 +343,12 @@ Public Class UpdaterMainForm
     Private locString_Toolbar_AdvancedEnable As String = constString_Toolbar_AdvancedEnable
     Private locString_Toolbar_AdvancedDisable As String = constString_Toolbar_AdvancedDisable
     Private locString_Toolbar_UpdateID As String = constString_Toolbar_UpdateID
+    Private locString_Toolbar_ChangeCP As String = constString_Toolbar_ChangeCP
 
     ' Log
     Private locString_Log_BootAdvanced As String = constString_Log_BootAdvanced
     Private locString_Log_BootSuccess As String = constString_Log_BootSuccess
+    Public locString_Log_ChangeCPType As String = constString_Log_ChangeCPType
     Private locString_Log_CheckingForBaseUpdates As String = constString_Log_CheckingForBaseUpdates
     Private locString_Log_CheckingForCPUpdates As String = constString_Log_CheckingForCPUpdates
     Private locString_Log_CheckingForUpdates As String = constString_Log_CheckingForUpdates
@@ -377,7 +391,7 @@ Public Class UpdaterMainForm
     Private locString_Log_NoNewUpdates As String = constString_Log_NoNewUpdates
     Private locString_Log_PathChanged As String = constString_Log_PathChanged
     Private locString_Log_RefreshFile As String = constString_Log_RefreshFile
-    Private locString_log_ServerNoResponse As String = constString_log_ServerNoResponse
+    Private locString_Log_ServerNoResponse As String = constString_log_ServerNoResponse
     Private locString_Log_Shutdown As String = constString_Log_Shutdown
     Private locString_Log_UpdateFile As String = constString_Log_UpdateFile
     Private locString_Log_UpdateServerNoResponse As String = constString_Log_UpdateServerNoResponse
@@ -597,6 +611,10 @@ Public Class UpdaterMainForm
             Changelog.Close()
         End If
 
+        If (ChangeCP IsNot Nothing) Then
+            ChangeCP.Close()
+        End If
+
         If (Not silentClose) Then
             Log(locString_Log_Shutdown.Replace("<app>", locString_Window_UpdaterName), True)
             Log(locString_Log_LogClose.Replace("<date>", thisDate.ToShortDateString).Replace("<time>", thisTime.ToShortTimeString), True)
@@ -662,6 +680,7 @@ Public Class UpdaterMainForm
                 ViewChangelogToolStripMenuItem.Enabled = False
                 ExitToolStripMenuItem.Enabled = False
                 exitButton.Enabled = False
+                ChangeCommunityPackToolStripMenuItem.Enabled = False
 
                 Dim fileList = Await GetRemoteFileInfos(updaterDirectory)
 
@@ -825,6 +844,7 @@ Public Class UpdaterMainForm
 
         If (File.Exists(Path.Combine(homeDirectory.FullName, "System\CommunityPack.ini"))) Then
             customCheckBox.Enabled = True
+            ChangeCommunityPackToolStripMenuItem.Enabled = True
             If (ChangeStates) Then
                 customCheckBox.Checked = True
             End If
@@ -856,6 +876,7 @@ Public Class UpdaterMainForm
 
         Else
             customCheckBox.Enabled = False
+            ChangeCommunityPackToolStripMenuItem.Enabled = False
             Log(locString_Log_CPNotDetected, True)
             hasCP = False
             cpVersionString = ""
@@ -952,11 +973,13 @@ Public Class UpdaterMainForm
         If (Not isQuerying) Then
             'updateButton.Enabled = True
             CheckForUpdatesToolStripMenuItem.Enabled = True
+            ChangeCommunityPackToolStripMenuItem.Enabled = True
             customCheckBox.Enabled = hasCP
         Else
             updateFilesTreeView.Nodes.Clear()
             updateButton.Enabled = False
             CheckForUpdatesToolStripMenuItem.Enabled = False
+            ChangeCommunityPackToolStripMenuItem.Enabled = False
         End If
     End Sub
 
@@ -981,6 +1004,9 @@ Public Class UpdaterMainForm
             If (CheckNABRunning(True)) Then
                 MessageBox.Show(locString_Caption_UpdatingAborted, locString_Window_UpdateAborted, MessageBoxButtons.OK, MessageBoxIcon.None)
             Else
+                If (ChangeCP IsNot Nothing) Then
+                    ChangeCP.Close()
+                End If
                 Updating = True
                 SetUpdateStatus("Update")
                 If (AdvancedMode) Then
@@ -992,6 +1018,7 @@ Public Class UpdaterMainForm
                 End If
                 updateButton.Enabled = False
                 CheckForUpdatesToolStripMenuItem.Enabled = False
+                ChangeCommunityPackToolStripMenuItem.Enabled = False
                 CopyFilesOver()
                 updateSuccess = True
                 'writeINI(iniDirectory.ToString, "Update", "UpdateID", "")
@@ -999,6 +1026,7 @@ Public Class UpdaterMainForm
                 SetUpdateStatus("Ready")
                 updateButton.Enabled = True
                 CheckForUpdatesToolStripMenuItem.Enabled = True
+                ChangeCommunityPackToolStripMenuItem.Enabled = True
                 Log(locString_Log_UpdatesWereSuccessful, True)
                 MessageBox.Show(locString_Caption_UpdatesWereSuccessful, locString_Window_UpdateComplete, MessageBoxButtons.OK, MessageBoxIcon.None)
                 outputTextbox.Text = locString_Output_UpdatesSuccessful
@@ -1175,7 +1203,7 @@ Public Class UpdaterMainForm
             End If
 
         Catch ex As HttpRequestException
-            Log(locString_log_ServerNoResponse.Replace("<url>", parentNode.Tag.ToString), True)
+            Log(locString_Log_ServerNoResponse.Replace("<url>", parentNode.Tag.ToString), True)
             If (ex.InnerException IsNot Nothing) Then
                 MessageBox.Show(locString_Caption_ServerNoResponse.Replace("<url>", parentNode.Tag.ToString) & ControlChars.NewLine & ControlChars.NewLine & locString_Caption_ErrorReport & ControlChars.NewLine & ControlChars.NewLine & ex.InnerException.Message, locString_Window_ServerNoResponse, MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
             Else
@@ -1309,6 +1337,7 @@ Public Class UpdaterMainForm
             updateProgressBar.Value = 0
             updateButton.Enabled = True
             CheckForUpdatesToolStripMenuItem.Enabled = True
+            ChangeCommunityPackToolStripMenuItem.Enabled = True
             changeFilepathButton.Enabled = True
             ChangeBaseDirectoryToolStripMenuItem.Enabled = True
             VersionToolStripMenuItem.Enabled = True
@@ -1331,6 +1360,7 @@ Public Class UpdaterMainForm
             updateProgressBar.Value = 0
             updateButton.Enabled = True
             CheckForUpdatesToolStripMenuItem.Enabled = True
+            ChangeCommunityPackToolStripMenuItem.Enabled = True
             changeFilepathButton.Enabled = True
             ChangeBaseDirectoryToolStripMenuItem.Enabled = True
             VersionToolStripMenuItem.Enabled = True
@@ -1825,7 +1855,7 @@ Public Class UpdaterMainForm
         End If
     End Sub
 
-    Private Sub Log(Info As String, Append As Boolean)
+    Public Sub Log(Info As String, Append As Boolean)
         Using LogWriter As New StreamWriter(logDirectory, Append)
             LogWriter.WriteLine(Info)
             LogWriter.Flush()
@@ -1903,6 +1933,7 @@ Public Class UpdaterMainForm
             SetUpdateStatus("Ready")
             updateButton.Enabled = True
             CheckForUpdatesToolStripMenuItem.Enabled = True
+            ChangeCommunityPackToolStripMenuItem.Enabled = True
             updateCount = 0
         End If
     End Sub
@@ -1936,6 +1967,10 @@ Public Class UpdaterMainForm
                 locString_Window_AboutUpdater = readIni(ldi.FullName, "Windows", "locString_Window_AboutUpdater", SB, constString_Window_AboutUpdater)
                 locString_Window_AdvancedDisable = readIni(ldi.FullName, "Windows", "locString_Window_AdvancedDisable", SB, constString_Window_AdvancedDisable)
                 locString_Window_AdvancedEnable = readIni(ldi.FullName, "Windows", "locString_Window_AdvancedEnable", SB, constString_Window_AdvancedEnable)
+                locString_Window_ChangeCP = readIni(ldi.FullName, "Windows", "locString_Window_ChangeCP", SB, constString_Window_ChangeCP)
+                If (ChangeCP IsNot Nothing) Then
+                    ChangeCP.Text = locString_Window_ChangeCP
+                End If
                 locString_Window_Changelog = readIni(ldi.FullName, "Windows", "locString_Window_Changelog", SB, constString_Window_Changelog)
                 If (Changelog IsNot Nothing) Then
                     Changelog.Text = locString_Window_Changelog
@@ -1963,6 +1998,7 @@ Public Class UpdaterMainForm
                 ' Captions
                 locString_Caption_AdvancedEnableWarning = readIni(ldi.FullName, "Captions", "locString_Caption_AdvancedEnableWarning", SB, constString_Caption_AdvancedEnableWarning)
                 locString_Caption_AdvancedDisableWarning = readIni(ldi.FullName, "Captions", "locString_Caption_AdvancedDisableWarning", SB, constString_Caption_AdvancedDisableWarning)
+                locString_Caption_ChangeCPWarning = readIni(ldi.FullName, "Captions", "locString_Caption_ChangeCPWarning", SB, constString_Caption_ChangeCPWarning)
                 locString_Caption_ChangelogMissing = readIni(ldi.FullName, "Captions", "locString_Caption_ChangelogMissing", SB, constString_Caption_ChangelogMissing)
                 locString_Caption_CleanupWarning = readIni(ldi.FullName, "Captions", "locString_Caption_CleanupWarning", SB, constString_Caption_CleanupWarning)
                 locString_Caption_ConfigNotFound = readIni(ldi.FullName, "Captions", "locString_Caption_ConfigNotFound", SB, constString_Caption_ConfigNotFound)
@@ -2034,6 +2070,14 @@ Public Class UpdaterMainForm
                 cleanupCheckBox.Text = locString_GUI_FileCleanup
                 locString_GUI_FileReverts = readIni(ldi.FullName, "GUI", "locString_GUI_FileReverts", SB, constString_GUI_FileReverts)
                 revertCheckBox.Text = locString_GUI_FileReverts
+                locString_GUI_SelectACP = readIni(ldi.FullName, "GUI", "locString_GUI_SelectACP", SB, constString_GUI_SelectACP)
+                locString_GUI_Apply = readIni(ldi.FullName, "GUI", "locString_GUI_Apply", SB, constString_GUI_Apply)
+                locString_GUI_Other = readIni(ldi.FullName, "GUI", "locString_GUI_Other", SB, constString_GUI_Other)
+                If (ChangeCPForm IsNot Nothing) Then
+                    ChangeCP.SelectCPLabel.Text = locString_GUI_SelectACP
+                    ChangeCP.ChangeCPApply.Text = locString_GUI_Apply
+                    ChangeCP.CPOtherRadioButton.Text = locString_GUI_Other
+                End If
 
                 SetUpdateStatus("")
 
@@ -2083,10 +2127,13 @@ Public Class UpdaterMainForm
                 End If
                 locString_Toolbar_UpdateID = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_UpdateID", SB, constString_Toolbar_UpdateID)
                 ShowLatestUpdateIDToolStripMenuItem.Text = locString_Toolbar_UpdateID
+                locString_Toolbar_ChangeCP = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_ChangeCP", SB, constString_Toolbar_ChangeCP)
+                ChangeCommunityPackToolStripMenuItem.Text = locString_Toolbar_ChangeCP
 
                 ' Log
                 locString_Log_BootAdvanced = readIni(ldi.FullName, "Log", "locString_Log_BootAdvanced", SB, constString_Log_BootAdvanced)
                 locString_Log_BootSuccess = readIni(ldi.FullName, "Log", "locString_Log_BootSuccess", SB, constString_Log_BootSuccess)
+                locString_Log_ChangeCPType = readIni(ldi.FullName, "Log", "locString_Log_ChangeCPType", SB, constString_Log_ChangeCPType)
                 locString_Log_CheckingForBaseUpdates = readIni(ldi.FullName, "Log", "locString_Log_CheckingForBaseUpdates", SB, constString_Log_CheckingForBaseUpdates)
                 locString_Log_CheckingForCPUpdates = readIni(ldi.FullName, "Log", "locString_Log_CheckingForCPUpdates", SB, constString_Log_CheckingForCPUpdates)
                 locString_Log_CheckingForUpdates = readIni(ldi.FullName, "Log", "locString_Log_CheckingForUpdates", SB, constString_Log_CheckingForUpdates)
@@ -2240,11 +2287,34 @@ Public Class UpdaterMainForm
                 Return False
             End If
             Return False
+        ElseIf (VariantType = "") Then
+            If (FolderVariant = "Full") Then
+                Return False
+            ElseIf (FolderVariant = "Lite") Then
+                Return False
+            ElseIf (FolderVariant = "Beta") Then
+                Return False
+            End If
+            Return False
         End If
         Return False
     End Function
 
+    Private Sub ChangeCommunityPackToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ChangeCommunityPackToolStripMenuItem.Click
+        If (ChangeCP Is Nothing) Then
+            MessageBox.Show(locString_Caption_ChangeCPWarning, locString_Window_Warning, MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
+            ChangeCP = New ChangeCPForm()
+            ChangeCP.Show()
+        End If
+    End Sub
 
+    Public Sub CPVariantChanged(CPVariant As String)
+        updateFilesTreeView.Nodes.Clear()
+        SetUpdateStatus("Ready")
+        outputTextbox.Text = locString_Output_UpdaterReady.Replace("<app>", locString_Window_UpdaterName)
+        querying = False
+        DoUpdate(querying)
+    End Sub
 End Class
 
 Class MyTreeView
