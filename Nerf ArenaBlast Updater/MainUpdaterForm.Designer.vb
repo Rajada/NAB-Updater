@@ -1,27 +1,27 @@
 ﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
 Partial Class UpdaterMainForm
-  Inherits System.Windows.Forms.Form
+    Inherits System.Windows.Forms.Form
 
-  'Form overrides dispose to clean up the component list.
-  <System.Diagnostics.DebuggerNonUserCode()>
-  Protected Overrides Sub Dispose(ByVal disposing As Boolean)
-    Try
-      If disposing AndAlso components IsNot Nothing Then
-        components.Dispose()
-      End If
-    Finally
-      MyBase.Dispose(disposing)
-    End Try
-  End Sub
+    'Form overrides dispose to clean up the component list.
+    <System.Diagnostics.DebuggerNonUserCode()>
+    Protected Overrides Sub Dispose(ByVal disposing As Boolean)
+        Try
+            If disposing AndAlso components IsNot Nothing Then
+                components.Dispose()
+            End If
+        Finally
+            MyBase.Dispose(disposing)
+        End Try
+    End Sub
 
-  'Required by the Windows Form Designer
-  Private components As System.ComponentModel.IContainer
+    'Required by the Windows Form Designer
+    Private components As System.ComponentModel.IContainer
 
-  'NOTE: The following procedure is required by the Windows Form Designer
-  'It can be modified using the Windows Form Designer.  
-  'Do not modify it using the code editor.
-  <System.Diagnostics.DebuggerStepThrough()>
-  Private Sub InitializeComponent()
+    'NOTE: The following procedure is required by the Windows Form Designer
+    'It can be modified using the Windows Form Designer.  
+    'Do not modify it using the code editor.
+    <System.Diagnostics.DebuggerStepThrough()>
+    Private Sub InitializeComponent()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(UpdaterMainForm))
         Me.updateButton = New System.Windows.Forms.Button()
         Me.exitButton = New System.Windows.Forms.Button()
@@ -34,6 +34,7 @@ Partial Class UpdaterMainForm
         Me.nerfNetPlugLabel = New System.Windows.Forms.LinkLabel()
         Me.MenuStrip1 = New System.Windows.Forms.MenuStrip()
         Me.FileToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.PlayNerfArenaBlastToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ChangeBaseDirectoryToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator3 = New System.Windows.Forms.ToolStripSeparator()
         Me.CheckForUpdatesToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
@@ -60,12 +61,14 @@ Partial Class UpdaterMainForm
         Me.AdvancedModeToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ShowLatestUpdateIDToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ChangeCommunityPackToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ViewLogToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.cleanupCheckBox = New System.Windows.Forms.CheckBox()
         Me.lastCheckedBox = New System.Windows.Forms.GroupBox()
         Me.lastUpdateLabel = New System.Windows.Forms.Label()
         Me.revertCheckBox = New System.Windows.Forms.CheckBox()
         Me.outputTextbox = New System.Windows.Forms.Label()
         Me.updateFilesTreeView = New Nerf_ArenaBlast_Updater.MyTreeView()
+        Me.LaunchGameCheckbox = New System.Windows.Forms.CheckBox()
         Me.MenuStrip1.SuspendLayout()
         Me.lastCheckedBox.SuspendLayout()
         Me.SuspendLayout()
@@ -135,9 +138,14 @@ Partial Class UpdaterMainForm
         '
         'FileToolStripMenuItem
         '
-        Me.FileToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ChangeBaseDirectoryToolStripMenuItem, Me.ToolStripSeparator3, Me.CheckForUpdatesToolStripMenuItem, Me.SelectAllToolStripMenuItem, Me.DeselectAllToolStripMenuItem, Me.ToolStripSeparator4, Me.GetLatestCommunityPackToolStripMenuItem, Me.ToolStripSeparator1, Me.ExitToolStripMenuItem})
+        Me.FileToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.PlayNerfArenaBlastToolStripMenuItem, Me.ChangeBaseDirectoryToolStripMenuItem, Me.ToolStripSeparator3, Me.CheckForUpdatesToolStripMenuItem, Me.SelectAllToolStripMenuItem, Me.DeselectAllToolStripMenuItem, Me.ToolStripSeparator4, Me.GetLatestCommunityPackToolStripMenuItem, Me.ToolStripSeparator1, Me.ExitToolStripMenuItem})
         Me.FileToolStripMenuItem.Name = "FileToolStripMenuItem"
         resources.ApplyResources(Me.FileToolStripMenuItem, "FileToolStripMenuItem")
+        '
+        'PlayNerfArenaBlastToolStripMenuItem
+        '
+        Me.PlayNerfArenaBlastToolStripMenuItem.Name = "PlayNerfArenaBlastToolStripMenuItem"
+        resources.ApplyResources(Me.PlayNerfArenaBlastToolStripMenuItem, "PlayNerfArenaBlastToolStripMenuItem")
         '
         'ChangeBaseDirectoryToolStripMenuItem
         '
@@ -255,7 +263,7 @@ Partial Class UpdaterMainForm
         '
         'AdvancedToolStripMenuItem
         '
-        Me.AdvancedToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.AdvancedModeToolStripMenuItem, Me.ShowLatestUpdateIDToolStripMenuItem, Me.ChangeCommunityPackToolStripMenuItem})
+        Me.AdvancedToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.AdvancedModeToolStripMenuItem, Me.ShowLatestUpdateIDToolStripMenuItem, Me.ChangeCommunityPackToolStripMenuItem, Me.ViewLogToolStripMenuItem})
         Me.AdvancedToolStripMenuItem.Name = "AdvancedToolStripMenuItem"
         resources.ApplyResources(Me.AdvancedToolStripMenuItem, "AdvancedToolStripMenuItem")
         '
@@ -273,6 +281,11 @@ Partial Class UpdaterMainForm
         '
         Me.ChangeCommunityPackToolStripMenuItem.Name = "ChangeCommunityPackToolStripMenuItem"
         resources.ApplyResources(Me.ChangeCommunityPackToolStripMenuItem, "ChangeCommunityPackToolStripMenuItem")
+        '
+        'ViewLogToolStripMenuItem
+        '
+        Me.ViewLogToolStripMenuItem.Name = "ViewLogToolStripMenuItem"
+        resources.ApplyResources(Me.ViewLogToolStripMenuItem, "ViewLogToolStripMenuItem")
         '
         'cleanupCheckBox
         '
@@ -309,12 +322,19 @@ Partial Class UpdaterMainForm
         resources.ApplyResources(Me.updateFilesTreeView, "updateFilesTreeView")
         Me.updateFilesTreeView.Name = "updateFilesTreeView"
         '
+        'LaunchGameCheckbox
+        '
+        resources.ApplyResources(Me.LaunchGameCheckbox, "LaunchGameCheckbox")
+        Me.LaunchGameCheckbox.Name = "LaunchGameCheckbox"
+        Me.LaunchGameCheckbox.UseVisualStyleBackColor = True
+        '
         'UpdaterMainForm
         '
         Me.AcceptButton = Me.updateButton
         resources.ApplyResources(Me, "$this")
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.CancelButton = Me.exitButton
+        Me.Controls.Add(Me.LaunchGameCheckbox)
         Me.Controls.Add(Me.outputTextbox)
         Me.Controls.Add(Me.revertCheckBox)
         Me.Controls.Add(Me.updateFilesTreeView)
@@ -344,46 +364,49 @@ Partial Class UpdaterMainForm
     End Sub
 
     Friend WithEvents updateButton As Button
-  Friend WithEvents exitButton As Button
-  Friend WithEvents changeFilepathButton As Button
-  Friend WithEvents updatePathLabel As Label
-  Friend WithEvents updateProgressBar As ProgressBar
-  Friend WithEvents customCheckBox As CheckBox
-  Friend WithEvents selectAllButton As Button
-  Friend WithEvents deselectAllButton As Button
-  Friend WithEvents nerfNetPlugLabel As LinkLabel
-  Friend WithEvents MenuStrip1 As MenuStrip
-  Friend WithEvents FileToolStripMenuItem As ToolStripMenuItem
-  Friend WithEvents ExitToolStripMenuItem As ToolStripMenuItem
-  Friend WithEvents HelpToolStripMenuItem As ToolStripMenuItem
-  Friend WithEvents AboutToolStripMenuItem As ToolStripMenuItem
-  Friend WithEvents ChangeBaseDirectoryToolStripMenuItem As ToolStripMenuItem
-  Friend WithEvents VisitWebsiteToolStripMenuItem As ToolStripMenuItem
-  Friend WithEvents CheckForUpdatesToolStripMenuItem As ToolStripMenuItem
-  Friend WithEvents SelectAllToolStripMenuItem As ToolStripMenuItem
-  Friend WithEvents DeselectAllToolStripMenuItem As ToolStripMenuItem
-  Friend WithEvents ViewHelpToolStripMenuItem As ToolStripMenuItem
-  Friend WithEvents cleanupCheckBox As CheckBox
-  Friend WithEvents ToolStripSeparator3 As ToolStripSeparator
-  Friend WithEvents ToolStripSeparator1 As ToolStripSeparator
-  Friend WithEvents ToolStripSeparator2 As ToolStripSeparator
-  Friend WithEvents lastCheckedBox As GroupBox
-  Friend WithEvents ToolStripSeparator4 As ToolStripSeparator
-  Friend WithEvents GetLatestCommunityPackToolStripMenuItem As ToolStripMenuItem
-  Friend WithEvents revertCheckBox As CheckBox
-  Friend WithEvents VersionToolStripMenuItem As ToolStripMenuItem
-  Friend WithEvents CheckForNewVersionToolStripMenuItem As ToolStripMenuItem
-  Friend WithEvents ViewChangelogToolStripMenuItem As ToolStripMenuItem
-  Friend WithEvents updateFilesTreeView As MyTreeView
-  Friend WithEvents lastUpdateLabel As Label
-  Friend WithEvents outputTextbox As Label
-  Friend WithEvents AdvancedToolStripMenuItem As ToolStripMenuItem
-  Friend WithEvents AdvancedModeToolStripMenuItem As ToolStripMenuItem
-  Friend WithEvents ShowLatestUpdateIDToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents exitButton As Button
+    Friend WithEvents changeFilepathButton As Button
+    Friend WithEvents updatePathLabel As Label
+    Friend WithEvents updateProgressBar As ProgressBar
+    Friend WithEvents customCheckBox As CheckBox
+    Friend WithEvents selectAllButton As Button
+    Friend WithEvents deselectAllButton As Button
+    Friend WithEvents nerfNetPlugLabel As LinkLabel
+    Friend WithEvents MenuStrip1 As MenuStrip
+    Friend WithEvents FileToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents ExitToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents HelpToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents AboutToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents ChangeBaseDirectoryToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents VisitWebsiteToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents CheckForUpdatesToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents SelectAllToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents DeselectAllToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents ViewHelpToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents cleanupCheckBox As CheckBox
+    Friend WithEvents ToolStripSeparator3 As ToolStripSeparator
+    Friend WithEvents ToolStripSeparator1 As ToolStripSeparator
+    Friend WithEvents ToolStripSeparator2 As ToolStripSeparator
+    Friend WithEvents lastCheckedBox As GroupBox
+    Friend WithEvents ToolStripSeparator4 As ToolStripSeparator
+    Friend WithEvents GetLatestCommunityPackToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents revertCheckBox As CheckBox
+    Friend WithEvents VersionToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents CheckForNewVersionToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents ViewChangelogToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents updateFilesTreeView As MyTreeView
+    Friend WithEvents lastUpdateLabel As Label
+    Friend WithEvents outputTextbox As Label
+    Friend WithEvents AdvancedToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents AdvancedModeToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents ShowLatestUpdateIDToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents OptionsToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents LanguageToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents OpenGameDirectoryToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents InternationalEnglishDefaultToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents ToolStripSeparator5 As ToolStripSeparator
     Friend WithEvents ChangeCommunityPackToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents ViewLogToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents PlayNerfArenaBlastToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents LaunchGameCheckbox As CheckBox
 End Class

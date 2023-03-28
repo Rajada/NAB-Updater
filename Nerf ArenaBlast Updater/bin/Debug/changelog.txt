@@ -1,4 +1,24 @@
-Please provide feedback and report any bugs at https://www.nerfarena.net
+﻿Please provide feedback and report any bugs at https://www.nerfarena.net
+
+3.9:
+
+- Improved logging.
+- Added warnings if updating the updater fails.
+- Added launch game toolbar item and auto-launch advanced option.
+
+3.89:
+
+- Added a log viewer.
+
+3.88:
+
+- Fixed some typos in strings.
+- Fixed WINE systems not being able to read the language file properly.
+- The "Download Latest Community Pack" menu item now directs you to the download link for the version of the CP you have installed (if you have one installed).
+
+3.87:
+
+- Addressed an issue running the updater on WINE systems.
 
 3.86:
 
@@ -64,7 +84,7 @@ Please provide feedback and report any bugs at https://www.nerfarena.net
 
 3.74:
 - Added shortcut key for advanced mode.
-- Fixed application hanging if you cancelled during the initial search for the Nerf.ini file.
+- Fixed application hanging if you canceled during the initial search for the Nerf.ini file.
 - Fixed checkboxes being partially cut off by text.
 - Update list is no longer cleared if you cancel a base directory change.
 

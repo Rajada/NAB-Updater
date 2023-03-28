@@ -23,7 +23,10 @@ Public Class UpdaterMainForm
     Private selectedCustomDirectory As String = "https://www.update.nerfarena.net/community/"
     Private updaterDirectory As String = "https://www.update.nerfarena.net/nerfupdate/"
     Private communityDirectory As String = "https://www.nerfarena.net/"
-    Private communityPackDirectory As String = "https://www.nerfarena.net/index.php/downloads/download/8-community-packs-and-utilities/4-nab-community-pack-lite"
+    Private communityPackFullDirectory As String = "https://www.nerfarena.net/index.php/downloads/download/8-community-packs-and-utilities/1-nab-community-pack-full"
+    Private communityPackLiteDirectory As String = "https://www.nerfarena.net/index.php/downloads/download/8-community-packs-and-utilities/4-nab-community-pack-lite"
+    Private communityPackMinimalDirectory As String = "https://www.nerfarena.net/index.php/downloads/download/8-community-packs-and-utilities/24-nab-community-pack-minimal"
+
     Private communityPack300Directory As String = "https://www.nerfarena.net/"
     Private thisDate As Date
     Private thisTime As Date
@@ -34,17 +37,19 @@ Public Class UpdaterMainForm
     Private querying As Boolean = False
     Private nodesToDelete As New List(Of TreeNode)
     Private filesToDelete As New List(Of String)
-    Private updaterVersion As String = "3.86"
+    Private updaterVersion As String = "3.9"
     Private updateDiff As Integer = 0
     Private newVersion As Boolean = False
     Private updateCount As Integer = 0
     Private InitialAppend As Integer = 0
     Public Changelog As ChangelogForm
     Public ChangeCP As ChangeCPForm
+    Public LogViewer As LogViewerForm
     Private AdvancedMode As Boolean = False
     Private Aborting As Boolean = False
     Private Updating As Boolean = False
     Private BootAdvanced As Integer = 0
+    Private AutoLaunch As Integer = 0
     Private engineVersionNumber As Integer = -1
     Public cpVersionString As String = String.Empty
     Public cpVariantString As String = String.Empty
@@ -63,8 +68,11 @@ Public Class UpdaterMainForm
     Const constString_Window_ConfigNotRead As String = "Unable to Read <app> Configuration File"
     Const constString_Window_DeleteFolder As String = "Delete Folder?"
     Const constString_Window_ErrorDownloading As String = "Error Downloading File"
+    Const constString_Window_ErrorUpdating As String = "Error Updating"
     Const constString_Window_ExitUpdater As String = "Exit <app>?"
+    Const constString_Window_GameExeNotFound As String = "Nerf Executable Not Found"
     Const constString_Window_IniNotFound As String = "Nerf.ini File Not Found"
+    Const constString_Window_Log As String = "Log"
     Const constString_Window_NABRunning As String = "Nerf ArenaBlast Running"
     Const constString_Window_NewVersionAvailable As String = "New Version Available"
     Const constString_Window_SelectInstall As String = "Select Nerf ArenaBlast Installation Location"
@@ -90,12 +98,14 @@ Public Class UpdaterMainForm
     Const constString_Caption_DetectedNABCritical As String = "We have detected that Nerf ArenaBlast is currently running. It is highly recommended that you close Nerf ArenaBlast before updating to ensure updates are applied correctly. Click OK to ignore this warning or click Cancel to abort updating."
     Const constString_Caption_ErrorChecking As String = "Error checking for updates. Check has been cancelled."
     Const constString_Caption_ErrorDownloading As String = "Error downloading file <url>."
+    Const constString_Caption_ErrorUpdatingUpdater As String = "There was an error while updating the <app>. Please try again."
     Const constString_Caption_ErrorReport As String = "An error report follows."
     Const constString_Caption_ExitNoUpdate As String = "Are you sure you want to exit? The game will not be updated."
     Const constString_Caption_ExitMidUpdate As String = "Are you sure you want to exit? The game has not been fully updated. This may result in game instability and inability to play in multiplayer matches."
     Const constString_Caption_IniNotLocated As String = "The Nerf.ini file could not be located in the provided directory <dir>. If you have not done so, run the game once and then locate the Nerf root folder before updating."
     Const constString_Caption_NewVersionAvailable As String = "There is a newer version of the <app> available (<ver>). It is highly recommended that you use the newest version of the <app>. Would you like to install it now?"
     Const constString_Caption_FolderDeletionWarning As String = "<dir> is a folder that contains other files. Are you sure you want to delete it?"
+    Const constString_Caption_NoGameExeWarning As String = "Could not find the game executable file. Please check that it is installed correctly."
     Const constString_Caption_NoNewUpdates As String = "No new updates available at this time."
     Const constString_Caption_NoNewVersion As String = "No new version available at this time."
     Const constString_Caption_RevertWarning As String = "This option shows all files on your system that are considered up to date by the server. Typically, this is every file, and there may be significant delay listing them all. If you have files you have modified or updated on purpose, you will lose the work you did to them when reverting to the server's version. Use caution, and only check files you are sure you want to revert. For your protection, the revertable files will not be checked by default."
@@ -144,12 +154,14 @@ Public Class UpdaterMainForm
     Const constString_GUI_CustomContent As String = "Custom Content"
     Const constString_GUI_FileCleanup As String = "File Cleanup"
     Const constString_GUI_FileReverts As String = "File Reverts"
+    Const constString_GUI_AutoLaunch As String = "Auto-Launch Game"
     Const constString_GUI_SelectACP As String = "Select a Community Pack type below"
     Const constString_GUI_Apply As String = "Apply"
     Const constString_GUI_Other As String = "Other"
 
     ' Toolbars
     Const constString_Toolbar_File As String = "&File"
+    Const constString_Toolbar_PlayNerfArenaBlast = "&Play Nerf ArenaBlast"
     Const constString_Toolbar_ChangeDirectory As String = "Change Game Directory"
     Const constString_Toolbar_CheckForUpdates As String = "Check for &Updates"
     Const constString_Toolbar_SelectAll As String = "&Select All Updates"
@@ -214,6 +226,9 @@ Public Class UpdaterMainForm
     Const constString_Log_LogClose As String = "Log closed <date> at <time>."
     Const constString_Log_LogOpen As String = "Log opened <date> at <time>."
     Const constString_Log_NewVersion As String = "Found a new version (<ver1>), current version (<ver2>)."
+    Const constString_Log_NoGameExeWarning As String = "Error: Could not find the game executable file at <dir>. Game launch aborted."
+    Const constString_Log_LaunchGame As String = "Launching game..."
+    Const constString_Log_LaunchGameSuccess As String = "Game launched at <dir>."
     Const constString_Log_NoNewVersion As String = "No new version available at this time."
     Const constString_Log_NoNewUpdates As String = "No new updates available at this time."
     Const constString_Log_PathChanged As String = "Game path changed to <dir>."
@@ -221,6 +236,7 @@ Public Class UpdaterMainForm
     Const constString_log_ServerNoResponse As String = "Error: Could not reach the update server at <url>."
     Const constString_Log_Shutdown As String = "<app> shutting down."
     Const constString_Log_UpdateFile As String = "Updating file <dir>."
+    Const constString_Log_UpdaterUpdateFailBat As String = "Error: Could not update the <app>. Missing bat file."
     Const constString_Log_UpdateServerNoResponse As String = "Warning: Could not reach the update server while checking for new versions."
     Const constString_Log_UpdatesWereSuccessful As String = "Updates were successful."
     Const constString_Log_UpdatingFiles As String = "Updating files..."
@@ -236,8 +252,11 @@ Public Class UpdaterMainForm
     Private locString_Window_ConfigNotRead As String = constString_Window_ConfigNotRead
     Private locString_Window_DeleteFolder As String = constString_Window_DeleteFolder
     Private locString_Window_ErrorDownloading As String = constString_Window_ErrorDownloading
+    Private locString_Window_ErrorUpdating As String = constString_Window_ErrorUpdating
     Private locString_Window_ExitUpdater As String = constString_Window_ExitUpdater
+    Private locString_Window_GameExeNotFound As String = constString_Window_GameExeNotFound
     Private locString_Window_IniNotFound As String = constString_Window_IniNotFound
+    Public locString_Window_Log As String = constString_Window_Log
     Private locString_Window_NABRunning As String = constString_Window_NABRunning
     Private locString_Window_NewVersionAvailable As String = constString_Window_NewVersionAvailable
     Private locString_Window_SelectInstall As String = constString_Window_SelectInstall
@@ -264,11 +283,13 @@ Public Class UpdaterMainForm
     Private locString_Caption_ErrorChecking As String = constString_Caption_ErrorChecking
     Private locString_Caption_ErrorDownloading As String = constString_Caption_ErrorDownloading
     Private locString_Caption_ErrorReport As String = constString_Caption_ErrorReport
+    Private locString_Caption_ErrorUpdatingUpdater As String = constString_Caption_ErrorUpdatingUpdater
     Private locString_Caption_ExitNoUpdate As String = constString_Caption_ExitNoUpdate
     Private locString_Caption_ExitMidUpdate As String = constString_Caption_ExitMidUpdate
     Private locString_Caption_IniNotLocated As String = constString_Caption_IniNotLocated
     Private locString_Caption_NewVersionAvailable As String = constString_Caption_NewVersionAvailable
     Private locString_Caption_FolderDeletionWarning As String = constString_Caption_FolderDeletionWarning
+    Private locString_Caption_NoGameExeWarning As String = constString_Caption_NoGameExeWarning
     Private locString_Caption_NoNewUpdates As String = constString_Caption_NoNewUpdates
     Private locString_Caption_NoNewVersion As String = constString_Caption_NoNewVersion
     Private locString_Caption_RevertWarning As String = constString_Caption_RevertWarning
@@ -317,12 +338,14 @@ Public Class UpdaterMainForm
     Private locString_GUI_CustomContent As String = constString_GUI_CustomContent
     Private locString_GUI_FileCleanup As String = constString_GUI_FileCleanup
     Private locString_GUI_FileReverts As String = constString_GUI_FileReverts
+    Private locString_GUI_AutoLaunch As String = constString_GUI_AutoLaunch
     Private locString_GUI_SelectACP As String = constString_GUI_SelectACP
     Private locString_GUI_Apply As String = constString_GUI_Apply
     Private locString_GUI_Other As String = constString_GUI_Other
 
     ' Toolbars
     Private locString_Toolbar_File As String = constString_Toolbar_File
+    Private locString_Toolbar_PlayNerfArenaBlast As String = constString_Toolbar_PlayNerfArenaBlast
     Private locString_Toolbar_ChangeDirectory As String = constString_Toolbar_ChangeDirectory
     Private locString_Toolbar_CheckForUpdates As String = constString_Toolbar_CheckForUpdates
     Private locString_Toolbar_SelectAll As String = constString_Toolbar_SelectAll
@@ -387,6 +410,9 @@ Public Class UpdaterMainForm
     Private locString_Log_LogClose As String = constString_Log_LogClose
     Private locString_Log_LogOpen As String = constString_Log_LogOpen
     Private locString_Log_NewVersion As String = constString_Log_NewVersion
+    Private locString_Log_NoGameExeWarning As String = constString_Log_NoGameExeWarning
+    Private locString_Log_LaunchGame As String = constString_Log_LaunchGame
+    Private locString_Log_LaunchGameSuccess As String = constString_Log_LaunchGameSuccess
     Private locString_Log_NoNewVersion As String = constString_Log_NoNewVersion
     Private locString_Log_NoNewUpdates As String = constString_Log_NoNewUpdates
     Private locString_Log_PathChanged As String = constString_Log_PathChanged
@@ -394,6 +420,7 @@ Public Class UpdaterMainForm
     Private locString_Log_ServerNoResponse As String = constString_log_ServerNoResponse
     Private locString_Log_Shutdown As String = constString_Log_Shutdown
     Private locString_Log_UpdateFile As String = constString_Log_UpdateFile
+    Private locString_Log_UpdaterUpdateFailBat As String = constString_Log_UpdaterUpdateFailBat
     Private locString_Log_UpdateServerNoResponse As String = constString_Log_UpdateServerNoResponse
     Private locString_Log_UpdatesWereSuccessful As String = constString_Log_UpdatesWereSuccessful
     Private locString_Log_UpdatingFiles As String = constString_Log_UpdatingFiles
@@ -585,7 +612,12 @@ Public Class UpdaterMainForm
 
     Private Sub UpdaterMainForm_Closed(sender As Object, e As EventArgs) Handles Me.Closed
         If (newVersion) Then
-            Process.Start(Path.Combine(Directory.GetCurrentDirectory, "update.bat"))
+            If (My.Computer.FileSystem.FileExists(Path.Combine(Directory.GetCurrentDirectory, "update.bat"))) Then
+                Process.Start(Path.Combine(Directory.GetCurrentDirectory, "update.bat"))
+            Else
+                MessageBox.Show(locString_Caption_ErrorUpdatingUpdater.Replace("<app>", locString_Window_UpdaterName), locString_Window_ErrorUpdating, MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
+                Log(locString_Log_UpdaterUpdateFailBat.Replace("<app>", locString_Window_UpdaterName), True)
+            End If
         End If
     End Sub
 
@@ -604,6 +636,12 @@ Public Class UpdaterMainForm
             End If
             ToggleAdvanced(sender, e, True)
         End If
+
+        If (AutoLaunch > 0) Then
+            LaunchGameCheckbox.Checked = True
+        Else
+            LaunchGameCheckbox.Checked = False
+        End If
     End Sub
 
     Private Sub MainFormClosing(sender As Object, e As EventArgs) Handles Me.Closing
@@ -615,9 +653,13 @@ Public Class UpdaterMainForm
             ChangeCP.Close()
         End If
 
+        If (LogViewer IsNot Nothing) Then
+            LogViewer.Close()
+        End If
+
         If (Not silentClose) Then
             Log(locString_Log_Shutdown.Replace("<app>", locString_Window_UpdaterName), True)
-            Log(locString_Log_LogClose.Replace("<date>", thisDate.ToShortDateString).Replace("<time>", thisTime.ToShortTimeString), True)
+            Log(locString_Log_LogClose.Replace("<date>", thisDate.ToShortDateString).Replace("<time>", thisTime.ToShortTimeString) + Environment.NewLine, True)
         End If
     End Sub
 
@@ -673,6 +715,7 @@ Public Class UpdaterMainForm
                 Log(locString_Log_DownloadingNewVersion, True)
                 UpdateSettings("InitialAppend", "1")
                 updateButton.Enabled = False
+                PlayNerfArenaBlastToolStripMenuItem.Enabled = False
                 CheckForUpdatesToolStripMenuItem.Enabled = False
                 AdvancedModeToolStripMenuItem.Enabled = False
                 LanguageToolStripMenuItem.Enabled = False
@@ -752,6 +795,7 @@ Public Class UpdaterMainForm
             UpdateSettings("LastTime", String.Empty)
             UpdateSettings("InitialAppend", "0")
             UpdateSettings("BootAdvanced", "0")
+            UpdateSettings("AutoLaunch", "0")
             UpdateSettings("Language", lang)
         Else
             Try
@@ -767,6 +811,7 @@ Public Class UpdaterMainForm
                 End If
                 InitialAppend = CInt(ConfigurationManager.AppSettings("InitialAppend"))
                 BootAdvanced = CInt(ConfigurationManager.AppSettings("BootAdvanced"))
+                AutoLaunch = CInt(ConfigurationManager.AppSettings("AutoLaunch"))
                 SetLanguage(ConfigurationManager.AppSettings("Language"), True)
             Catch e As ConfigurationErrorsException
                 Log(locString_Log_ErrorLoadingConfig.Replace("<app>", locString_Window_UpdaterName), True)
@@ -972,12 +1017,14 @@ Public Class UpdaterMainForm
         End If
         If (Not isQuerying) Then
             'updateButton.Enabled = True
+            PlayNerfArenaBlastToolStripMenuItem.Enabled = True
             CheckForUpdatesToolStripMenuItem.Enabled = True
             ChangeCommunityPackToolStripMenuItem.Enabled = True
             customCheckBox.Enabled = hasCP
         Else
             updateFilesTreeView.Nodes.Clear()
             updateButton.Enabled = False
+            PlayNerfArenaBlastToolStripMenuItem.Enabled = False
             CheckForUpdatesToolStripMenuItem.Enabled = False
             ChangeCommunityPackToolStripMenuItem.Enabled = False
         End If
@@ -1017,6 +1064,7 @@ Public Class UpdaterMainForm
                     Log(locString_Log_UpdatingFiles, True)
                 End If
                 updateButton.Enabled = False
+                PlayNerfArenaBlastToolStripMenuItem.Enabled = False
                 CheckForUpdatesToolStripMenuItem.Enabled = False
                 ChangeCommunityPackToolStripMenuItem.Enabled = False
                 CopyFilesOver()
@@ -1035,6 +1083,17 @@ Public Class UpdaterMainForm
                 SelectAllToolStripMenuItem.Enabled = False
                 deselectAllButton.Enabled = False
                 DeselectAllToolStripMenuItem.Enabled = False
+
+                If (AutoLaunch > 0) Then
+                    PlayNerfArenaBlastToolStripMenuItem.Enabled = False
+                    If (Launch_Game()) Then
+                        Close()
+                    Else
+                        PlayNerfArenaBlastToolStripMenuItem.Enabled = True
+                    End If
+                Else
+                        PlayNerfArenaBlastToolStripMenuItem.Enabled = True
+                End If
             End If
         End If
     End Sub
@@ -1155,7 +1214,7 @@ Public Class UpdaterMainForm
 
 
 
-                                tempDiff = DateDiff("n", TimeZoneInfo.ConvertTime(infoReader.LastWriteTime, TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time")).ToString(), entry.LastModified)
+                                tempDiff = DateDiff("n", TimeZoneInfo.ConvertTime(infoReader.LastWriteTime, TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time")), entry.LastModified)
                             End If
 
                             If (revertCheckBox.Checked) AndAlso (My.Computer.FileSystem.FileExists(tempFilePath)) AndAlso (tempDiff < 0) Then
@@ -1336,6 +1395,7 @@ Public Class UpdaterMainForm
             updateDiff = 0
             updateProgressBar.Value = 0
             updateButton.Enabled = True
+            PlayNerfArenaBlastToolStripMenuItem.Enabled = True
             CheckForUpdatesToolStripMenuItem.Enabled = True
             ChangeCommunityPackToolStripMenuItem.Enabled = True
             changeFilepathButton.Enabled = True
@@ -1367,6 +1427,17 @@ Public Class UpdaterMainForm
             AdvancedModeToolStripMenuItem.Enabled = True
             LanguageToolStripMenuItem.Enabled = True
             customCheckBox.Enabled = hasCP
+
+            If (AutoLaunch > 0) Then
+                PlayNerfArenaBlastToolStripMenuItem.Enabled = False
+                If (Launch_Game()) Then
+                    Close()
+                Else
+                    PlayNerfArenaBlastToolStripMenuItem.Enabled = True
+                End If
+            Else
+                    PlayNerfArenaBlastToolStripMenuItem.Enabled = True
+            End If
         End If
 
         cleanupCheckBox.Enabled = True
@@ -1824,11 +1895,23 @@ Public Class UpdaterMainForm
 
     Private Sub GetLatestCommunityPackToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles GetLatestCommunityPackToolStripMenuItem.Click
         If (engineVersionNumber = 1) Then
-            Process.Start(communityPackDirectory)
+
+            If (cpVariantString = "Full") Then
+                Process.Start(communityPackFullDirectory)
+            ElseIf (cpVariantString = "Lite") Then
+                Process.Start(communityPackLiteDirectory)
+            ElseIf (cpVariantString = "Min") Then
+                Process.Start(communityPackMinimalDirectory)
+            ElseIf (cpVariantString = "Beta") Then
+                Process.Start(communityPackFullDirectory)
+            Else
+                Process.Start(communityPackLiteDirectory)
+            End If
+
         ElseIf (engineVersionNumber = 2) Then
-            Process.Start(communityPack300Directory)
-        Else
-            Process.Start(communityPack300Directory)
+                Process.Start(communityPack300Directory)
+            Else
+                Process.Start(communityPack300Directory)
         End If
     End Sub
 
@@ -1861,6 +1944,15 @@ Public Class UpdaterMainForm
             LogWriter.Flush()
             LogWriter.Close()
         End Using
+
+        If LogViewer IsNot Nothing Then
+            If (Append) Then
+                LogViewer.logtext.Text += Info & Environment.NewLine
+            Else
+                LogViewer.logtext.Text = Nothing
+                LogViewer.logtext.Text += Info & Environment.NewLine
+            End If
+        End If
     End Sub
 
     Private Sub AdvancedModeToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles AdvancedModeToolStripMenuItem.Click
@@ -1891,6 +1983,7 @@ Public Class UpdaterMainForm
             selectAllButton.Visible = True
             deselectAllButton.Visible = True
             customCheckBox.Visible = True
+            LaunchGameCheckbox.Visible = True
             cleanupCheckBox.Visible = True
             revertCheckBox.Visible = True
             SelectAllToolStripMenuItem.Visible = True
@@ -1915,6 +2008,7 @@ Public Class UpdaterMainForm
             selectAllButton.Visible = False
             deselectAllButton.Visible = False
             customCheckBox.Visible = False
+            LaunchGameCheckbox.Visible = False
 
             If (cleanupCheckBox.Checked) Then
                 cleanupCheckBox.Checked = False
@@ -1932,6 +2026,7 @@ Public Class UpdaterMainForm
             CheckForCP(True)
             SetUpdateStatus("Ready")
             updateButton.Enabled = True
+            PlayNerfArenaBlastToolStripMenuItem.Enabled = True
             CheckForUpdatesToolStripMenuItem.Enabled = True
             ChangeCommunityPackToolStripMenuItem.Enabled = True
             updateCount = 0
@@ -1975,12 +2070,19 @@ Public Class UpdaterMainForm
                 If (Changelog IsNot Nothing) Then
                     Changelog.Text = locString_Window_Changelog
                 End If
+                locString_Window_Log = readIni(ldi.FullName, "Windows", "locString_Window_Log", SB, constString_Window_Log)
+                If (LogViewer IsNot Nothing) Then
+                    LogViewer.Text = locString_Window_Log
+                End If
                 locString_Window_ConfigNotFound = readIni(ldi.FullName, "Windows", "locString_Window_ConfigNotFound", SB, constString_Window_ConfigNotFound)
                 locString_Window_ConfigNotRead = readIni(ldi.FullName, "Windows", "locString_Window_ConfigNotRead", SB, constString_Window_ConfigNotRead)
                 locString_Window_DeleteFolder = readIni(ldi.FullName, "Windows", "locString_Window_DeleteFolder", SB, constString_Window_DeleteFolder)
                 locString_Window_ErrorDownloading = readIni(ldi.FullName, "Windows", "locString_Window_ErrorDownloading", SB, constString_Window_ErrorDownloading)
+                locString_Window_ErrorUpdating = readIni(ldi.FullName, "Windows", "locString_Window_ErrorUpdating", SB, constString_Window_ErrorUpdating)
                 locString_Window_ExitUpdater = readIni(ldi.FullName, "Windows", "locString_Window_ExitUpdater", SB, constString_Window_ExitUpdater)
+                locString_Window_GameExeNotFound = readIni(ldi.FullName, "Windows", "locString_Window_GameExeNotFound", SB, constString_Window_GameExeNotFound)
                 locString_Window_IniNotFound = readIni(ldi.FullName, "Windows", "locString_Window_IniNotFound", SB, constString_Window_IniNotFound)
+                locString_Window_Log = readIni(ldi.FullName, "Windows", "locString_Window_Log", SB, constString_Window_Log)
                 locString_Window_NABRunning = readIni(ldi.FullName, "Windows", "locString_Window_NABRunning", SB, constString_Window_NABRunning)
                 locString_Window_NewVersionAvailable = readIni(ldi.FullName, "Windows", "locString_Window_NewVersionAvailable", SB, constString_Window_NewVersionAvailable)
                 locString_Window_SelectInstall = readIni(ldi.FullName, "Windows", "locString_Window_SelectInstall", SB, constString_Window_SelectInstall)
@@ -2008,10 +2110,12 @@ Public Class UpdaterMainForm
                 locString_Caption_ErrorChecking = readIni(ldi.FullName, "Captions", "locString_Caption_ErrorChecking", SB, constString_Caption_ErrorChecking)
                 locString_Caption_ErrorDownloading = readIni(ldi.FullName, "Captions", "locString_Caption_ErrorDownloading", SB, constString_Caption_ErrorDownloading)
                 locString_Caption_ErrorReport = readIni(ldi.FullName, "Captions", "locString_Caption_ErrorReport", SB, constString_Caption_ErrorReport)
+                locString_Caption_ErrorUpdatingUpdater = readIni(ldi.FullName, "Captions", "locString_Caption_ErrorUpdatingUpdater", SB, constString_Caption_ErrorUpdatingUpdater)
                 locString_Caption_ExitNoUpdate = readIni(ldi.FullName, "Captions", "locString_Caption_ExitNoUpdate", SB, constString_Caption_ExitNoUpdate)
                 locString_Caption_ExitMidUpdate = readIni(ldi.FullName, "Captions", "locString_Caption_ExitMidUpdate", SB, constString_Caption_ExitMidUpdate)
                 locString_Caption_IniNotLocated = readIni(ldi.FullName, "Captions", "locString_Caption_IniNotLocated", SB, constString_Caption_IniNotLocated)
                 locString_Caption_NewVersionAvailable = readIni(ldi.FullName, "Captions", "locString_Caption_NewVersionAvailable", SB, constString_Caption_NewVersionAvailable)
+                locString_Caption_NoGameExeWarning = readIni(ldi.FullName, "Captions", "locString_Caption_NoGameExeWarning", SB, constString_Caption_NoGameExeWarning)
                 locString_Caption_FolderDeletionWarning = readIni(ldi.FullName, "Captions", "locString_Caption_FolderDeletionWarning", SB, constString_Caption_FolderDeletionWarning)
                 locString_Caption_NoNewUpdates = readIni(ldi.FullName, "Captions", "locString_Caption_NoNewUpdates", SB, constString_Caption_NoNewUpdates)
                 locString_Caption_NoNewVersion = readIni(ldi.FullName, "Captions", "locString_Caption_NoNewVersion", SB, constString_Caption_NoNewVersion)
@@ -2066,6 +2170,8 @@ Public Class UpdaterMainForm
                 updatePathLabel.Text = locString_GUI_UpdatingFilesAt & " " & homeDirectory.FullName
                 locString_GUI_CustomContent = readIni(ldi.FullName, "GUI", "locString_GUI_CustomContent", SB, constString_GUI_CustomContent)
                 customCheckBox.Text = locString_GUI_CustomContent
+                locString_GUI_AutoLaunch = readIni(ldi.FullName, "GUI", "locString_GUI_AutoLaunch", SB, constString_GUI_AutoLaunch)
+                LaunchGameCheckbox.Text = locString_GUI_AutoLaunch
                 locString_GUI_FileCleanup = readIni(ldi.FullName, "GUI", "locString_GUI_FileCleanup", SB, constString_GUI_FileCleanup)
                 cleanupCheckBox.Text = locString_GUI_FileCleanup
                 locString_GUI_FileReverts = readIni(ldi.FullName, "GUI", "locString_GUI_FileReverts", SB, constString_GUI_FileReverts)
@@ -2084,6 +2190,8 @@ Public Class UpdaterMainForm
                 ' Toolbars
                 locString_Toolbar_File = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_File", SB, constString_Toolbar_File)
                 FileToolStripMenuItem.Text = locString_Toolbar_File
+                locString_Toolbar_PlayNerfArenaBlast = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_PlayNerfArenaBlast", SB, constString_Toolbar_PlayNerfArenaBlast)
+                PlayNerfArenaBlastToolStripMenuItem.Text = locString_Toolbar_PlayNerfArenaBlast
                 locString_Toolbar_ChangeDirectory = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_ChangeDirectory", SB, constString_Toolbar_ChangeDirectory)
                 ChangeBaseDirectoryToolStripMenuItem.Text = locString_Toolbar_ChangeDirectory
                 locString_Toolbar_CheckForUpdates = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_CheckForUpdates", SB, constString_Toolbar_CheckForUpdates)
@@ -2172,6 +2280,9 @@ Public Class UpdaterMainForm
                 locString_Log_LogClose = readIni(ldi.FullName, "Log", "locString_Log_LogClose", SB, constString_Log_LogClose)
                 locString_Log_LogOpen = readIni(ldi.FullName, "Log", "locString_Log_LogOpen", SB, constString_Log_LogOpen)
                 locString_Log_NewVersion = readIni(ldi.FullName, "Log", "locString_Log_NewVersion", SB, constString_Log_NewVersion)
+                locString_Log_NoGameExeWarning = readIni(ldi.FullName, "Log", "locString_Log_NoGameExeWarning", SB, constString_Log_NoGameExeWarning)
+                locString_Log_LaunchGame = readIni(ldi.FullName, "Log", "locString_Log_LaunchGame", SB, constString_Log_LaunchGame)
+                locString_Log_LaunchGameSuccess = readIni(ldi.FullName, "Log", "locString_Log_LaunchGameSuccess", SB, constString_Log_LaunchGameSuccess)
                 locString_Log_NoNewVersion = readIni(ldi.FullName, "Log", "locString_Log_NoNewVersion", SB, constString_Log_NoNewVersion)
                 locString_Log_NoNewUpdates = readIni(ldi.FullName, "Log", "locString_Log_NoNewUpdates", SB, constString_Log_NoNewUpdates)
                 locString_Log_PathChanged = readIni(ldi.FullName, "Log", "locString_Log_PathChanged", SB, constString_Log_PathChanged)
@@ -2179,6 +2290,7 @@ Public Class UpdaterMainForm
                 locString_log_ServerNoResponse = readIni(ldi.FullName, "Log", "locString_log_ServerNoResponse", SB, constString_log_ServerNoResponse)
                 locString_Log_Shutdown = readIni(ldi.FullName, "Log", "locString_Log_Shutdown", SB, constString_Log_Shutdown)
                 locString_Log_UpdateFile = readIni(ldi.FullName, "Log", "locString_Log_UpdateFile", SB, constString_Log_UpdateFile)
+                locString_Log_UpdaterUpdateFailBat = readIni(ldi.FullName, "Log", "locString_Log_UpdaterUpdateFailBat", SB, constString_Log_UpdaterUpdateFailBat)
                 locString_Log_UpdateServerNoResponse = readIni(ldi.FullName, "Log", "locString_Log_UpdateServerNoResponse", SB, constString_Log_UpdateServerNoResponse)
                 locString_Log_UpdatesWereSuccessful = readIni(ldi.FullName, "Log", "locString_Log_UpdatesWereSuccessful", SB, constString_Log_UpdatesWereSuccessful)
                 locString_Log_UpdatingFiles = readIni(ldi.FullName, "Log", "locString_Log_UpdatingFiles", SB, constString_Log_UpdatingFiles)
@@ -2314,6 +2426,44 @@ Public Class UpdaterMainForm
         outputTextbox.Text = locString_Output_UpdaterReady.Replace("<app>", locString_Window_UpdaterName)
         querying = False
         DoUpdate(querying)
+    End Sub
+
+    Private Sub ViewLogToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ViewLogToolStripMenuItem.Click
+        If (LogViewer Is Nothing) Then
+            LogViewer = New LogViewerForm()
+            LogViewer.Show()
+        End If
+    End Sub
+
+    Private Sub PlayNerfArenaBlastToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles PlayNerfArenaBlastToolStripMenuItem.Click
+        Launch_Game()
+    End Sub
+
+    Private Function Launch_Game() As Boolean
+        Log(locString_Log_LaunchGame, True)
+        If (My.Computer.FileSystem.FileExists(Path.Combine(homeDirectory.FullName, "System\Nerf.exe"))) Then
+            If (Process.Start(Path.Combine(homeDirectory.FullName, "System\Nerf.exe")) IsNot Nothing) Then
+                Log(locString_Log_LaunchGameSuccess.Replace("<dir>", Path.Combine(homeDirectory.FullName, "System\Nerf.exe")), True)
+                Return True
+            Else
+                Return False
+            End If
+        Else
+            MessageBox.Show(locString_Caption_NoGameExeWarning, locString_Window_GameExeNotFound, MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
+            Log(locString_Log_NoGameExeWarning.Replace("<dir>", Path.Combine(homeDirectory.FullName, "System\Nerf.exe")), True)
+            Return False
+        End If
+    End Function
+
+    Private Sub LaunchGameCheckbox_CheckedChanged(sender As Object, e As EventArgs) Handles LaunchGameCheckbox.CheckedChanged
+        If (LaunchGameCheckbox.Checked) Then
+            AutoLaunch = 1
+            UpdateSettings("AutoLaunch", "1")
+        Else
+            AutoLaunch = 0
+            UpdateSettings("AutoLaunch", "0")
+        End If
+
     End Sub
 End Class
 

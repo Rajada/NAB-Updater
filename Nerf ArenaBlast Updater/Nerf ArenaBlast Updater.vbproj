@@ -113,6 +113,12 @@
     <Compile Include="ChangeCP.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Log.Designer.vb">
+      <DependentUpon>Log.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Log.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="MainUpdaterForm.vb">
       <SubType>Form</SubType>
     </Compile>
@@ -142,6 +148,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Changelog.resx">
       <DependentUpon>Changelog.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Log.resx">
+      <DependentUpon>Log.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainUpdaterForm.resx">
       <DependentUpon>MainUpdaterForm.vb</DependentUpon>
