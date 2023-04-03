@@ -79,8 +79,6 @@ Public Class ChangeCPForm
 
     Private Sub ChangeCPApply_Click(sender As Object, e As EventArgs) Handles ChangeCPApply.Click
         If (NewVariant <> PreviousVariant) Then
-            UpdaterMainForm.writeINI(Path.Combine(UpdaterMainForm.homeDirectory.FullName, "System\CommunityPack.ini"), "Community Pack", "Variant", NewVariant)
-            UpdaterMainForm.Log(UpdaterMainForm.locString_Log_ChangeCPType.Replace("<var>", NewVariant), True)
             UpdaterMainForm.CPVariantChanged(NewVariant)
         End If
         Close()

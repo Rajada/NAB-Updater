@@ -1,5 +1,23 @@
 ﻿Please provide feedback and report any bugs at https://www.nerfarena.net
 
+3.922:
+
+-Fixed a bug where files and deletion entries could appear more than once in the update list if they were applicable to multiple CP versions.
+
+3.921:
+
+-Fixed a bug where changing the CP variant did not apply until next boot.
+
+3.92:
+
+- Added support for minimal-only patch files.
+
+
+3.91:
+
+- Viewing the Updater changelog is no longer prohibited during update check.
+- Added the ability to check your game's version for help with debugging.
+
 3.9:
 
 - Improved logging.

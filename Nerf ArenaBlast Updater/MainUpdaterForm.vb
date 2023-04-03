@@ -6,6 +6,8 @@ Imports System.Text
 Imports System.Net
 Imports System.Reflection
 Imports Microsoft.VisualBasic.FileIO
+Imports System.Security.Cryptography
+Imports System.Drawing.Drawing2D
 
 Public Class UpdaterMainForm
     ' Replace folder dialogue with file dialogue?
@@ -37,7 +39,7 @@ Public Class UpdaterMainForm
     Private querying As Boolean = False
     Private nodesToDelete As New List(Of TreeNode)
     Private filesToDelete As New List(Of String)
-    Private updaterVersion As String = "3.9"
+    Private updaterVersion As String = "3.922"
     Private updateDiff As Integer = 0
     Private newVersion As Boolean = False
     Private updateCount As Integer = 0
@@ -81,6 +83,7 @@ Public Class UpdaterMainForm
     Const constString_Window_UpdateCheckCancelled As String = "Update Check Cancelled"
     Const constString_Window_UpdateCheckComplete As String = "Update Check Complete"
     Const constString_Window_UpdateComplete As String = "Update Complete"
+    Const constString_Window_UpdateID As String = "Latest Update ID"
     Const constString_Window_UpdaterName As String = "Nerf ArenaBlast Updater"
     Const constString_Window_UpdaterRunning As String = "<app> Already Running"
     Const constString_Window_VersionCheckComplete As String = "Version Check Complete"
@@ -110,6 +113,7 @@ Public Class UpdaterMainForm
     Const constString_Caption_NoNewVersion As String = "No new version available at this time."
     Const constString_Caption_RevertWarning As String = "This option shows all files on your system that are considered up to date by the server. Typically, this is every file, and there may be significant delay listing them all. If you have files you have modified or updated on purpose, you will lose the work you did to them when reverting to the server's version. Use caution, and only check files you are sure you want to revert. For your protection, the revertable files will not be checked by default."
     Const constString_Caption_ServerNoResponse As String = "The update server did not respond at <url>. The URL may be wrong, the host may be down, or you may need to check your internet connection."
+    Const constString_Caption_UpdateID As String = "Your update ID is:"
     Const constString_Caption_UpdateServerNoResponse As String = "The update server did not respond while checking for new versions. The URL may be wrong, the host may be down, or you may need to check your internet connection."
     Const constString_Caption_UpdatesWereSuccessful As String = "Updates were successful."
     Const constString_Caption_UpdaterForceClose As String = "In order to ensure update success, please only run one instance of the <app> at a time. This program will now close."
@@ -265,6 +269,7 @@ Public Class UpdaterMainForm
     Private locString_Window_UpdateCheckCancelled As String = constString_Window_UpdateCheckCancelled
     Private locString_Window_UpdateCheckComplete As String = constString_Window_UpdateCheckComplete
     Private locString_Window_UpdateComplete As String = constString_Window_UpdateComplete
+    Private locString_Window_UpdateID As String = constString_Window_UpdateID
     Private locString_Window_UpdaterName As String = constString_Window_UpdaterName
     Private locString_Window_UpdaterRunning As String = constString_Window_UpdaterRunning
     Private locString_Window_VersionCheckComplete As String = constString_Window_VersionCheckComplete
@@ -294,6 +299,7 @@ Public Class UpdaterMainForm
     Private locString_Caption_NoNewVersion As String = constString_Caption_NoNewVersion
     Private locString_Caption_RevertWarning As String = constString_Caption_RevertWarning
     Private locString_Caption_ServerNoResponse As String = constString_Caption_ServerNoResponse
+    Private locString_Caption_UpdateID As String = constString_Caption_UpdateID
     Private locString_Caption_UpdateServerNoResponse As String = constString_Caption_UpdateServerNoResponse
     Private locString_Caption_UpdatesWereSuccessful As String = constString_Caption_UpdatesWereSuccessful
     Private locString_Caption_UpdaterForceClose As String = constString_Caption_UpdaterForceClose
@@ -371,7 +377,7 @@ Public Class UpdaterMainForm
     ' Log
     Private locString_Log_BootAdvanced As String = constString_Log_BootAdvanced
     Private locString_Log_BootSuccess As String = constString_Log_BootSuccess
-    Public locString_Log_ChangeCPType As String = constString_Log_ChangeCPType
+    Private locString_Log_ChangeCPType As String = constString_Log_ChangeCPType
     Private locString_Log_CheckingForBaseUpdates As String = constString_Log_CheckingForBaseUpdates
     Private locString_Log_CheckingForCPUpdates As String = constString_Log_CheckingForCPUpdates
     Private locString_Log_CheckingForUpdates As String = constString_Log_CheckingForUpdates
@@ -622,7 +628,6 @@ Public Class UpdaterMainForm
     End Sub
 
     Private Sub UpdaterMainForm_Loaded(sender As Object, e As EventArgs) Handles Me.Shown
-        ShowLatestUpdateIDToolStripMenuItem.Enabled = False
         SelectAllToolStripMenuItem.Visible = False
         DeselectAllToolStripMenuItem.Visible = False
         Log(locString_Log_BootSuccess.Replace("<app>", locString_Window_UpdaterName).Replace("<ver>", updaterVersion), True)
@@ -908,7 +913,7 @@ Public Class UpdaterMainForm
             Else
                 If (cpVariant = "ERROR") Then
                     cpVariant = ""
-                ElseIf ((cpVariant <> "Full") And (cpVariant <> "Lite") And (cpVariant <> "Beta") And (cpVariant <> "Minimal")) Then
+                ElseIf ((cpVariant <> "Full") And (cpVariant <> "Lite") And (cpVariant <> "Beta") And (cpVariant <> "Minimal") And (cpVariant <> "Archive")) Then
                     cpVariant = ""
                 End If
 
@@ -999,7 +1004,7 @@ Public Class UpdaterMainForm
         ChangeBaseDirectoryToolStripMenuItem.Enabled = Not isQuerying
         AdvancedModeToolStripMenuItem.Enabled = Not isQuerying
         LanguageToolStripMenuItem.Enabled = Not isQuerying
-        VersionToolStripMenuItem.Enabled = Not isQuerying
+        CheckForNewVersionToolStripMenuItem.Enabled = Not isQuerying
         customCheckBox.Enabled = False
         cleanupCheckBox.Enabled = Not isQuerying
         revertCheckBox.Enabled = Not isQuerying
@@ -1092,7 +1097,7 @@ Public Class UpdaterMainForm
                         PlayNerfArenaBlastToolStripMenuItem.Enabled = True
                     End If
                 Else
-                        PlayNerfArenaBlastToolStripMenuItem.Enabled = True
+                    PlayNerfArenaBlastToolStripMenuItem.Enabled = True
                 End If
             End If
         End If
@@ -1188,21 +1193,27 @@ Public Class UpdaterMainForm
                                 If Not (tempFilePath Like "*.*") Then
                                     tempFilePath = tempFilePath + "\"
                                     If (My.Computer.FileSystem.DirectoryExists(tempFilePath)) Then
-                                        updateProgressBar.Maximum += 1
-                                        Dim folderNode As TreeNode = Nothing
-                                        folderNode = parentNode.Nodes.Add(entry.FileName.Replace(".delete", ":"))
-                                        folderNode.Tag = SanitizeVariants(dir) + entry.FileName.Replace(".delete", "/")
-                                        folderNode.ForeColor = Color.Red
-                                        updateProgressBar.PerformStep()
+                                        If (Not parentNode.Nodes.ContainsKey(entry.FileName.Replace(".delete", "/"))) Then
+                                            updateProgressBar.Maximum += 1
+                                            Dim folderNode As TreeNode = Nothing
+                                            folderNode = parentNode.Nodes.Add(entry.FileName.Replace(".delete", ":"))
+                                            folderNode.Tag = SanitizeVariants(dir) + entry.FileName.Replace(".delete", "/")
+                                            folderNode.Name = folderNode.Text
+                                            folderNode.ForeColor = Color.Red
+                                            updateProgressBar.PerformStep()
+                                        End If
                                     End If
                                 Else
                                     If (My.Computer.FileSystem.FileExists(tempFilePath)) Then
-                                        updateProgressBar.Maximum += 1
-                                        Dim fileNode As TreeNode = Nothing
-                                        fileNode = parentNode.Nodes.Add(entry.FileName.Replace(".delete", ""))
-                                        fileNode.Tag = SanitizeVariants(dir) + entry.FileName.Replace(".delete", "")
-                                        fileNode.ForeColor = Color.Red
-                                        updateProgressBar.PerformStep()
+                                        If (Not parentNode.Nodes.ContainsKey(entry.FileName.Replace(".delete", ""))) Then
+                                            updateProgressBar.Maximum += 1
+                                            Dim fileNode As TreeNode = Nothing
+                                            fileNode = parentNode.Nodes.Add(entry.FileName.Replace(".delete", ""))
+                                            fileNode.Tag = SanitizeVariants(dir) + entry.FileName.Replace(".delete", "")
+                                            fileNode.Name = fileNode.Text
+                                            fileNode.ForeColor = Color.Red
+                                            updateProgressBar.PerformStep()
+                                        End If
                                     End If
                                 End If
                             End If
@@ -1218,24 +1229,30 @@ Public Class UpdaterMainForm
                             End If
 
                             If (revertCheckBox.Checked) AndAlso (My.Computer.FileSystem.FileExists(tempFilePath)) AndAlso (tempDiff < 0) Then
-                                updateProgressBar.Maximum += 1
-                                Dim fileNode As TreeNode = Nothing
-                                fileNode = parentNode.Nodes.Add(entry.FileName + " (" + entry.FileSize + "B)")
-                                fileNode.Tag = SanitizeVariants(dir) + entry.FileName
-                                fileNode.ForeColor = Color.DarkOrchid
-                                updateProgressBar.PerformStep()
+                                If (Not parentNode.Nodes.ContainsKey(entry.FileName + " (" + entry.FileSize + "B)")) Then
+                                    updateProgressBar.Maximum += 1
+                                    Dim fileNode As TreeNode = Nothing
+                                    fileNode = parentNode.Nodes.Add(entry.FileName + " (" + entry.FileSize + "B)")
+                                    fileNode.Tag = SanitizeVariants(dir) + entry.FileName
+                                    fileNode.Name = fileNode.Text
+                                    fileNode.ForeColor = Color.DarkOrchid
+                                    updateProgressBar.PerformStep()
+                                End If
                             End If
 
                             If ((tempDiff > 0) Or (Not My.Computer.FileSystem.FileExists(tempFilePath))) Then
-                                updateProgressBar.Maximum += 1
-                                Dim fileNode As TreeNode = Nothing
-                                fileNode = parentNode.Nodes.Add(entry.FileName + " (" + entry.FileSize + "B)")
-                                fileNode.Tag = SanitizeVariants(dir) + entry.FileName
-                                If File.Exists(tempFilePath) Then
-                                    fileNode.ForeColor = Color.Blue
-                                Else
-                                    fileNode.ForeColor = Color.Orange
-                                    updateProgressBar.PerformStep()
+                                If (Not parentNode.Nodes.ContainsKey(entry.FileName + " (" + entry.FileSize + "B)")) Then
+                                    updateProgressBar.Maximum += 1
+                                    Dim fileNode As TreeNode = Nothing
+                                    fileNode = parentNode.Nodes.Add(entry.FileName + " (" + entry.FileSize + "B)")
+                                    fileNode.Tag = SanitizeVariants(dir) + entry.FileName
+                                    fileNode.Name = fileNode.Text
+                                    If File.Exists(tempFilePath) Then
+                                        fileNode.ForeColor = Color.Blue
+                                    Else
+                                        fileNode.ForeColor = Color.Orange
+                                        updateProgressBar.PerformStep()
+                                    End If
                                 End If
                             End If
                         End If
@@ -1249,11 +1266,13 @@ Public Class UpdaterMainForm
                         If Not (CheckVariantString(folderName)) Then
                             folderNode = parentNode.Nodes.Add(folderName + ":")
                             folderNode.Tag = dir + entry.FileName
+                            folderNode.Name = folderNode.Text
                             Await PopulateTreeView(folderNode.Tag.ToString, folderNode)
                         Else
                             If RelevantVariant(cpVariantString, folderName) Then
                                 folderNode = parentNode
                                 folderNode.Tag = dir + entry.FileName
+                                folderNode.Name = folderNode.Text
                                 Await PopulateTreeView(folderNode.Tag.ToString, folderNode)
                             End If
                         End If
@@ -1400,7 +1419,7 @@ Public Class UpdaterMainForm
             ChangeCommunityPackToolStripMenuItem.Enabled = True
             changeFilepathButton.Enabled = True
             ChangeBaseDirectoryToolStripMenuItem.Enabled = True
-            VersionToolStripMenuItem.Enabled = True
+            CheckForNewVersionToolStripMenuItem.Enabled = True
             AdvancedModeToolStripMenuItem.Enabled = True
             LanguageToolStripMenuItem.Enabled = True
             customCheckBox.Enabled = hasCP
@@ -1423,7 +1442,7 @@ Public Class UpdaterMainForm
             ChangeCommunityPackToolStripMenuItem.Enabled = True
             changeFilepathButton.Enabled = True
             ChangeBaseDirectoryToolStripMenuItem.Enabled = True
-            VersionToolStripMenuItem.Enabled = True
+            CheckForNewVersionToolStripMenuItem.Enabled = True
             AdvancedModeToolStripMenuItem.Enabled = True
             LanguageToolStripMenuItem.Enabled = True
             customCheckBox.Enabled = hasCP
@@ -1436,7 +1455,7 @@ Public Class UpdaterMainForm
                     PlayNerfArenaBlastToolStripMenuItem.Enabled = True
                 End If
             Else
-                    PlayNerfArenaBlastToolStripMenuItem.Enabled = True
+                PlayNerfArenaBlastToolStripMenuItem.Enabled = True
             End If
         End If
 
@@ -1909,9 +1928,9 @@ Public Class UpdaterMainForm
             End If
 
         ElseIf (engineVersionNumber = 2) Then
-                Process.Start(communityPack300Directory)
-            Else
-                Process.Start(communityPack300Directory)
+            Process.Start(communityPack300Directory)
+        Else
+            Process.Start(communityPack300Directory)
         End If
     End Sub
 
@@ -2041,7 +2060,54 @@ Public Class UpdaterMainForm
     End Sub
 
     Private Sub ShowLatestUpdateIDToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ShowLatestUpdateIDToolStripMenuItem.Click
-        MessageBox.Show("The latest update ID is " + "<PH>", "Latest Update ID", MessageBoxButtons.OK, MessageBoxIcon.None)
+        Dim SB As StringBuilder = New StringBuilder(512)
+        Dim IDString As String = "NAB"
+        Dim updateFlag As Integer
+        Dim EngineSum As String = CreateMD5Sum(Path.Combine(homeDirectory.FullName, "System\Engine.u"))
+        Dim NerfISum As String = CreateMD5Sum(Path.Combine(homeDirectory.FullName, "System\NerfI.u"))
+        Dim NerfWeaponSum As String = CreateMD5Sum(Path.Combine(homeDirectory.FullName, "System\NerfWeapon.u"))
+        Dim NerfMenuSum As String = CreateMD5Sum(Path.Combine(homeDirectory.FullName, "System\NerfMenu.u"))
+        Dim NerfKidsSum As String = CreateMD5Sum(Path.Combine(homeDirectory.FullName, "System\NerfKids.u"))
+        Dim NerfResSum As String = CreateMD5Sum(Path.Combine(homeDirectory.FullName, "System\NerfRes.u"))
+
+        updateFlag = CInt(readIni(iniDirectory.ToString, "PatchUpdate", "Update", SB, "-1"))
+
+        If (engineVersionNumber = 2) Then
+            IDString += "300"
+        Else
+            If (updateFlag = 1) Then
+                IDString += "12"
+            ElseIf (updateFlag = -1) Then
+                IDString += "X"
+            End If
+        End If
+
+        Select Case cpVariantString
+            Case "Full"
+                IDString += "-CPF"
+            Case "Lite"
+                IDString += "-CPL"
+            Case "Minimal"
+                IDString += "-CPM"
+            Case "Beta"
+                IDString += "-CPB"
+            Case "Archive"
+                IDString += "-CPA"
+            Case ""
+                Exit Select
+            Case Else
+                IDString += "-CPX"
+        End Select
+
+        If (cpVersionString IsNot Nothing) Then
+            IDString += cpVersionString
+        Else
+            IDString += "0"
+        End If
+
+        IDString += Environment.NewLine + "E-" + EngineSum + Environment.NewLine + "I-" + NerfISum + Environment.NewLine + "W-" + NerfWeaponSum + Environment.NewLine + "M-" + NerfMenuSum + Environment.NewLine + "K-" + NerfKidsSum + Environment.NewLine + "R-" + NerfResSum
+
+        MessageBox.Show(locString_Caption_UpdateID + Environment.NewLine + IDString, locString_Window_UpdateID, MessageBoxButtons.OK, MessageBoxIcon.None)
     End Sub
 
     Private Sub OpenGameDirectoryToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles OpenGameDirectoryToolStripMenuItem.Click
@@ -2091,6 +2157,7 @@ Public Class UpdaterMainForm
                 locString_Window_UpdateCheckCancelled = readIni(ldi.FullName, "Windows", "locString_Window_UpdateCheckCancelled", SB, constString_Window_UpdateCheckCancelled)
                 locString_Window_UpdateCheckComplete = readIni(ldi.FullName, "Windows", "locString_Window_UpdateCheckComplete", SB, constString_Window_UpdateCheckComplete)
                 locString_Window_UpdateComplete = readIni(ldi.FullName, "Windows", "locString_Window_UpdateComplete", SB, constString_Window_UpdateComplete)
+                locString_Window_UpdateID = readIni(ldi.FullName, "Windows", "locString_Window_UpdateID", SB, constString_Window_UpdateID)
                 locString_Window_UpdaterName = readIni(ldi.FullName, "Windows", "locString_Window_UpdaterName", SB, constString_Window_UpdaterName)
                 Me.Text = locString_Window_UpdaterName + " " + updaterVersion
                 locString_Window_UpdaterRunning = readIni(ldi.FullName, "Windows", "locString_Window_UpdaterRunning", SB, constString_Window_UpdaterRunning)
@@ -2121,6 +2188,7 @@ Public Class UpdaterMainForm
                 locString_Caption_NoNewVersion = readIni(ldi.FullName, "Captions", "locString_Caption_NoNewVersion", SB, constString_Caption_NoNewVersion)
                 locString_Caption_RevertWarning = readIni(ldi.FullName, "Captions", "locString_Caption_RevertWarning", SB, constString_Caption_RevertWarning)
                 locString_Caption_ServerNoResponse = readIni(ldi.FullName, "Captions", "locString_Caption_ServerNoResponse", SB, constString_Caption_ServerNoResponse)
+                locString_Caption_UpdateID = readIni(ldi.FullName, "Captions", "locString_Caption_UpdateID", SB, constString_Caption_UpdateID)
                 locString_Caption_UpdateServerNoResponse = readIni(ldi.FullName, "Captions", "locString_Caption_UpdateServerNoResponse", SB, constString_Caption_UpdateServerNoResponse)
                 locString_Caption_UpdatesWereSuccessful = readIni(ldi.FullName, "Captions", "locString_Caption_UpdatesWereSuccessful", SB, constString_Caption_UpdatesWereSuccessful)
                 locString_Caption_UpdaterForceClose = readIni(ldi.FullName, "Captions", "locString_Caption_UpdaterForceClose", SB, constString_Caption_UpdaterForceClose)
@@ -2352,24 +2420,41 @@ Public Class UpdaterMainForm
     End Sub
 
     Private Function SanitizeVariants(InputDir As String) As String
-        Return InputDir.Replace("Full\", "").Replace("Lite\", "")
+        Return InputDir.Replace("Full\", "").Replace("Lite\", "").Replace("Minimal\", "").Replace("Archive\", "").Replace("Beta\", "")
     End Function
 
     Private Function CheckVariantString(InputFolder As String) As Boolean
-        If (InputFolder = "Full") Or (InputFolder = "Lite") Then
+        If (InputFolder = "Full") Or (InputFolder = "Lite") Or (InputFolder = "Minimal") Or (InputFolder = "Archive") Or (InputFolder = "Beta") Then
             Return True
         End If
         Return False
     End Function
 
     Private Function RelevantVariant(VariantType As String, FolderVariant As String) As Boolean
-        If (VariantType = "Full") Then
+        If (VariantType = "Archive") Then
             If (FolderVariant = "Full") Then
                 Return True
             ElseIf (FolderVariant = "Lite") Then
                 Return True
             ElseIf (FolderVariant = "Beta") Then
                 Return False
+            ElseIf (FolderVariant = "Archive") Then
+                Return True
+            ElseIf (FolderVariant = "Minimal") Then
+                Return True
+            End If
+            Return False
+        ElseIf (VariantType = "Full") Then
+            If (FolderVariant = "Full") Then
+                Return True
+            ElseIf (FolderVariant = "Lite") Then
+                Return True
+            ElseIf (FolderVariant = "Beta") Then
+                Return False
+            ElseIf (FolderVariant = "Archive") Then
+                Return False
+            ElseIf (FolderVariant = "Minimal") Then
+                Return True
             End If
             Return False
         ElseIf (VariantType = "Lite") Then
@@ -2379,6 +2464,10 @@ Public Class UpdaterMainForm
                 Return True
             ElseIf (FolderVariant = "Beta") Then
                 Return False
+            ElseIf (FolderVariant = "Archive") Then
+                Return False
+            ElseIf (FolderVariant = "Minimal") Then
+                Return True
             End If
             Return False
         ElseIf (VariantType = "Beta") Then
@@ -2387,6 +2476,10 @@ Public Class UpdaterMainForm
             ElseIf (FolderVariant = "Lite") Then
                 Return True
             ElseIf (FolderVariant = "Beta") Then
+                Return True
+            ElseIf (FolderVariant = "Archive") Then
+                Return False
+            ElseIf (FolderVariant = "Minimal") Then
                 Return True
             End If
             Return False
@@ -2397,6 +2490,10 @@ Public Class UpdaterMainForm
                 Return False
             ElseIf (FolderVariant = "Beta") Then
                 Return False
+            ElseIf (FolderVariant = "Archive") Then
+                Return False
+            ElseIf (FolderVariant = "Minimal") Then
+                Return True
             End If
             Return False
         ElseIf (VariantType = "") Then
@@ -2406,8 +2503,12 @@ Public Class UpdaterMainForm
                 Return False
             ElseIf (FolderVariant = "Beta") Then
                 Return False
-            End If
-            Return False
+            ElseIf (FolderVariant = "Archive") Then
+                Return False
+            ElseIf (FolderVariant = "Minimal") Then
+                Return True
+                End If
+        Return False
         End If
         Return False
     End Function
@@ -2422,6 +2523,9 @@ Public Class UpdaterMainForm
 
     Public Sub CPVariantChanged(CPVariant As String)
         updateFilesTreeView.Nodes.Clear()
+        cpVariantString = CPVariant
+        writeINI(Path.Combine(homeDirectory.FullName, "System\CommunityPack.ini"), "Community Pack", "Variant", CPVariant)
+        Log(locString_Log_ChangeCPType.Replace("<var>", CPVariant), True)
         SetUpdateStatus("Ready")
         outputTextbox.Text = locString_Output_UpdaterReady.Replace("<app>", locString_Window_UpdaterName)
         querying = False
@@ -2463,8 +2567,15 @@ Public Class UpdaterMainForm
             AutoLaunch = 0
             UpdateSettings("AutoLaunch", "0")
         End If
-
     End Sub
+    Private Function CreateMD5Sum(ByVal filename As String) As String
+        Using md5 As MD5 = MD5.Create()
+
+            Using stream = File.OpenRead(filename)
+                Return BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", String.Empty)
+            End Using
+        End Using
+    End Function
 End Class
 
 Class MyTreeView
