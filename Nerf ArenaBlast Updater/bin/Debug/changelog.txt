@@ -1,12 +1,27 @@
 ﻿Please provide feedback and report any bugs at https://www.nerfarena.net
 
+3.925:
+
+- Fixed a bug that made all uninstall info relevant to all versions of the Community Pack.
+- Uninstall entries are now a different color to differentiate them from bad file deletions.
+
+3.924:
+
+- Fixed a bug where the Check for Updates button wasn't active in some cases after changing Community Pack variants.
+
+3.923:
+
+- Added the ability to read and implement uninstall info for changing Community Pack types.
+- Added the languages folder for storing language files.
+- Added a temp folder for downloading uninstall info and other temporary files.
+
 3.922:
 
--Fixed a bug where files and deletion entries could appear more than once in the update list if they were applicable to multiple CP versions.
+- Fixed a bug where files and deletion entries could appear more than once in the update list if they were applicable to multiple Community Pack versions.
 
 3.921:
 
--Fixed a bug where changing the CP variant did not apply until next boot.
+- Fixed a bug where changing the Community Pack variant did not apply until next boot.
 
 3.92:
 
@@ -32,7 +47,7 @@
 
 - Fixed some typos in strings.
 - Fixed WINE systems not being able to read the language file properly.
-- The "Download Latest Community Pack" menu item now directs you to the download link for the version of the CP you have installed (if you have one installed).
+- The "Download Latest Community Pack" menu item now directs you to the download link for the version of the Community Pack you have installed (if you have one installed).
 
 3.87:
 

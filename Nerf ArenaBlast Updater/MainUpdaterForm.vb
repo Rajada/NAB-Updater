@@ -7,7 +7,6 @@ Imports System.Net
 Imports System.Reflection
 Imports Microsoft.VisualBasic.FileIO
 Imports System.Security.Cryptography
-Imports System.Drawing.Drawing2D
 
 Public Class UpdaterMainForm
     ' Replace folder dialogue with file dialogue?
@@ -39,7 +38,7 @@ Public Class UpdaterMainForm
     Private querying As Boolean = False
     Private nodesToDelete As New List(Of TreeNode)
     Private filesToDelete As New List(Of String)
-    Private updaterVersion As String = "3.922"
+    Private updaterVersion As String = "3.925"
     Private updateDiff As Integer = 0
     Private newVersion As Boolean = False
     Private updateCount As Integer = 0
@@ -58,6 +57,7 @@ Public Class UpdaterMainForm
     Private hasCP As Boolean = False
     Private silentClose As Boolean = False
     Private Upgrading As Boolean = False
+    Private DupClosing As Boolean = False
 
     ' Strings
     ' Windows
@@ -485,7 +485,9 @@ Public Class UpdaterMainForm
             silentClose = True
             Return True
         ElseIf (CheckForProcess("Nerf ArenaBlast Updater") > 1) Then
-            MessageBox.Show(locString_Caption_UpdaterForceClose.Replace("<app>", locString_Window_UpdaterName), locString_Window_UpdaterRunning.Replace("<app>", locString_Window_UpdaterName), MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
+            If (Not DupClosing) Then
+                MessageBox.Show(locString_Caption_UpdaterForceClose.Replace("<app>", locString_Window_UpdaterName), locString_Window_UpdaterRunning.Replace("<app>", locString_Window_UpdaterName), MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
+            End If
             silentClose = True
             Return True
         End If
@@ -568,7 +570,7 @@ Public Class UpdaterMainForm
     End Sub
 
     Private Sub IterateLanguageOptions()
-        Dim ldi As New DirectoryInfo(Directory.GetCurrentDirectory().ToString)
+        Dim ldi As New DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory().ToString, "languages"))
         Dim FileArray As FileInfo() = ldi.GetFiles()
         Dim LFI As FileInfo
         Dim LTSMI As ToolStripMenuItem
@@ -589,10 +591,12 @@ Public Class UpdaterMainForm
     End Sub
 
     Private Sub UpdaterMainForm_Load(sender As Object, e As EventArgs) Handles Me.Load
+        UpdateFilestructure()
         IterateLanguageOptions()
         Text = locString_Window_UpdaterName + " " + updaterVersion
 
         If (CheckUpdaterRunning()) Then
+            DupClosing = True
             Close()
             Exit Sub
         End If
@@ -668,6 +672,33 @@ Public Class UpdaterMainForm
         End If
     End Sub
 
+    Private Sub UpdateFilestructure()
+
+        If (CheckUpdaterRunning()) Then
+            DupClosing = True
+            Close()
+            Exit Sub
+        End If
+
+        Dim updaterPath As String = Directory.GetCurrentDirectory
+
+        If Not (My.Computer.FileSystem.DirectoryExists(updaterPath)) Then
+            My.Computer.FileSystem.CreateDirectory(updaterPath)
+        End If
+
+        If Not (My.Computer.FileSystem.DirectoryExists(Path.Combine(updaterPath, "temp"))) Then
+            My.Computer.FileSystem.CreateDirectory(Path.Combine(updaterPath, "temp"))
+        End If
+
+        If Not (My.Computer.FileSystem.DirectoryExists(Path.Combine(updaterPath, "languages"))) Then
+            My.Computer.FileSystem.CreateDirectory(Path.Combine(updaterPath, "languages"))
+        End If
+
+        If (My.Computer.FileSystem.FileExists(Path.Combine(updaterPath, "International English.lang"))) Then
+            My.Computer.FileSystem.MoveFile(Path.Combine(updaterPath, "International English.lang"), Path.Combine(updaterPath, "languages", "International English.lang"))
+        End If
+    End Sub
+
     Private Async Sub CheckUpdaterVersion(ShowUpToDateMessage As Boolean)
         Dim latestVersion As String = updaterVersion
         Dim downPath As String = Path.Combine(updaterDirectory, "version.txt")
@@ -675,9 +706,7 @@ Public Class UpdaterMainForm
         Dim updaterPath As String = Directory.GetCurrentDirectory
         Dim myWebClient As New WebClient()
 
-        If Not (My.Computer.FileSystem.DirectoryExists(updaterPath)) Then
-            My.Computer.FileSystem.CreateDirectory(updaterPath)
-        End If
+        UpdateFilestructure()
 
         Try
             myWebClient.DownloadFile(downPath, filePath)
@@ -698,7 +727,9 @@ Public Class UpdaterMainForm
         Loop
         SR.Close()
 
-        My.Computer.FileSystem.DeleteFile(filePath)
+        If (My.Computer.FileSystem.FileExists(filePath)) Then
+            My.Computer.FileSystem.DeleteFile(filePath)
+        End If
 
         If (Convert.ToDouble(latestVersion) > Convert.ToDouble(updaterVersion)) Then
             Log(locString_Log_NewVersion.Replace("<ver1>", latestVersion).Replace("<ver2>", updaterVersion), True)
@@ -737,6 +768,8 @@ Public Class UpdaterMainForm
                         If Not (entry.FileName Like "version.txt") Then
                             If (entry.FileName Like "Nerf ArenaBlast Updater.exe") Then
                                 myWebClient.DownloadFile(Path.Combine(updaterDirectory, entry.FileName), Path.Combine(updaterPath, entry.FileName + ".new"))
+                            ElseIf (entry.FileName Like "*.lang") Then
+                                myWebClient.DownloadFile(Path.Combine(updaterDirectory, entry.FileName), Path.Combine(updaterPath, "languages", entry.FileName))
                             Else
                                 myWebClient.DownloadFile(Path.Combine(updaterDirectory, entry.FileName), Path.Combine(updaterPath, entry.FileName))
                             End If
@@ -1180,6 +1213,8 @@ Public Class UpdaterMainForm
         Dim infoReader As FileInfo
         Dim tempFilePath As String
         Dim tempDiff As Long
+        Dim myWebClient As New WebClient()
+
 
         Try
             Dim fileList = Await GetRemoteFileInfos(parentNode.Tag.ToString)
@@ -1187,8 +1222,62 @@ Public Class UpdaterMainForm
             If (fileList.Count > 0) Then
                 For Each entry In fileList
                     If Not (entry.FileName Like "*/") Then
-                        If (entry.FileName Like "*.delete") Then
+                        If (entry.FileName Like "*.uninstall") Then
                             If (cleanupCheckBox.Checked) Then
+                                If (RelevantVariant(cpVariantString, entry.FileName)) Then
+                                    Try
+                                        myWebClient.DownloadFile(entry.Url, Path.Combine(Directory.GetCurrentDirectory(), "temp", entry.FileName))
+                                    Catch ex As Exception
+                                        Log(locString_Log_ServerNoResponse.Replace("<url>", parentNode.Tag.ToString), True)
+                                        If (ex.InnerException IsNot Nothing) Then
+                                            MessageBox.Show(locString_Caption_ServerNoResponse.Replace("<url>", parentNode.Tag.ToString) & ControlChars.NewLine & ControlChars.NewLine & locString_Caption_ErrorReport & ControlChars.NewLine & ControlChars.NewLine & ex.InnerException.Message, locString_Window_ServerNoResponse, MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
+                                        Else
+                                            MessageBox.Show(locString_Caption_ServerNoResponse.Replace("<url>", parentNode.Tag.ToString) & ControlChars.NewLine & ControlChars.NewLine & locString_Caption_ErrorReport & ControlChars.NewLine & ControlChars.NewLine & ex.Message, locString_Window_ServerNoResponse, MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
+                                        End If
+                                        myWebClient.Dispose()
+                                    End Try
+
+                                    Dim SR As StreamReader = New StreamReader(Path.Combine(Directory.GetCurrentDirectory(), "temp", entry.FileName))
+                                    Dim LineRead As String
+
+                                    Do While SR.Peek() >= 0
+                                        LineRead = SR.ReadLine()
+                                        tempFilePath = Path.Combine(homeDirectory.FullName, SanitizeVariants(dir.Replace(selectedBaseDirectory, "").Replace(selectedCustomDirectory, "").Replace("/", "\") + LineRead))
+                                        If Not (tempFilePath Like "*.*") Then
+                                            tempFilePath = tempFilePath + "\"
+                                            If (My.Computer.FileSystem.DirectoryExists(tempFilePath)) Then
+                                                If (Not parentNode.Nodes.ContainsKey(LineRead)) Then
+                                                    updateProgressBar.Maximum += 1
+                                                    Dim folderNode As TreeNode = Nothing
+                                                    folderNode = parentNode.Nodes.Add(LineRead + ":")
+                                                    folderNode.Tag = SanitizeVariants(dir) + LineRead + "/"
+                                                    folderNode.Name = folderNode.Text
+                                                    folderNode.ForeColor = Color.Tomato
+                                                    updateProgressBar.PerformStep()
+                                                End If
+                                            End If
+                                        Else
+                                            If (My.Computer.FileSystem.FileExists(tempFilePath)) Then
+                                                If (Not parentNode.Nodes.ContainsKey(LineRead)) Then
+                                                    updateProgressBar.Maximum += 1
+                                                    Dim fileNode As TreeNode = Nothing
+                                                    fileNode = parentNode.Nodes.Add(LineRead)
+                                                    fileNode.Tag = SanitizeVariants(dir) + LineRead
+                                                    fileNode.Name = fileNode.Text
+                                                    fileNode.ForeColor = Color.Tomato
+                                                    updateProgressBar.PerformStep()
+                                                End If
+                                            End If
+                                        End If
+                                    Loop
+                                    SR.Close()
+                                    If (My.Computer.FileSystem.FileExists(Path.Combine(Directory.GetCurrentDirectory(), "temp", entry.FileName))) Then
+                                        My.Computer.FileSystem.DeleteFile(Path.Combine(Directory.GetCurrentDirectory(), "temp", entry.FileName))
+                                    End If
+                                End If
+                            End If
+                        ElseIf (entry.FileName Like "*.delete") Then
+                        If (cleanupCheckBox.Checked) Then
                                 tempFilePath = Path.Combine(homeDirectory.FullName, SanitizeVariants(dir.Replace(selectedBaseDirectory, "").Replace(selectedCustomDirectory, "").Replace("/", "\") + entry.FileName.Replace(".delete", "")))
                                 If Not (tempFilePath Like "*.*") Then
                                     tempFilePath = tempFilePath + "\"
@@ -2122,7 +2211,7 @@ Public Class UpdaterMainForm
 
         For Each LFI In FileArray
             If (LFI.Name Like (Lang + ".lang")) Then
-                ldi = New DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory().ToString, LFI.Name))
+                ldi = New DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory().ToString, "languages", LFI.Name))
 
                 ' Windows
                 locString_Window_AboutUpdater = readIni(ldi.FullName, "Windows", "locString_Window_AboutUpdater", SB, constString_Window_AboutUpdater)
@@ -2390,7 +2479,7 @@ Public Class UpdaterMainForm
     End Sub
 
     Private Sub SetLanguage(Lang As String, ReloadonFail As Boolean)
-        Dim LanguageDirectory As DirectoryInfo = New DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory(), Lang + ".lang"))
+        Dim LanguageDirectory As DirectoryInfo = New DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory(), "languages", Lang + ".lang"))
 
         If ((Lang = "") Or (Lang = "International English")) Then
             Lang = "International English"
@@ -2442,6 +2531,12 @@ Public Class UpdaterMainForm
                 Return True
             ElseIf (FolderVariant = "Minimal") Then
                 Return True
+            ElseIf (FolderVariant Like "archive-*.uninstall") Then
+                Return False
+            ElseIf (FolderVariant Like "full-*.uninstall") Then
+                Return False
+            ElseIf (FolderVariant Like "lite-*.uninstall") Then
+                Return False
             End If
             Return False
         ElseIf (VariantType = "Full") Then
@@ -2455,6 +2550,12 @@ Public Class UpdaterMainForm
                 Return False
             ElseIf (FolderVariant = "Minimal") Then
                 Return True
+            ElseIf (FolderVariant Like "archive-*.uninstall") Then
+                Return True
+            ElseIf (FolderVariant Like "full-*.uninstall") Then
+                Return False
+            ElseIf (FolderVariant Like "lite-*.uninstall") Then
+                Return False
             End If
             Return False
         ElseIf (VariantType = "Lite") Then
@@ -2468,6 +2569,12 @@ Public Class UpdaterMainForm
                 Return False
             ElseIf (FolderVariant = "Minimal") Then
                 Return True
+            ElseIf (FolderVariant Like "archive-*.uninstall") Then
+                Return True
+            ElseIf (FolderVariant Like "full-*.uninstall") Then
+                Return True
+            ElseIf (FolderVariant Like "lite-*.uninstall") Then
+                Return False
             End If
             Return False
         ElseIf (VariantType = "Beta") Then
@@ -2481,6 +2588,12 @@ Public Class UpdaterMainForm
                 Return False
             ElseIf (FolderVariant = "Minimal") Then
                 Return True
+            ElseIf (FolderVariant Like "archive-*.uninstall") Then
+                Return True
+            ElseIf (FolderVariant Like "full-*.uninstall") Then
+                Return False
+            ElseIf (FolderVariant Like "lite-*.uninstall") Then
+                Return False
             End If
             Return False
         ElseIf (VariantType = "Minimal") Then
@@ -2493,6 +2606,12 @@ Public Class UpdaterMainForm
             ElseIf (FolderVariant = "Archive") Then
                 Return False
             ElseIf (FolderVariant = "Minimal") Then
+                Return True
+            ElseIf (FolderVariant Like "archive-*.uninstall") Then
+                Return True
+            ElseIf (FolderVariant Like "full-*.uninstall") Then
+                Return True
+            ElseIf (FolderVariant Like "lite-*.uninstall") Then
                 Return True
             End If
             Return False
@@ -2507,7 +2626,13 @@ Public Class UpdaterMainForm
                 Return False
             ElseIf (FolderVariant = "Minimal") Then
                 Return True
-                End If
+            ElseIf (FolderVariant Like "archive-*.uninstall") Then
+                Return False
+            ElseIf (FolderVariant Like "full-*.uninstall") Then
+                Return False
+            ElseIf (FolderVariant Like "lite-*.uninstall") Then
+                Return False
+            End If
         Return False
         End If
         Return False
@@ -2527,9 +2652,11 @@ Public Class UpdaterMainForm
         writeINI(Path.Combine(homeDirectory.FullName, "System\CommunityPack.ini"), "Community Pack", "Variant", CPVariant)
         Log(locString_Log_ChangeCPType.Replace("<var>", CPVariant), True)
         SetUpdateStatus("Ready")
+        updateSuccess = True
         outputTextbox.Text = locString_Output_UpdaterReady.Replace("<app>", locString_Window_UpdaterName)
         querying = False
         DoUpdate(querying)
+        updateButton.Enabled = True
     End Sub
 
     Private Sub ViewLogToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ViewLogToolStripMenuItem.Click
