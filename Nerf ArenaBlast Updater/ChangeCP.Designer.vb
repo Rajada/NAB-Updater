@@ -30,12 +30,13 @@ Partial Class ChangeCPForm
         Me.SelectCPLabel = New System.Windows.Forms.Label()
         Me.CPOtherRadioButton = New System.Windows.Forms.RadioButton()
         Me.ChangeCPApply = New System.Windows.Forms.Button()
+        Me.CPArchiveRadioButton = New System.Windows.Forms.RadioButton()
         Me.SuspendLayout()
         '
         'CPFullRadioButton
         '
         Me.CPFullRadioButton.AutoSize = True
-        Me.CPFullRadioButton.Location = New System.Drawing.Point(18, 34)
+        Me.CPFullRadioButton.Location = New System.Drawing.Point(18, 58)
         Me.CPFullRadioButton.Name = "CPFullRadioButton"
         Me.CPFullRadioButton.Size = New System.Drawing.Size(41, 17)
         Me.CPFullRadioButton.TabIndex = 1
@@ -46,7 +47,7 @@ Partial Class ChangeCPForm
         'CPLiteRadioButton
         '
         Me.CPLiteRadioButton.AutoSize = True
-        Me.CPLiteRadioButton.Location = New System.Drawing.Point(18, 57)
+        Me.CPLiteRadioButton.Location = New System.Drawing.Point(18, 81)
         Me.CPLiteRadioButton.Name = "CPLiteRadioButton"
         Me.CPLiteRadioButton.Size = New System.Drawing.Size(42, 17)
         Me.CPLiteRadioButton.TabIndex = 2
@@ -57,7 +58,7 @@ Partial Class ChangeCPForm
         'CPMinRadioButton
         '
         Me.CPMinRadioButton.AutoSize = True
-        Me.CPMinRadioButton.Location = New System.Drawing.Point(18, 80)
+        Me.CPMinRadioButton.Location = New System.Drawing.Point(18, 102)
         Me.CPMinRadioButton.Name = "CPMinRadioButton"
         Me.CPMinRadioButton.Size = New System.Drawing.Size(60, 17)
         Me.CPMinRadioButton.TabIndex = 3
@@ -67,7 +68,7 @@ Partial Class ChangeCPForm
         '
         'OtherTextBox
         '
-        Me.OtherTextBox.Location = New System.Drawing.Point(100, 103)
+        Me.OtherTextBox.Location = New System.Drawing.Point(100, 125)
         Me.OtherTextBox.MaxLength = 16
         Me.OtherTextBox.Name = "OtherTextBox"
         Me.OtherTextBox.Size = New System.Drawing.Size(100, 20)
@@ -85,7 +86,7 @@ Partial Class ChangeCPForm
         'CPOtherRadioButton
         '
         Me.CPOtherRadioButton.AutoSize = True
-        Me.CPOtherRadioButton.Location = New System.Drawing.Point(18, 103)
+        Me.CPOtherRadioButton.Location = New System.Drawing.Point(18, 125)
         Me.CPOtherRadioButton.Name = "CPOtherRadioButton"
         Me.CPOtherRadioButton.Size = New System.Drawing.Size(51, 17)
         Me.CPOtherRadioButton.TabIndex = 4
@@ -95,19 +96,31 @@ Partial Class ChangeCPForm
         '
         'ChangeCPApply
         '
-        Me.ChangeCPApply.Location = New System.Drawing.Point(18, 136)
+        Me.ChangeCPApply.Location = New System.Drawing.Point(18, 158)
         Me.ChangeCPApply.Name = "ChangeCPApply"
         Me.ChangeCPApply.Size = New System.Drawing.Size(75, 23)
         Me.ChangeCPApply.TabIndex = 6
         Me.ChangeCPApply.Text = "Apply"
         Me.ChangeCPApply.UseVisualStyleBackColor = True
         '
+        'CPArchiveRadioButton
+        '
+        Me.CPArchiveRadioButton.AutoSize = True
+        Me.CPArchiveRadioButton.Location = New System.Drawing.Point(18, 35)
+        Me.CPArchiveRadioButton.Name = "CPArchiveRadioButton"
+        Me.CPArchiveRadioButton.Size = New System.Drawing.Size(61, 17)
+        Me.CPArchiveRadioButton.TabIndex = 7
+        Me.CPArchiveRadioButton.TabStop = True
+        Me.CPArchiveRadioButton.Text = "Archive"
+        Me.CPArchiveRadioButton.UseVisualStyleBackColor = True
+        '
         'ChangeCPForm
         '
         Me.AcceptButton = Me.ChangeCPApply
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(224, 171)
+        Me.ClientSize = New System.Drawing.Size(224, 196)
+        Me.Controls.Add(Me.CPArchiveRadioButton)
         Me.Controls.Add(Me.ChangeCPApply)
         Me.Controls.Add(Me.CPOtherRadioButton)
         Me.Controls.Add(Me.SelectCPLabel)
@@ -134,4 +147,5 @@ Partial Class ChangeCPForm
     Friend WithEvents SelectCPLabel As Label
     Friend WithEvents CPOtherRadioButton As RadioButton
     Friend WithEvents ChangeCPApply As Button
+    Friend WithEvents CPArchiveRadioButton As RadioButton
 End Class

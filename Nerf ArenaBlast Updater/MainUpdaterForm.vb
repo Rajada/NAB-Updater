@@ -38,7 +38,7 @@ Public Class UpdaterMainForm
     Private querying As Boolean = False
     Private nodesToDelete As New List(Of TreeNode)
     Private filesToDelete As New List(Of String)
-    Private updaterVersion As String = "3.925"
+    Private updaterVersion As String = "3.927"
     Private updateDiff As Integer = 0
     Private newVersion As Boolean = False
     Private updateCount As Integer = 0
@@ -1214,6 +1214,7 @@ Public Class UpdaterMainForm
         Dim tempFilePath As String
         Dim tempDiff As Long
         Dim myWebClient As New WebClient()
+        Dim DTModified As DateTime
 
 
         Try
@@ -1312,9 +1313,9 @@ Public Class UpdaterMainForm
                             If (My.Computer.FileSystem.FileExists(tempFilePath)) Then
                                 infoReader = My.Computer.FileSystem.GetFileInfo(tempFilePath)
 
+                                Date.TryParse(entry.LastModified, DTModified)
 
-
-                                tempDiff = DateDiff("n", TimeZoneInfo.ConvertTime(infoReader.LastWriteTime, TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time")), entry.LastModified)
+                                tempDiff = DateDiff("n", TimeZoneInfo.ConvertTime(infoReader.LastWriteTime, TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time")), DTModified)
                             End If
 
                             If (revertCheckBox.Checked) AndAlso (My.Computer.FileSystem.FileExists(tempFilePath)) AndAlso (tempDiff < 0) Then

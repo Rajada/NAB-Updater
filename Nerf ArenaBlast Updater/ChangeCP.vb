@@ -5,8 +5,17 @@ Public Class ChangeCPForm
     Private NewVariant As String = ""
 
     Private Sub ChangeCP_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        If (UpdaterMainForm.cpVariantString = "Full") Then
+        If (UpdaterMainForm.cpVariantString = "Archive") Then
+            PreviousVariant = "Archive"
+            CPArchiveRadioButton.Checked = True
+            CPFullRadioButton.Checked = False
+            CPLiteRadioButton.Checked = False
+            CPMinRadioButton.Checked = False
+            CPOtherRadioButton.Checked = False
+            OtherTextBox.Enabled = False
+        ElseIf (UpdaterMainForm.cpVariantString = "Full") Then
             PreviousVariant = "Full"
+            CPArchiveRadioButton.Checked = False
             CPFullRadioButton.Checked = True
             CPLiteRadioButton.Checked = False
             CPMinRadioButton.Checked = False
@@ -14,6 +23,7 @@ Public Class ChangeCPForm
             OtherTextBox.Enabled = False
         ElseIf (UpdaterMainForm.cpVariantString = "Lite") Then
             PreviousVariant = "Lite"
+            CPArchiveRadioButton.Checked = False
             CPFullRadioButton.Checked = False
             CPLiteRadioButton.Checked = True
             CPMinRadioButton.Checked = False
@@ -21,6 +31,7 @@ Public Class ChangeCPForm
             OtherTextBox.Enabled = False
         ElseIf (UpdaterMainForm.cpVariantString = "Minimal") Then
             PreviousVariant = "Minimal"
+            CPArchiveRadioButton.Checked = False
             CPFullRadioButton.Checked = False
             CPLiteRadioButton.Checked = False
             CPMinRadioButton.Checked = True
@@ -28,6 +39,7 @@ Public Class ChangeCPForm
             OtherTextBox.Enabled = False
         Else
             PreviousVariant = UpdaterMainForm.cpVariantString
+            CPArchiveRadioButton.Checked = False
             CPFullRadioButton.Checked = False
             CPLiteRadioButton.Checked = False
             CPMinRadioButton.Checked = False
@@ -39,6 +51,7 @@ Public Class ChangeCPForm
 
     Private Sub CPFullRadioButton_CheckedChanged(sender As Object, e As EventArgs) Handles CPFullRadioButton.CheckedChanged
         If (CPFullRadioButton.Checked) Then
+            CPArchiveRadioButton.Checked = False
             CPLiteRadioButton.Checked = False
             CPMinRadioButton.Checked = False
             CPOtherRadioButton.Checked = False
@@ -49,6 +62,7 @@ Public Class ChangeCPForm
 
     Private Sub CPLiteRadioButton_CheckedChanged(sender As Object, e As EventArgs) Handles CPLiteRadioButton.CheckedChanged
         If (CPLiteRadioButton.Checked) Then
+            CPArchiveRadioButton.Checked = False
             CPFullRadioButton.Checked = False
             CPMinRadioButton.Checked = False
             CPOtherRadioButton.Checked = False
@@ -59,6 +73,7 @@ Public Class ChangeCPForm
 
     Private Sub CPMinRadioButton_CheckedChanged(sender As Object, e As EventArgs) Handles CPMinRadioButton.CheckedChanged
         If (CPMinRadioButton.Checked) Then
+            CPArchiveRadioButton.Checked = False
             CPFullRadioButton.Checked = False
             CPLiteRadioButton.Checked = False
             CPOtherRadioButton.Checked = False
@@ -69,6 +84,7 @@ Public Class ChangeCPForm
 
     Private Sub CPOtherRadioButton_CheckedChanged(sender As Object, e As EventArgs) Handles CPOtherRadioButton.CheckedChanged
         If (CPOtherRadioButton.Checked) Then
+            CPArchiveRadioButton.Checked = False
             CPFullRadioButton.Checked = False
             CPLiteRadioButton.Checked = False
             CPMinRadioButton.Checked = False
@@ -96,5 +112,15 @@ Public Class ChangeCPForm
 
     Private Sub ChangeCPClosing(sender As Object, e As EventArgs) Handles Me.FormClosing
         UpdaterMainForm.ChangeCP = Nothing
+    End Sub
+    Private Sub CPArchiveRadioButton_CheckedChanged(sender As Object, e As EventArgs) Handles CPArchiveRadioButton.CheckedChanged
+        If (CPArchiveRadioButton.Checked) Then
+            CPFullRadioButton.Checked = False
+            CPMinRadioButton.Checked = False
+            CPLiteRadioButton.Checked = False
+            CPOtherRadioButton.Checked = False
+            OtherTextBox.Enabled = False
+            NewVariant = "Archive"
+        End If
     End Sub
 End Class

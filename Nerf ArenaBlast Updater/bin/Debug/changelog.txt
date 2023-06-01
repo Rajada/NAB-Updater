@@ -1,5 +1,13 @@
 ﻿Please provide feedback and report any bugs at https://www.nerfarena.net
 
+3.927:
+
+- Added the Archive branch of the Community Pack to the change Community Pack window.
+
+3.926:
+
+- Fixed an oversight that caused Linux/WINE systems to throw a cast exception when checking for updates.
+
 3.925:
 
 - Fixed a bug that made all uninstall info relevant to all versions of the Community Pack.
@@ -27,7 +35,6 @@
 
 - Added support for minimal-only patch files.
 
-
 3.91:
 
 - Viewing the Updater changelog is no longer prohibited during update check.
@@ -46,12 +53,12 @@
 3.88:
 
 - Fixed some typos in strings.
-- Fixed WINE systems not being able to read the language file properly.
+- Fixed Linux/WINE systems not being able to read the language file properly.
 - The "Download Latest Community Pack" menu item now directs you to the download link for the version of the Community Pack you have installed (if you have one installed).
 
 3.87:
 
-- Addressed an issue running the updater on WINE systems.
+- Addressed an issue running the updater on Linux/WINE systems.
 
 3.86:
 
