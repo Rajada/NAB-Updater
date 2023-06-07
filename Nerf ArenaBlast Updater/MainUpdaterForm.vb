@@ -38,7 +38,7 @@ Public Class UpdaterMainForm
     Private querying As Boolean = False
     Private nodesToDelete As New List(Of TreeNode)
     Private filesToDelete As New List(Of String)
-    Private updaterVersion As String = "3.927"
+    Private updaterVersion As String = "3.928"
     Private updateDiff As Integer = 0
     Private newVersion As Boolean = False
     Private updateCount As Integer = 0
@@ -2654,6 +2654,7 @@ Public Class UpdaterMainForm
         Log(locString_Log_ChangeCPType.Replace("<var>", CPVariant), True)
         SetUpdateStatus("Ready")
         updateSuccess = True
+        updateDiff = 0
         outputTextbox.Text = locString_Output_UpdaterReady.Replace("<app>", locString_Window_UpdaterName)
         querying = False
         DoUpdate(querying)

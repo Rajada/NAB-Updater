@@ -1,5 +1,9 @@
 ﻿Please provide feedback and report any bugs at https://www.nerfarena.net
 
+3.928:
+
+- Fixed a small bug where the updater would report the game as not fully updated if you changed Community Pack versions after querying updates for the previous Community Pack version you had selected.
+
 3.927:
 
 - Added the Archive branch of the Community Pack to the change Community Pack window.
