@@ -38,7 +38,7 @@ Public Class UpdaterMainForm
     Private querying As Boolean = False
     Private nodesToDelete As New List(Of TreeNode)
     Private filesToDelete As New List(Of String)
-    Private updaterVersion As String = "3.928"
+    Private updaterVersion As String = "3.929"
     Private updateDiff As Integer = 0
     Private newVersion As Boolean = False
     Private updateCount As Integer = 0
@@ -1566,7 +1566,7 @@ Public Class UpdaterMainForm
         Dim cleanupNode As TreeNode
         Dim tempFileCount As Integer
 
-        If ((treeNode.Nodes.Count <= 0) And (Not treeNode.ForeColor = Color.Red)) Then
+        If ((treeNode.Nodes.Count <= 0) And (Not treeNode.ForeColor = Color.Red) And (Not treeNode.ForeColor = Color.Tomato)) Then
             If (Not nodesToDelete.Contains(treeNode)) Then
                 nodesToDelete.Add(treeNode)
             End If
@@ -1593,7 +1593,7 @@ Public Class UpdaterMainForm
                 If (node.Nodes.Count > 0) Then
                     fileCount = RecurseCountFiles(node, fileCount)
                 Else
-                    If (node.ForeColor = Color.Red) Then
+                    If (node.ForeColor = Color.Red Or node.ForeColor = Color.Tomato) Then
                         fileCount += 1
                     Else
                         If (Not nodesToDelete.Contains(node)) Then
@@ -1604,7 +1604,7 @@ Public Class UpdaterMainForm
                         If (node.Parent IsNot Nothing) Then
                             tempFileCount = 0
                             For Each cleanupNode In node.Parent.Nodes
-                                If (cleanupNode.ForeColor = Color.Red) Then
+                                If (cleanupNode.ForeColor = Color.Red Or cleanupNode.ForeColor = Color.Tomato) Then
                                     tempFileCount += 1
                                 ElseIf (Not nodesToDelete.Contains(cleanupNode)) AndAlso (cleanupNode.Nodes.Count > 0) Then
                                     tempFileCount += cleanupNode.Nodes.Count
@@ -1646,7 +1646,7 @@ Public Class UpdaterMainForm
             Else
                 If node.Nodes.Count > 0 Then
                     selCount = RecurseCountSelected(node, selCount)
-                ElseIf ((node.ForeColor = Color.Red) And (node.Checked)) Then
+                ElseIf ((node.ForeColor = Color.Red Or node.ForeColor = Color.Tomato) And (node.Checked)) Then
                     selCount += 1
                 End If
             End If
@@ -1681,8 +1681,8 @@ Public Class UpdaterMainForm
                 actualPath = Path.Combine(homeDirectory.FullName, temp)
                 Dim actualDirectoryInfo As DirectoryInfo = New DirectoryInfo(actualPath)
 
-                If ((Not (actualOnlinePath Like "*/")) Or ((actualOnlinePath Like "*/") And (node.ForeColor = Color.Red))) Then
-                    If (node.ForeColor = Color.Red) Then
+                If ((Not (actualOnlinePath Like "*/")) Or ((actualOnlinePath Like "*/") And (node.ForeColor = Color.Red Or node.ForeColor = Color.Tomato))) Then
+                    If (node.ForeColor = Color.Red Or node.ForeColor = Color.Tomato) Then
                         If (node.Text Like "*.*") Then
                             If (My.Computer.FileSystem.FileExists(actualPath)) Then
                                 outputTextbox.Text = locString_Output_DeletingFile & ControlChars.NewLine & ControlChars.NewLine & node.Text
@@ -1905,7 +1905,7 @@ Public Class UpdaterMainForm
             If (checkAllTypes) Then
                 node.Checked = nodeChecked
             Else
-                If (node.ForeColor = Color.DarkOrchid) Or (node.ForeColor = Color.Red) Then
+                If (node.ForeColor = Color.DarkOrchid) Or (node.ForeColor = Color.Red) Or (node.ForeColor = Color.Tomato) Then
                     node.Checked = False
                     ToggleParentChecks(node, node.Checked)
                 Else
