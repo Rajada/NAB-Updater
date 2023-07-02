@@ -1,5 +1,9 @@
 ﻿Please provide feedback and report any bugs at https://www.nerfarena.net
 
+3.9291:
+
+- Fixed a bug where the Check for Updates button would be unavailable if you had 0 updates selected then changed the state of one of the advanced mode checkboxes.
+
 3.929:
 
 - Fixed a number of small bugs with uninstalling Community Packs.

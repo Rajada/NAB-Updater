@@ -38,7 +38,7 @@ Public Class UpdaterMainForm
     Private querying As Boolean = False
     Private nodesToDelete As New List(Of TreeNode)
     Private filesToDelete As New List(Of String)
-    Private updaterVersion As String = "3.929"
+    Private updaterVersion As String = "3.9291"
     Private updateDiff As Integer = 0
     Private newVersion As Boolean = False
     Private updateCount As Integer = 0
@@ -1988,6 +1988,7 @@ Public Class UpdaterMainForm
         outputTextbox.Text = locString_Output_UpdaterReady.Replace("<app>", locString_Window_UpdaterName)
         querying = False
         DoUpdate(querying)
+        updateButton.Enabled = True
     End Sub
 
     Private Sub cleanupCheckBox_CheckedChanged(sender As Object, e As EventArgs) Handles cleanupCheckBox.CheckedChanged
@@ -1996,6 +1997,7 @@ Public Class UpdaterMainForm
         outputTextbox.Text = locString_Output_UpdaterReady.Replace("<app>", locString_Window_UpdaterName)
         querying = False
         DoUpdate(querying)
+        updateButton.Enabled = True
 
         If (cleanupCheckBox.Checked) Then
             MessageBox.Show(locString_Caption_CleanupWarning, locString_Window_Warning, MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
@@ -2034,6 +2036,7 @@ Public Class UpdaterMainForm
         outputTextbox.Text = locString_Output_UpdaterReady.Replace("<app>", locString_Window_UpdaterName)
         querying = False
         DoUpdate(querying)
+        updateButton.Enabled = True
 
         If (revertCheckBox.Checked) Then
             MessageBox.Show(locString_Caption_RevertWarning, locString_Window_Warning, MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
