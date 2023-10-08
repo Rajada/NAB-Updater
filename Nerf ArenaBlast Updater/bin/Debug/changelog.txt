@@ -1,5 +1,13 @@
 ﻿Please provide feedback and report any bugs at https://www.nerfarena.net
 
+3.9293:
+
+- Added unknown language detection logging.
+
+3.9292:
+
+- The program now asks what version of NAB you are running if engine detection fails.
+
 3.9291:
 
 - Fixed a bug where the Check for Updates button would be unavailable if you had 0 updates selected then changed the state of one of the advanced mode checkboxes.

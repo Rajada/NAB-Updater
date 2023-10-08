@@ -38,7 +38,7 @@ Public Class UpdaterMainForm
     Private querying As Boolean = False
     Private nodesToDelete As New List(Of TreeNode)
     Private filesToDelete As New List(Of String)
-    Private updaterVersion As String = "3.9291"
+    Private updaterVersion As String = "3.9293"
     Private updateDiff As Integer = 0
     Private newVersion As Boolean = False
     Private updateCount As Integer = 0
@@ -69,6 +69,7 @@ Public Class UpdaterMainForm
     Const constString_Window_ConfigNotFound As String = "<app> Configuration File Not Found"
     Const constString_Window_ConfigNotRead As String = "Unable to Read <app> Configuration File"
     Const constString_Window_DeleteFolder As String = "Delete Folder?"
+    Const constString_Window_EngineDetectionFailure As String = "Error Detecting Engine Version"
     Const constString_Window_ErrorDownloading As String = "Error Downloading File"
     Const constString_Window_ErrorUpdating As String = "Error Updating"
     Const constString_Window_ExitUpdater As String = "Exit <app>?"
@@ -99,6 +100,7 @@ Public Class UpdaterMainForm
     Const constString_Caption_ConfigNotRead As String = "Could not read <app> configuration settings. Please make sure you have permission to read and write to the game directory. You may want to run the <app> as an administrator."
     Const constString_Caption_DetectedNAB As String = "We have detected that Nerf ArenaBlast is currently running. It is highly recommended that you close Nerf ArenaBlast before updating to ensure updates are applied correctly."
     Const constString_Caption_DetectedNABCritical As String = "We have detected that Nerf ArenaBlast is currently running. It is highly recommended that you close Nerf ArenaBlast before updating to ensure updates are applied correctly. Click OK to ignore this warning or click Cancel to abort updating."
+    Const constString_Caption_EngineDetectionFailure As String = "There was an error automatically detecting the version of Nerf ArenaBlast you are running. It is important to specify if you are running a standard Nerf ArenaBlast Community Pack install or the latest Nerf ArenaBlast beta. Are you updating a standard Community Pack install?"
     Const constString_Caption_ErrorChecking As String = "Error checking for updates. Check has been cancelled."
     Const constString_Caption_ErrorDownloading As String = "Error downloading file <url>."
     Const constString_Caption_ErrorUpdatingUpdater As String = "There was an error while updating the <app>. Please try again."
@@ -205,6 +207,7 @@ Public Class UpdaterMainForm
     Const constString_Log_DetectedNABLangEnglish As String = "Detected language in Nerf ArenaBlast as English."
     Const constString_Log_DetectedNABLangGerman As String = "Detected language in Nerf ArenaBlast as German."
     Const constString_Log_DetectedNABLangItalian As String = "Detected language in Nerf ArenaBlast as Italian."
+    Const constString_Log_DetectedNABLangUnknown As String = "Warning: Detected unknown language in Nerf ArenaBlast <lang>."
     Const constString_Log_DetectingCP As String = "Detecting Community Pack..."
     Const constString_Log_DetectingEngine As String = "Detecting engine version..."
     Const constString_Log_DownloadingNewVersion As String = "Downloading new version..."
@@ -255,6 +258,7 @@ Public Class UpdaterMainForm
     Private locString_Window_ConfigNotFound As String = constString_Window_ConfigNotFound
     Private locString_Window_ConfigNotRead As String = constString_Window_ConfigNotRead
     Private locString_Window_DeleteFolder As String = constString_Window_DeleteFolder
+    Private locString_Window_EngineDetectionFailure As String = constString_Window_EngineDetectionFailure
     Private locString_Window_ErrorDownloading As String = constString_Window_ErrorDownloading
     Private locString_Window_ErrorUpdating As String = constString_Window_ErrorUpdating
     Private locString_Window_ExitUpdater As String = constString_Window_ExitUpdater
@@ -285,6 +289,7 @@ Public Class UpdaterMainForm
     Private locString_Caption_ConfigNotRead As String = constString_Caption_ConfigNotRead
     Private locString_Caption_DetectedNAB As String = constString_Caption_DetectedNAB
     Private locString_Caption_DetectedNABCritical As String = constString_Caption_DetectedNABCritical
+    Private locString_Caption_EngineDetectionFailure As String = constString_Caption_EngineDetectionFailure
     Private locString_Caption_ErrorChecking As String = constString_Caption_ErrorChecking
     Private locString_Caption_ErrorDownloading As String = constString_Caption_ErrorDownloading
     Private locString_Caption_ErrorReport As String = constString_Caption_ErrorReport
@@ -391,6 +396,7 @@ Public Class UpdaterMainForm
     Private locString_Log_DetectedNABLangEnglish As String = constString_Log_DetectedNABLangEnglish
     Private locString_Log_DetectedNABLangGerman As String = constString_Log_DetectedNABLangGerman
     Private locString_Log_DetectedNABLangItalian As String = constString_Log_DetectedNABLangItalian
+    Private locString_Log_DetectedNABLangUnknown As String = constString_Log_DetectedNABLangUnknown
     Private locString_Log_DetectingCP As String = constString_Log_DetectingCP
     Private locString_Log_DetectingEngine As String = constString_Log_DetectingEngine
     Private locString_Log_DownloadingNewVersion As String = constString_Log_DownloadingNewVersion
@@ -812,6 +818,8 @@ Public Class UpdaterMainForm
         ElseIf (tempLang.ToString = "itt") Then
             lang = "Italian"
             Log(locString_Log_DetectedNABLangItalian, True)
+        Else
+            Log(locString_Log_DetectedNABLangUnknown.Replace("<lang>", tempLang.ToString), True)
         End If
 
         Return lang
@@ -906,19 +914,43 @@ Public Class UpdaterMainForm
         ElseIf (engineVersion.ToString = "ERROR") Then
             Log(locString_Log_EngineError, True)
             engineVersionNumber = -1
-            selectedBaseDirectory = onlineBaseDirectory
-            selectedCustomDirectory = onlineCustomDirectory
-            UpdateSettings("BaseQueryURL", onlineBaseDirectory)
-            UpdateSettings("CommunityQueryURL", onlineCustomDirectory)
             GetLatestCommunityPackToolStripMenuItem.Enabled = False
+
+            If (MessageBox.Show(locString_Caption_EngineDetectionFailure.Replace("<app>", locString_Window_UpdaterName), locString_Window_EngineDetectionFailure, MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) = DialogResult.Yes) Then
+                engineVersionNumber = 1
+                selectedBaseDirectory = onlineOldBaseDirectory
+                selectedCustomDirectory = onlineOldCustomDirectory
+                UpdateSettings("BaseQueryURL", onlineOldBaseDirectory)
+                UpdateSettings("CommunityQueryURL", onlineOldCustomDirectory)
+                GetLatestCommunityPackToolStripMenuItem.Enabled = True
+            Else
+                engineVersionNumber = 2
+                selectedBaseDirectory = onlineBaseDirectory
+                selectedCustomDirectory = onlineCustomDirectory
+                UpdateSettings("BaseQueryURL", onlineBaseDirectory)
+                UpdateSettings("CommunityQueryURL", onlineCustomDirectory)
+                GetLatestCommunityPackToolStripMenuItem.Enabled = True
+            End If
         Else
-            Log(locString_Log_EngineUnknown.Replace("<ver>", engineVersion.ToString), True)
+                Log(locString_Log_EngineUnknown.Replace("<ver>", engineVersion.ToString), True)
             engineVersionNumber = 0
-            selectedBaseDirectory = onlineBaseDirectory
-            selectedCustomDirectory = onlineCustomDirectory
-            UpdateSettings("BaseQueryURL", onlineBaseDirectory)
-            UpdateSettings("CommunityQueryURL", onlineCustomDirectory)
             GetLatestCommunityPackToolStripMenuItem.Enabled = False
+
+            If (MessageBox.Show(locString_Caption_EngineDetectionFailure.Replace("<app>", locString_Window_UpdaterName), locString_Window_EngineDetectionFailure, MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) = DialogResult.Yes) Then
+                engineVersionNumber = 1
+                selectedBaseDirectory = onlineOldBaseDirectory
+                selectedCustomDirectory = onlineOldCustomDirectory
+                UpdateSettings("BaseQueryURL", onlineOldBaseDirectory)
+                UpdateSettings("CommunityQueryURL", onlineOldCustomDirectory)
+                GetLatestCommunityPackToolStripMenuItem.Enabled = True
+            Else
+                engineVersionNumber = 2
+                selectedBaseDirectory = onlineBaseDirectory
+                selectedCustomDirectory = onlineCustomDirectory
+                UpdateSettings("BaseQueryURL", onlineBaseDirectory)
+                UpdateSettings("CommunityQueryURL", onlineCustomDirectory)
+                GetLatestCommunityPackToolStripMenuItem.Enabled = True
+            End If
         End If
     End Sub
 
@@ -2236,6 +2268,7 @@ Public Class UpdaterMainForm
                 locString_Window_ConfigNotFound = readIni(ldi.FullName, "Windows", "locString_Window_ConfigNotFound", SB, constString_Window_ConfigNotFound)
                 locString_Window_ConfigNotRead = readIni(ldi.FullName, "Windows", "locString_Window_ConfigNotRead", SB, constString_Window_ConfigNotRead)
                 locString_Window_DeleteFolder = readIni(ldi.FullName, "Windows", "locString_Window_DeleteFolder", SB, constString_Window_DeleteFolder)
+                locString_Window_EngineDetectionFailure = readIni(ldi.FullName, "Windows", "locString_Window_EngineDetectionFailure", SB, constString_Window_EngineDetectionFailure)
                 locString_Window_ErrorDownloading = readIni(ldi.FullName, "Windows", "locString_Window_ErrorDownloading", SB, constString_Window_ErrorDownloading)
                 locString_Window_ErrorUpdating = readIni(ldi.FullName, "Windows", "locString_Window_ErrorUpdating", SB, constString_Window_ErrorUpdating)
                 locString_Window_ExitUpdater = readIni(ldi.FullName, "Windows", "locString_Window_ExitUpdater", SB, constString_Window_ExitUpdater)
@@ -2267,6 +2300,7 @@ Public Class UpdaterMainForm
                 locString_Caption_ConfigNotRead = readIni(ldi.FullName, "Captions", "locString_Caption_ConfigNotRead", SB, constString_Caption_ConfigNotRead)
                 locString_Caption_DetectedNAB = readIni(ldi.FullName, "Captions", "locString_Caption_DetectedNAB", SB, constString_Caption_DetectedNAB)
                 locString_Caption_DetectedNABCritical = readIni(ldi.FullName, "Captions", "locString_Caption_DetectedNABCritical", SB, constString_Caption_DetectedNABCritical)
+                locString_Caption_EngineDetectionFailure = readIni(ldi.FullName, "Captions", "locString_Caption_EngineDetectionFailure", SB, constString_Caption_EngineDetectionFailure)
                 locString_Caption_ErrorChecking = readIni(ldi.FullName, "Captions", "locString_Caption_ErrorChecking", SB, constString_Caption_ErrorChecking)
                 locString_Caption_ErrorDownloading = readIni(ldi.FullName, "Captions", "locString_Caption_ErrorDownloading", SB, constString_Caption_ErrorDownloading)
                 locString_Caption_ErrorReport = readIni(ldi.FullName, "Captions", "locString_Caption_ErrorReport", SB, constString_Caption_ErrorReport)
@@ -2416,6 +2450,7 @@ Public Class UpdaterMainForm
                 locString_Log_DetectedNABLangEnglish = readIni(ldi.FullName, "Log", "locString_Log_DetectedNABLangEnglish", SB, constString_Log_DetectedNABLangEnglish)
                 locString_Log_DetectedNABLangGerman = readIni(ldi.FullName, "Log", "locString_Log_DetectedNABLangGerman", SB, constString_Log_DetectedNABLangGerman)
                 locString_Log_DetectedNABLangItalian = readIni(ldi.FullName, "Log", "locString_Log_DetectedNABLangItalian", SB, constString_Log_DetectedNABLangItalian)
+                locString_Log_DetectedNABLangUnknown = readIni(ldi.FullName, "Log", "locString_Log_DetectedNABLangUnknown", SB, constString_Log_DetectedNABLangUnknown)
                 locString_Log_DetectingCP = readIni(ldi.FullName, "Log", "locString_Log_DetectingCP", SB, constString_Log_DetectingCP)
                 locString_Log_DetectingEngine = readIni(ldi.FullName, "Log", "locString_Log_DetectingEngine", SB, constString_Log_DetectingEngine)
                 locString_Log_DownloadingNewVersion = readIni(ldi.FullName, "Log", "locString_Log_DownloadingNewVersion", SB, constString_Log_DownloadingNewVersion)
