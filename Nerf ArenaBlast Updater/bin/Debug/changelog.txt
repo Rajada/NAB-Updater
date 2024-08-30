@@ -1,5 +1,9 @@
 ﻿Please provide feedback and report any bugs at https://www.nerfarena.net
 
+3.9294:
+
+- Downloaded files now have their date modified set to the date modified of the file rather than the date and time it was downloaded.
+
 3.9293:
 
 - Added unknown language detection logging.
