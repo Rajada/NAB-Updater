@@ -1,5 +1,14 @@
 ﻿Please provide feedback and report any bugs at https://www.nerfarena.net
 
+3.9296:
+
+- Fixed a bug that caused language loading to fail.
+- Languages can now name themselves in the UI with newly added language strings.
+
+3.9295:
+
+- Added additional date and time information to the log when updating a file.
+
 3.9294:
 
 - Downloaded files now have their date modified set to the date modified of the file rather than the date and time it was downloaded.

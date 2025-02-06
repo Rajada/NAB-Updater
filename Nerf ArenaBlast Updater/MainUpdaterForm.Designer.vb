@@ -208,6 +208,7 @@ Partial Class UpdaterMainForm
         '
         Me.InternationalEnglishDefaultToolStripMenuItem.Name = "InternationalEnglishDefaultToolStripMenuItem"
         resources.ApplyResources(Me.InternationalEnglishDefaultToolStripMenuItem, "InternationalEnglishDefaultToolStripMenuItem")
+        Me.InternationalEnglishDefaultToolStripMenuItem.Tag = "International English"
         '
         'ToolStripSeparator5
         '

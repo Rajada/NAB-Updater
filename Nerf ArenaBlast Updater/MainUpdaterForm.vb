@@ -38,7 +38,7 @@ Public Class UpdaterMainForm
     Private querying As Boolean = False
     Private nodesToDelete As New List(Of TreeNode)
     Private filesToDelete As New List(Of String)
-    Private updaterVersion As String = "3.9294"
+    Private updaterVersion As String = "3.9296"
     Private updateDiff As Integer = 0
     Private newVersion As Boolean = False
     Private updateCount As Integer = 0
@@ -242,12 +242,14 @@ Public Class UpdaterMainForm
     Const constString_Log_RefreshFile As String = "Refreshing <dir>."
     Const constString_log_ServerNoResponse As String = "Error: Could not reach the update server at <url>."
     Const constString_Log_Shutdown As String = "<app> shutting down."
-    Const constString_Log_UpdateFile As String = "Updating file <dir>."
+    Const constString_Log_UpdateFile As String = "Updating file <dir>: <olddate> -> <newdate>."
     Const constString_Log_UpdaterUpdateFailBat As String = "Error: Could not update the <app>. Missing bat file."
     Const constString_Log_UpdateServerNoResponse As String = "Warning: Could not reach the update server while checking for new versions."
     Const constString_Log_UpdatesWereSuccessful As String = "Updates were successful."
     Const constString_Log_UpdatingFiles As String = "Updating files..."
     Const constString_Log_UpdatingSelectedFiles As String = "Updating selected files..."
+
+    Const constString_Language_Name As String = "International English"
 
     ' Windows
     Private locString_Window_AboutUpdater As String = constString_Window_AboutUpdater
@@ -438,6 +440,8 @@ Public Class UpdaterMainForm
     Private locString_Log_UpdatingFiles As String = constString_Log_UpdatingFiles
     Private locString_Log_UpdatingSelectedFiles As String = constString_Log_UpdatingSelectedFiles
 
+    Private locString_Language_Name As String = constString_Language_Name
+
     Dim resFilestream As Stream
     Dim Exeassembly As Assembly = Assembly.GetExecutingAssembly
     Dim Mynamespace As String = Exeassembly.GetName().Name.ToString()
@@ -580,12 +584,15 @@ Public Class UpdaterMainForm
         Dim FileArray As FileInfo() = ldi.GetFiles()
         Dim LFI As FileInfo
         Dim LTSMI As ToolStripMenuItem
+        Dim SB As StringBuilder = New StringBuilder(255)
 
         For Each LFI In FileArray
             If ((LFI.Name Like "*.lang") And (Not LFI.Name Like "International English.lang")) Then
-                LTSMI = New ToolStripMenuItem()
-                LTSMI.Name = LFI.Name.Replace(".lang", "ToolStripMenuItem")
-                LTSMI.Text = LFI.Name.Replace(".lang", "")
+                LTSMI = New ToolStripMenuItem With {
+                    .Name = LFI.Name.Replace(".lang", "ToolStripMenuItem"),
+                    .Tag = LFI.Name.Replace(".lang", ""),
+                    .Text = readIni(Path.Combine(ldi.FullName, LFI.Name), "Language", "locString_Language_Name", SB, LFI.Name.Replace(".lang", ""))
+                }
                 AddHandler LTSMI.Click, AddressOf MenuItemClicked
                 LanguageToolStripMenuItem.DropDownItems.Add(LTSMI)
             End If
@@ -593,7 +600,7 @@ Public Class UpdaterMainForm
     End Sub
 
     Private Sub MenuItemClicked(ByVal sender As System.Object, ByVal e As System.EventArgs)
-        SetLanguage(DirectCast(sender, ToolStripItem).Text, False)
+        SetLanguage(CStr(DirectCast(sender, ToolStripItem).Tag), False)
     End Sub
 
     Private Sub UpdaterMainForm_Load(sender As Object, e As EventArgs) Handles Me.Load
@@ -1699,6 +1706,8 @@ Public Class UpdaterMainForm
         Dim actualPath As String
         Dim temp As String
         Dim myWebClient As New WebClient()
+        Dim infoReader As FileInfo
+        Dim oldFileDate As String = "N/A"
 
         For Each node In treeNode.Nodes
 
@@ -1749,6 +1758,11 @@ Public Class UpdaterMainForm
                                 Log(locString_Log_DownloadNewFile.Replace("<url>", actualOnlinePath), True)
                             End If
 
+                            If (My.Computer.FileSystem.FileExists(actualPath)) Then
+                                infoReader = My.Computer.FileSystem.GetFileInfo(actualPath)
+                                oldFileDate = CStr(infoReader.LastWriteTime)
+                            End If
+
                             outputTextbox.Text = locString_Output_DownloadingFile & ControlChars.NewLine & ControlChars.NewLine & node.Text
                             myWebClient.DownloadFile(actualOnlinePath, actualPath)
                             Dim fileData() = Split(CStr(node.Tag), "?")
@@ -1780,7 +1794,7 @@ Public Class UpdaterMainForm
                             End If
 
                             node.ForeColor = Color.Green
-                            Log(locString_Log_UpdateFile.Replace("<dir>", actualPath), True)
+                            Log(locString_Log_UpdateFile.Replace("<dir>", actualPath).Replace("<olddate>", oldFileDate).Replace("<newdate>", CStr(Date.ParseExact(fileData(1), "yyyy-MM-dd HH:mm", New Globalization.CultureInfo("en-US")))), True)
                         Catch e As Exception
                             Log(locString_Log_ErrorDownloading.Replace("<url>", actualOnlinePath), True)
                             MessageBox.Show(locString_Caption_ErrorDownloading.Replace("<url>", actualOnlinePath) & ControlChars.NewLine & ControlChars.NewLine & locString_Caption_ErrorReport & ControlChars.NewLine & ControlChars.NewLine & e.ToString, locString_Window_ErrorDownloading, MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1)
@@ -2137,631 +2151,635 @@ Public Class UpdaterMainForm
 
         AdvancedMode = Advanced
 
-            If (Advanced) Then
-                AdvancedModeToolStripMenuItem.Text = locString_Toolbar_AdvancedDisable
-                updateFilesTreeView.CheckBoxes = True
-                selectAllButton.Visible = True
-                deselectAllButton.Visible = True
-                customCheckBox.Visible = True
-                LaunchGameCheckbox.Visible = True
-                cleanupCheckBox.Visible = True
-                revertCheckBox.Visible = True
-                SelectAllToolStripMenuItem.Visible = True
-                DeselectAllToolStripMenuItem.Visible = True
-                UpdateSettings("BootAdvanced", "1")
+        If (Advanced) Then
+            AdvancedModeToolStripMenuItem.Text = locString_Toolbar_AdvancedDisable
+            updateFilesTreeView.CheckBoxes = True
+            selectAllButton.Visible = True
+            deselectAllButton.Visible = True
+            customCheckBox.Visible = True
+            LaunchGameCheckbox.Visible = True
+            cleanupCheckBox.Visible = True
+            revertCheckBox.Visible = True
+            SelectAllToolStripMenuItem.Visible = True
+            DeselectAllToolStripMenuItem.Visible = True
+            UpdateSettings("BootAdvanced", "1")
 
-                If (updateCount > 0) Then
-                    If (updateFilesTreeView.Nodes.Count > 0) Then
-                        For Each myNode In updateFilesTreeView.Nodes
-                            myNode.Checked = True
-                            If myNode.Nodes.Count > 0 Then
-                                CheckAllChildNodes(myNode, myNode.Checked, True)
-                            End If
-                        Next
-                    End If
-                    SetUpdateStatus("Update")
+            If (updateCount > 0) Then
+                If (updateFilesTreeView.Nodes.Count > 0) Then
+                    For Each myNode In updateFilesTreeView.Nodes
+                        myNode.Checked = True
+                        If myNode.Nodes.Count > 0 Then
+                            CheckAllChildNodes(myNode, myNode.Checked, True)
+                        End If
+                    Next
                 End If
-            Else
-                UpdateSettings("BootAdvanced", "0")
-                AdvancedModeToolStripMenuItem.Text = locString_Toolbar_AdvancedEnable
-                updateFilesTreeView.CheckBoxes = False
-                selectAllButton.Visible = False
-                deselectAllButton.Visible = False
-                customCheckBox.Visible = False
-                LaunchGameCheckbox.Visible = False
+                SetUpdateStatus("Update")
+            End If
+        Else
+            UpdateSettings("BootAdvanced", "0")
+            AdvancedModeToolStripMenuItem.Text = locString_Toolbar_AdvancedEnable
+            updateFilesTreeView.CheckBoxes = False
+            selectAllButton.Visible = False
+            deselectAllButton.Visible = False
+            customCheckBox.Visible = False
+            LaunchGameCheckbox.Visible = False
 
-                If (cleanupCheckBox.Checked) Then
-                    cleanupCheckBox.Checked = False
+            If (cleanupCheckBox.Checked) Then
+                cleanupCheckBox.Checked = False
+            End If
+            cleanupCheckBox.Visible = False
+
+            If (revertCheckBox.Checked) Then
+                revertCheckBox.Checked = False
+            End If
+            revertCheckBox.Visible = False
+
+            SelectAllToolStripMenuItem.Visible = False
+            DeselectAllToolStripMenuItem.Visible = False
+
+            CheckForCP(True)
+            SetUpdateStatus("Ready")
+            updateButton.Enabled = True
+            PlayNerfArenaBlastToolStripMenuItem.Enabled = True
+            CheckForUpdatesToolStripMenuItem.Enabled = True
+            ChangeCommunityPackToolStripMenuItem.Enabled = True
+            updateCount = 0
+        End If
+    End Sub
+
+    Private Sub updateFilesTreeView_BeforeCheck(sender As Object, e As TreeViewCancelEventArgs) Handles updateFilesTreeView.BeforeCheck
+
+        If ((updateSuccess) Or (Updating)) Then
+            e.Cancel = True
+        End If
+    End Sub
+
+    Private Sub ShowLatestUpdateIDToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ShowLatestUpdateIDToolStripMenuItem.Click
+        Dim SB As StringBuilder = New StringBuilder(255)
+        Dim IDString As String = "NAB"
+        Dim updateFlag As Integer
+        Dim EngineSum As String = CreateMD5Sum(Path.Combine(homeDirectory.FullName, "System\Engine.u"))
+        Dim NerfISum As String = CreateMD5Sum(Path.Combine(homeDirectory.FullName, "System\NerfI.u"))
+        Dim NerfWeaponSum As String = CreateMD5Sum(Path.Combine(homeDirectory.FullName, "System\NerfWeapon.u"))
+        Dim NerfMenuSum As String = CreateMD5Sum(Path.Combine(homeDirectory.FullName, "System\NerfMenu.u"))
+        Dim NerfKidsSum As String = CreateMD5Sum(Path.Combine(homeDirectory.FullName, "System\NerfKids.u"))
+        Dim NerfResSum As String = CreateMD5Sum(Path.Combine(homeDirectory.FullName, "System\NerfRes.u"))
+
+        updateFlag = CInt(readIni(iniDirectory.ToString, "PatchUpdate", "Update", SB, "-1"))
+
+        If (engineVersionNumber = 2) Then
+            IDString += "300"
+        Else
+            If (updateFlag = 1) Then
+                IDString += "12"
+            ElseIf (updateFlag = -1) Then
+                IDString += "X"
+            End If
+        End If
+
+        Select Case cpVariantString
+            Case "Full"
+                IDString += "-CPF"
+            Case "Lite"
+                IDString += "-CPL"
+            Case "Minimal"
+                IDString += "-CPM"
+            Case "Beta"
+                IDString += "-CPB"
+            Case "Archive"
+                IDString += "-CPA"
+            Case ""
+                Exit Select
+            Case Else
+                IDString += "-CPX"
+        End Select
+
+        If (cpVersionString IsNot Nothing) Then
+            IDString += cpVersionString
+        Else
+            IDString += "0"
+        End If
+
+        IDString += Environment.NewLine + "E-" + EngineSum + Environment.NewLine + "I-" + NerfISum + Environment.NewLine + "W-" + NerfWeaponSum + Environment.NewLine + "M-" + NerfMenuSum + Environment.NewLine + "K-" + NerfKidsSum + Environment.NewLine + "R-" + NerfResSum
+
+        MessageBox.Show(locString_Caption_UpdateID + Environment.NewLine + IDString, locString_Window_UpdateID, MessageBoxButtons.OK, MessageBoxIcon.None)
+    End Sub
+
+    Private Sub OpenGameDirectoryToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles OpenGameDirectoryToolStripMenuItem.Click
+        Process.Start(homeDirectory.FullName)
+    End Sub
+
+    Private Sub LoadLanguageStrings(Lang As String)
+        Dim ldi As New DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory().ToString, "languages"))
+        Dim FileArray As FileInfo() = ldi.GetFiles()
+        Dim LFI As FileInfo
+        Dim SB As New StringBuilder(255)
+
+        For Each LFI In FileArray
+            If (LFI.Name Like (Lang + ".lang")) Then
+                ldi = New DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory().ToString, "languages", LFI.Name))
+
+                ' Windows
+                locString_Window_AboutUpdater = readIni(ldi.FullName, "Windows", "locString_Window_AboutUpdater", SB, constString_Window_AboutUpdater)
+                locString_Window_AdvancedDisable = readIni(ldi.FullName, "Windows", "locString_Window_AdvancedDisable", SB, constString_Window_AdvancedDisable)
+                locString_Window_AdvancedEnable = readIni(ldi.FullName, "Windows", "locString_Window_AdvancedEnable", SB, constString_Window_AdvancedEnable)
+                locString_Window_ChangeCP = readIni(ldi.FullName, "Windows", "locString_Window_ChangeCP", SB, constString_Window_ChangeCP)
+                If (ChangeCP IsNot Nothing) Then
+                    ChangeCP.Text = locString_Window_ChangeCP
                 End If
-                cleanupCheckBox.Visible = False
-
-                If (revertCheckBox.Checked) Then
-                    revertCheckBox.Checked = False
+                locString_Window_Changelog = readIni(ldi.FullName, "Windows", "locString_Window_Changelog", SB, constString_Window_Changelog)
+                If (Changelog IsNot Nothing) Then
+                    Changelog.Text = locString_Window_Changelog
                 End If
-                revertCheckBox.Visible = False
-
-                SelectAllToolStripMenuItem.Visible = False
-                DeselectAllToolStripMenuItem.Visible = False
-
-                CheckForCP(True)
-                SetUpdateStatus("Ready")
-                updateButton.Enabled = True
-                PlayNerfArenaBlastToolStripMenuItem.Enabled = True
-                CheckForUpdatesToolStripMenuItem.Enabled = True
-                ChangeCommunityPackToolStripMenuItem.Enabled = True
-                updateCount = 0
-            End If
-        End Sub
-
-        Private Sub updateFilesTreeView_BeforeCheck(sender As Object, e As TreeViewCancelEventArgs) Handles updateFilesTreeView.BeforeCheck
-
-            If ((updateSuccess) Or (Updating)) Then
-                e.Cancel = True
-            End If
-        End Sub
-
-        Private Sub ShowLatestUpdateIDToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ShowLatestUpdateIDToolStripMenuItem.Click
-            Dim SB As StringBuilder = New StringBuilder(512)
-            Dim IDString As String = "NAB"
-            Dim updateFlag As Integer
-            Dim EngineSum As String = CreateMD5Sum(Path.Combine(homeDirectory.FullName, "System\Engine.u"))
-            Dim NerfISum As String = CreateMD5Sum(Path.Combine(homeDirectory.FullName, "System\NerfI.u"))
-            Dim NerfWeaponSum As String = CreateMD5Sum(Path.Combine(homeDirectory.FullName, "System\NerfWeapon.u"))
-            Dim NerfMenuSum As String = CreateMD5Sum(Path.Combine(homeDirectory.FullName, "System\NerfMenu.u"))
-            Dim NerfKidsSum As String = CreateMD5Sum(Path.Combine(homeDirectory.FullName, "System\NerfKids.u"))
-            Dim NerfResSum As String = CreateMD5Sum(Path.Combine(homeDirectory.FullName, "System\NerfRes.u"))
-
-            updateFlag = CInt(readIni(iniDirectory.ToString, "PatchUpdate", "Update", SB, "-1"))
-
-            If (engineVersionNumber = 2) Then
-                IDString += "300"
-            Else
-                If (updateFlag = 1) Then
-                    IDString += "12"
-                ElseIf (updateFlag = -1) Then
-                    IDString += "X"
+                locString_Window_Log = readIni(ldi.FullName, "Windows", "locString_Window_Log", SB, constString_Window_Log)
+                If (LogViewer IsNot Nothing) Then
+                    LogViewer.Text = locString_Window_Log
                 End If
-            End If
+                locString_Window_ConfigNotFound = readIni(ldi.FullName, "Windows", "locString_Window_ConfigNotFound", SB, constString_Window_ConfigNotFound)
+                locString_Window_ConfigNotRead = readIni(ldi.FullName, "Windows", "locString_Window_ConfigNotRead", SB, constString_Window_ConfigNotRead)
+                locString_Window_DeleteFolder = readIni(ldi.FullName, "Windows", "locString_Window_DeleteFolder", SB, constString_Window_DeleteFolder)
+                locString_Window_EngineDetectionFailure = readIni(ldi.FullName, "Windows", "locString_Window_EngineDetectionFailure", SB, constString_Window_EngineDetectionFailure)
+                locString_Window_ErrorDownloading = readIni(ldi.FullName, "Windows", "locString_Window_ErrorDownloading", SB, constString_Window_ErrorDownloading)
+                locString_Window_ErrorUpdating = readIni(ldi.FullName, "Windows", "locString_Window_ErrorUpdating", SB, constString_Window_ErrorUpdating)
+                locString_Window_ExitUpdater = readIni(ldi.FullName, "Windows", "locString_Window_ExitUpdater", SB, constString_Window_ExitUpdater)
+                locString_Window_GameExeNotFound = readIni(ldi.FullName, "Windows", "locString_Window_GameExeNotFound", SB, constString_Window_GameExeNotFound)
+                locString_Window_IniNotFound = readIni(ldi.FullName, "Windows", "locString_Window_IniNotFound", SB, constString_Window_IniNotFound)
+                locString_Window_Log = readIni(ldi.FullName, "Windows", "locString_Window_Log", SB, constString_Window_Log)
+                locString_Window_NABRunning = readIni(ldi.FullName, "Windows", "locString_Window_NABRunning", SB, constString_Window_NABRunning)
+                locString_Window_NewVersionAvailable = readIni(ldi.FullName, "Windows", "locString_Window_NewVersionAvailable", SB, constString_Window_NewVersionAvailable)
+                locString_Window_SelectInstall = readIni(ldi.FullName, "Windows", "locString_Window_SelectInstall", SB, constString_Window_SelectInstall)
+                locString_Window_ServerNoResponse = readIni(ldi.FullName, "Windows", "locString_Window_ServerNoResponse", SB, constString_Window_ServerNoResponse)
+                locString_Window_UpdateAborted = readIni(ldi.FullName, "Windows", "locString_Window_UpdateAborted", SB, constString_Window_UpdateAborted)
+                locString_Window_UpdateCheckCancelled = readIni(ldi.FullName, "Windows", "locString_Window_UpdateCheckCancelled", SB, constString_Window_UpdateCheckCancelled)
+                locString_Window_UpdateCheckComplete = readIni(ldi.FullName, "Windows", "locString_Window_UpdateCheckComplete", SB, constString_Window_UpdateCheckComplete)
+                locString_Window_UpdateComplete = readIni(ldi.FullName, "Windows", "locString_Window_UpdateComplete", SB, constString_Window_UpdateComplete)
+                locString_Window_UpdateID = readIni(ldi.FullName, "Windows", "locString_Window_UpdateID", SB, constString_Window_UpdateID)
+                locString_Window_UpdaterName = readIni(ldi.FullName, "Windows", "locString_Window_UpdaterName", SB, constString_Window_UpdaterName)
+                Me.Text = locString_Window_UpdaterName + " " + updaterVersion
+                locString_Window_UpdaterRunning = readIni(ldi.FullName, "Windows", "locString_Window_UpdaterRunning", SB, constString_Window_UpdaterRunning)
+                locString_Window_VersionCheckComplete = readIni(ldi.FullName, "Windows", "locString_Window_VersionCheckComplete", SB, constString_Window_VersionCheckComplete)
+                locString_Window_Warning = readIni(ldi.FullName, "Windows", "locString_Window_Warning", SB, constString_Window_Warning)
 
-            Select Case cpVariantString
-                Case "Full"
-                    IDString += "-CPF"
-                Case "Lite"
-                    IDString += "-CPL"
-                Case "Minimal"
-                    IDString += "-CPM"
-                Case "Beta"
-                    IDString += "-CPB"
-                Case "Archive"
-                    IDString += "-CPA"
-                Case ""
-                    Exit Select
-                Case Else
-                    IDString += "-CPX"
-            End Select
+                ' Captions
+                locString_Caption_AdvancedEnableWarning = readIni(ldi.FullName, "Captions", "locString_Caption_AdvancedEnableWarning", SB, constString_Caption_AdvancedEnableWarning)
+                locString_Caption_AdvancedDisableWarning = readIni(ldi.FullName, "Captions", "locString_Caption_AdvancedDisableWarning", SB, constString_Caption_AdvancedDisableWarning)
+                locString_Caption_ChangeCPWarning = readIni(ldi.FullName, "Captions", "locString_Caption_ChangeCPWarning", SB, constString_Caption_ChangeCPWarning)
+                locString_Caption_ChangelogMissing = readIni(ldi.FullName, "Captions", "locString_Caption_ChangelogMissing", SB, constString_Caption_ChangelogMissing)
+                locString_Caption_CleanupWarning = readIni(ldi.FullName, "Captions", "locString_Caption_CleanupWarning", SB, constString_Caption_CleanupWarning)
+                locString_Caption_ConfigNotFound = readIni(ldi.FullName, "Captions", "locString_Caption_ConfigNotFound", SB, constString_Caption_ConfigNotFound)
+                locString_Caption_ConfigNotRead = readIni(ldi.FullName, "Captions", "locString_Caption_ConfigNotRead", SB, constString_Caption_ConfigNotRead)
+                locString_Caption_DetectedNAB = readIni(ldi.FullName, "Captions", "locString_Caption_DetectedNAB", SB, constString_Caption_DetectedNAB)
+                locString_Caption_DetectedNABCritical = readIni(ldi.FullName, "Captions", "locString_Caption_DetectedNABCritical", SB, constString_Caption_DetectedNABCritical)
+                locString_Caption_EngineDetectionFailure = readIni(ldi.FullName, "Captions", "locString_Caption_EngineDetectionFailure", SB, constString_Caption_EngineDetectionFailure)
+                locString_Caption_ErrorChecking = readIni(ldi.FullName, "Captions", "locString_Caption_ErrorChecking", SB, constString_Caption_ErrorChecking)
+                locString_Caption_ErrorDownloading = readIni(ldi.FullName, "Captions", "locString_Caption_ErrorDownloading", SB, constString_Caption_ErrorDownloading)
+                locString_Caption_ErrorReport = readIni(ldi.FullName, "Captions", "locString_Caption_ErrorReport", SB, constString_Caption_ErrorReport)
+                locString_Caption_ErrorUpdatingUpdater = readIni(ldi.FullName, "Captions", "locString_Caption_ErrorUpdatingUpdater", SB, constString_Caption_ErrorUpdatingUpdater)
+                locString_Caption_ExitNoUpdate = readIni(ldi.FullName, "Captions", "locString_Caption_ExitNoUpdate", SB, constString_Caption_ExitNoUpdate)
+                locString_Caption_ExitMidUpdate = readIni(ldi.FullName, "Captions", "locString_Caption_ExitMidUpdate", SB, constString_Caption_ExitMidUpdate)
+                locString_Caption_IniNotLocated = readIni(ldi.FullName, "Captions", "locString_Caption_IniNotLocated", SB, constString_Caption_IniNotLocated)
+                locString_Caption_NewVersionAvailable = readIni(ldi.FullName, "Captions", "locString_Caption_NewVersionAvailable", SB, constString_Caption_NewVersionAvailable)
+                locString_Caption_NoGameExeWarning = readIni(ldi.FullName, "Captions", "locString_Caption_NoGameExeWarning", SB, constString_Caption_NoGameExeWarning)
+                locString_Caption_FolderDeletionWarning = readIni(ldi.FullName, "Captions", "locString_Caption_FolderDeletionWarning", SB, constString_Caption_FolderDeletionWarning)
+                locString_Caption_NoNewUpdates = readIni(ldi.FullName, "Captions", "locString_Caption_NoNewUpdates", SB, constString_Caption_NoNewUpdates)
+                locString_Caption_NoNewVersion = readIni(ldi.FullName, "Captions", "locString_Caption_NoNewVersion", SB, constString_Caption_NoNewVersion)
+                locString_Caption_RevertWarning = readIni(ldi.FullName, "Captions", "locString_Caption_RevertWarning", SB, constString_Caption_RevertWarning)
+                locString_Caption_ServerNoResponse = readIni(ldi.FullName, "Captions", "locString_Caption_ServerNoResponse", SB, constString_Caption_ServerNoResponse)
+                locString_Caption_UpdateID = readIni(ldi.FullName, "Captions", "locString_Caption_UpdateID", SB, constString_Caption_UpdateID)
+                locString_Caption_UpdateServerNoResponse = readIni(ldi.FullName, "Captions", "locString_Caption_UpdateServerNoResponse", SB, constString_Caption_UpdateServerNoResponse)
+                locString_Caption_UpdatesWereSuccessful = readIni(ldi.FullName, "Captions", "locString_Caption_UpdatesWereSuccessful", SB, constString_Caption_UpdatesWereSuccessful)
+                locString_Caption_UpdaterForceClose = readIni(ldi.FullName, "Captions", "locString_Caption_UpdaterForceClose", SB, constString_Caption_UpdaterForceClose)
+                locString_Caption_UpdatingAborted = readIni(ldi.FullName, "Captions", "locString_Caption_UpdatingAborted", SB, constString_Caption_UpdatingAborted)
 
-            If (cpVersionString IsNot Nothing) Then
-                IDString += cpVersionString
-            Else
-                IDString += "0"
-            End If
+                ' Outputs
+                locString_Output_CheckingForUpdates = readIni(ldi.FullName, "Outputs", "locString_Output_CheckingForUpdates", SB, constString_Output_CheckingForUpdates)
+                locString_Output_DeletingDirectory = readIni(ldi.FullName, "Outputs", "locString_Output_DeletingDirectory", SB, constString_Output_DeletingDirectory)
+                locString_Output_DeletingFile = readIni(ldi.FullName, "Outputs", "locString_Output_DeletingFile", SB, constString_Output_DeletingFile)
+                locString_Output_DownloadingFile = readIni(ldi.FullName, "Outputs", "locString_Output_DownloadingFile", SB, constString_Output_DownloadingFile)
+                locString_Output_DownloadingNewVersion = readIni(ldi.FullName, "Outputs", "locString_Output_DownloadingNewVersion", SB, constString_Output_DownloadingNewVersion)
+                locString_Output_ErrorChecking = readIni(ldi.FullName, "Outputs", "locString_Output_ErrorChecking", SB, constString_Output_ErrorChecking)
+                locString_Output_NoNewUpdates = readIni(ldi.FullName, "Outputs", "locString_Output_NoNewUpdates", SB, constString_Output_NoNewUpdates)
+                locString_Output_NoNewVersion = readIni(ldi.FullName, "Outputs", "locString_Output_NoNewVersion", SB, constString_Output_NoNewVersion)
+                locString_Output_Refreshing = readIni(ldi.FullName, "Outputs", "locString_Output_Refreshing", SB, constString_Output_Refreshing)
+                locString_Output_ServerError = readIni(ldi.FullName, "Outputs", "locString_Output_ServerError", SB, constString_Output_ServerError)
+                locString_Output_UpdateAvailable = readIni(ldi.FullName, "Outputs", "locString_Output_UpdateAvailable", SB, constString_Output_UpdateAvailable)
+                locString_Output_UpdaterReady = readIni(ldi.FullName, "Outputs", "locString_Output_UpdaterReady", SB, constString_Output_UpdaterReady)
+                locString_Output_UpdatesAvailable = readIni(ldi.FullName, "Outputs", "locString_Output_UpdatesAvailable", SB, constString_Output_UpdatesAvailable)
+                locString_Output_UpdatesPending = readIni(ldi.FullName, "Outputs", "locString_Output_UpdatesPending", SB, constString_Output_UpdatesPending)
+                locString_Output_UpdatesSelected = readIni(ldi.FullName, "Outputs", "locString_Output_UpdatesSelected", SB, constString_Output_UpdatesSelected)
+                locString_Output_UpdatesSuccessful = readIni(ldi.FullName, "Outputs", "locString_Output_UpdatesSuccessful", SB, constString_Output_UpdatesSuccessful)
+                locString_Output_UpdatingFiles = readIni(ldi.FullName, "Outputs", "locString_Output_UpdatingFiles", SB, constString_Output_UpdatingFiles)
+                locString_Output_UpdatingSelectedFiles = readIni(ldi.FullName, "Outputs", "locString_Output_UpdatingSelectedFiles", SB, constString_Output_UpdatingSelectedFiles)
 
-            IDString += Environment.NewLine + "E-" + EngineSum + Environment.NewLine + "I-" + NerfISum + Environment.NewLine + "W-" + NerfWeaponSum + Environment.NewLine + "M-" + NerfMenuSum + Environment.NewLine + "K-" + NerfKidsSum + Environment.NewLine + "R-" + NerfResSum
-
-            MessageBox.Show(locString_Caption_UpdateID + Environment.NewLine + IDString, locString_Window_UpdateID, MessageBoxButtons.OK, MessageBoxIcon.None)
-        End Sub
-
-        Private Sub OpenGameDirectoryToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles OpenGameDirectoryToolStripMenuItem.Click
-            Process.Start(homeDirectory.FullName)
-        End Sub
-
-        Private Sub LoadLanguageStrings(Lang As String)
-            Dim ldi As New DirectoryInfo(Directory.GetCurrentDirectory().ToString)
-            Dim FileArray As FileInfo() = ldi.GetFiles()
-            Dim LFI As FileInfo
-            Dim SB As StringBuilder = New StringBuilder(512)
-
-            For Each LFI In FileArray
-                If (LFI.Name Like (Lang + ".lang")) Then
-                    ldi = New DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory().ToString, "languages", LFI.Name))
-
-                    ' Windows
-                    locString_Window_AboutUpdater = readIni(ldi.FullName, "Windows", "locString_Window_AboutUpdater", SB, constString_Window_AboutUpdater)
-                    locString_Window_AdvancedDisable = readIni(ldi.FullName, "Windows", "locString_Window_AdvancedDisable", SB, constString_Window_AdvancedDisable)
-                    locString_Window_AdvancedEnable = readIni(ldi.FullName, "Windows", "locString_Window_AdvancedEnable", SB, constString_Window_AdvancedEnable)
-                    locString_Window_ChangeCP = readIni(ldi.FullName, "Windows", "locString_Window_ChangeCP", SB, constString_Window_ChangeCP)
-                    If (ChangeCP IsNot Nothing) Then
-                        ChangeCP.Text = locString_Window_ChangeCP
-                    End If
-                    locString_Window_Changelog = readIni(ldi.FullName, "Windows", "locString_Window_Changelog", SB, constString_Window_Changelog)
-                    If (Changelog IsNot Nothing) Then
-                        Changelog.Text = locString_Window_Changelog
-                    End If
-                    locString_Window_Log = readIni(ldi.FullName, "Windows", "locString_Window_Log", SB, constString_Window_Log)
-                    If (LogViewer IsNot Nothing) Then
-                        LogViewer.Text = locString_Window_Log
-                    End If
-                    locString_Window_ConfigNotFound = readIni(ldi.FullName, "Windows", "locString_Window_ConfigNotFound", SB, constString_Window_ConfigNotFound)
-                    locString_Window_ConfigNotRead = readIni(ldi.FullName, "Windows", "locString_Window_ConfigNotRead", SB, constString_Window_ConfigNotRead)
-                    locString_Window_DeleteFolder = readIni(ldi.FullName, "Windows", "locString_Window_DeleteFolder", SB, constString_Window_DeleteFolder)
-                    locString_Window_EngineDetectionFailure = readIni(ldi.FullName, "Windows", "locString_Window_EngineDetectionFailure", SB, constString_Window_EngineDetectionFailure)
-                    locString_Window_ErrorDownloading = readIni(ldi.FullName, "Windows", "locString_Window_ErrorDownloading", SB, constString_Window_ErrorDownloading)
-                    locString_Window_ErrorUpdating = readIni(ldi.FullName, "Windows", "locString_Window_ErrorUpdating", SB, constString_Window_ErrorUpdating)
-                    locString_Window_ExitUpdater = readIni(ldi.FullName, "Windows", "locString_Window_ExitUpdater", SB, constString_Window_ExitUpdater)
-                    locString_Window_GameExeNotFound = readIni(ldi.FullName, "Windows", "locString_Window_GameExeNotFound", SB, constString_Window_GameExeNotFound)
-                    locString_Window_IniNotFound = readIni(ldi.FullName, "Windows", "locString_Window_IniNotFound", SB, constString_Window_IniNotFound)
-                    locString_Window_Log = readIni(ldi.FullName, "Windows", "locString_Window_Log", SB, constString_Window_Log)
-                    locString_Window_NABRunning = readIni(ldi.FullName, "Windows", "locString_Window_NABRunning", SB, constString_Window_NABRunning)
-                    locString_Window_NewVersionAvailable = readIni(ldi.FullName, "Windows", "locString_Window_NewVersionAvailable", SB, constString_Window_NewVersionAvailable)
-                    locString_Window_SelectInstall = readIni(ldi.FullName, "Windows", "locString_Window_SelectInstall", SB, constString_Window_SelectInstall)
-                    locString_Window_ServerNoResponse = readIni(ldi.FullName, "Windows", "locString_Window_ServerNoResponse", SB, constString_Window_ServerNoResponse)
-                    locString_Window_UpdateAborted = readIni(ldi.FullName, "Windows", "locString_Window_UpdateAborted", SB, constString_Window_UpdateAborted)
-                    locString_Window_UpdateCheckCancelled = readIni(ldi.FullName, "Windows", "locString_Window_UpdateCheckCancelled", SB, constString_Window_UpdateCheckCancelled)
-                    locString_Window_UpdateCheckComplete = readIni(ldi.FullName, "Windows", "locString_Window_UpdateCheckComplete", SB, constString_Window_UpdateCheckComplete)
-                    locString_Window_UpdateComplete = readIni(ldi.FullName, "Windows", "locString_Window_UpdateComplete", SB, constString_Window_UpdateComplete)
-                    locString_Window_UpdateID = readIni(ldi.FullName, "Windows", "locString_Window_UpdateID", SB, constString_Window_UpdateID)
-                    locString_Window_UpdaterName = readIni(ldi.FullName, "Windows", "locString_Window_UpdaterName", SB, constString_Window_UpdaterName)
-                    Me.Text = locString_Window_UpdaterName + " " + updaterVersion
-                    locString_Window_UpdaterRunning = readIni(ldi.FullName, "Windows", "locString_Window_UpdaterRunning", SB, constString_Window_UpdaterRunning)
-                    locString_Window_VersionCheckComplete = readIni(ldi.FullName, "Windows", "locString_Window_VersionCheckComplete", SB, constString_Window_VersionCheckComplete)
-                    locString_Window_Warning = readIni(ldi.FullName, "Windows", "locString_Window_Warning", SB, constString_Window_Warning)
-
-                    ' Captions
-                    locString_Caption_AdvancedEnableWarning = readIni(ldi.FullName, "Captions", "locString_Caption_AdvancedEnableWarning", SB, constString_Caption_AdvancedEnableWarning)
-                    locString_Caption_AdvancedDisableWarning = readIni(ldi.FullName, "Captions", "locString_Caption_AdvancedDisableWarning", SB, constString_Caption_AdvancedDisableWarning)
-                    locString_Caption_ChangeCPWarning = readIni(ldi.FullName, "Captions", "locString_Caption_ChangeCPWarning", SB, constString_Caption_ChangeCPWarning)
-                    locString_Caption_ChangelogMissing = readIni(ldi.FullName, "Captions", "locString_Caption_ChangelogMissing", SB, constString_Caption_ChangelogMissing)
-                    locString_Caption_CleanupWarning = readIni(ldi.FullName, "Captions", "locString_Caption_CleanupWarning", SB, constString_Caption_CleanupWarning)
-                    locString_Caption_ConfigNotFound = readIni(ldi.FullName, "Captions", "locString_Caption_ConfigNotFound", SB, constString_Caption_ConfigNotFound)
-                    locString_Caption_ConfigNotRead = readIni(ldi.FullName, "Captions", "locString_Caption_ConfigNotRead", SB, constString_Caption_ConfigNotRead)
-                    locString_Caption_DetectedNAB = readIni(ldi.FullName, "Captions", "locString_Caption_DetectedNAB", SB, constString_Caption_DetectedNAB)
-                    locString_Caption_DetectedNABCritical = readIni(ldi.FullName, "Captions", "locString_Caption_DetectedNABCritical", SB, constString_Caption_DetectedNABCritical)
-                    locString_Caption_EngineDetectionFailure = readIni(ldi.FullName, "Captions", "locString_Caption_EngineDetectionFailure", SB, constString_Caption_EngineDetectionFailure)
-                    locString_Caption_ErrorChecking = readIni(ldi.FullName, "Captions", "locString_Caption_ErrorChecking", SB, constString_Caption_ErrorChecking)
-                    locString_Caption_ErrorDownloading = readIni(ldi.FullName, "Captions", "locString_Caption_ErrorDownloading", SB, constString_Caption_ErrorDownloading)
-                    locString_Caption_ErrorReport = readIni(ldi.FullName, "Captions", "locString_Caption_ErrorReport", SB, constString_Caption_ErrorReport)
-                    locString_Caption_ErrorUpdatingUpdater = readIni(ldi.FullName, "Captions", "locString_Caption_ErrorUpdatingUpdater", SB, constString_Caption_ErrorUpdatingUpdater)
-                    locString_Caption_ExitNoUpdate = readIni(ldi.FullName, "Captions", "locString_Caption_ExitNoUpdate", SB, constString_Caption_ExitNoUpdate)
-                    locString_Caption_ExitMidUpdate = readIni(ldi.FullName, "Captions", "locString_Caption_ExitMidUpdate", SB, constString_Caption_ExitMidUpdate)
-                    locString_Caption_IniNotLocated = readIni(ldi.FullName, "Captions", "locString_Caption_IniNotLocated", SB, constString_Caption_IniNotLocated)
-                    locString_Caption_NewVersionAvailable = readIni(ldi.FullName, "Captions", "locString_Caption_NewVersionAvailable", SB, constString_Caption_NewVersionAvailable)
-                    locString_Caption_NoGameExeWarning = readIni(ldi.FullName, "Captions", "locString_Caption_NoGameExeWarning", SB, constString_Caption_NoGameExeWarning)
-                    locString_Caption_FolderDeletionWarning = readIni(ldi.FullName, "Captions", "locString_Caption_FolderDeletionWarning", SB, constString_Caption_FolderDeletionWarning)
-                    locString_Caption_NoNewUpdates = readIni(ldi.FullName, "Captions", "locString_Caption_NoNewUpdates", SB, constString_Caption_NoNewUpdates)
-                    locString_Caption_NoNewVersion = readIni(ldi.FullName, "Captions", "locString_Caption_NoNewVersion", SB, constString_Caption_NoNewVersion)
-                    locString_Caption_RevertWarning = readIni(ldi.FullName, "Captions", "locString_Caption_RevertWarning", SB, constString_Caption_RevertWarning)
-                    locString_Caption_ServerNoResponse = readIni(ldi.FullName, "Captions", "locString_Caption_ServerNoResponse", SB, constString_Caption_ServerNoResponse)
-                    locString_Caption_UpdateID = readIni(ldi.FullName, "Captions", "locString_Caption_UpdateID", SB, constString_Caption_UpdateID)
-                    locString_Caption_UpdateServerNoResponse = readIni(ldi.FullName, "Captions", "locString_Caption_UpdateServerNoResponse", SB, constString_Caption_UpdateServerNoResponse)
-                    locString_Caption_UpdatesWereSuccessful = readIni(ldi.FullName, "Captions", "locString_Caption_UpdatesWereSuccessful", SB, constString_Caption_UpdatesWereSuccessful)
-                    locString_Caption_UpdaterForceClose = readIni(ldi.FullName, "Captions", "locString_Caption_UpdaterForceClose", SB, constString_Caption_UpdaterForceClose)
-                    locString_Caption_UpdatingAborted = readIni(ldi.FullName, "Captions", "locString_Caption_UpdatingAborted", SB, constString_Caption_UpdatingAborted)
-
-                    ' Outputs
-                    locString_Output_CheckingForUpdates = readIni(ldi.FullName, "Outputs", "locString_Output_CheckingForUpdates", SB, constString_Output_CheckingForUpdates)
-                    locString_Output_DeletingDirectory = readIni(ldi.FullName, "Outputs", "locString_Output_DeletingDirectory", SB, constString_Output_DeletingDirectory)
-                    locString_Output_DeletingFile = readIni(ldi.FullName, "Outputs", "locString_Output_DeletingFile", SB, constString_Output_DeletingFile)
-                    locString_Output_DownloadingFile = readIni(ldi.FullName, "Outputs", "locString_Output_DownloadingFile", SB, constString_Output_DownloadingFile)
-                    locString_Output_DownloadingNewVersion = readIni(ldi.FullName, "Outputs", "locString_Output_DownloadingNewVersion", SB, constString_Output_DownloadingNewVersion)
-                    locString_Output_ErrorChecking = readIni(ldi.FullName, "Outputs", "locString_Output_ErrorChecking", SB, constString_Output_ErrorChecking)
-                    locString_Output_NoNewUpdates = readIni(ldi.FullName, "Outputs", "locString_Output_NoNewUpdates", SB, constString_Output_NoNewUpdates)
-                    locString_Output_NoNewVersion = readIni(ldi.FullName, "Outputs", "locString_Output_NoNewVersion", SB, constString_Output_NoNewVersion)
-                    locString_Output_Refreshing = readIni(ldi.FullName, "Outputs", "locString_Output_Refreshing", SB, constString_Output_Refreshing)
-                    locString_Output_ServerError = readIni(ldi.FullName, "Outputs", "locString_Output_ServerError", SB, constString_Output_ServerError)
-                    locString_Output_UpdateAvailable = readIni(ldi.FullName, "Outputs", "locString_Output_UpdateAvailable", SB, constString_Output_UpdateAvailable)
-                    locString_Output_UpdaterReady = readIni(ldi.FullName, "Outputs", "locString_Output_UpdaterReady", SB, constString_Output_UpdaterReady)
-                    locString_Output_UpdatesAvailable = readIni(ldi.FullName, "Outputs", "locString_Output_UpdatesAvailable", SB, constString_Output_UpdatesAvailable)
-                    locString_Output_UpdatesPending = readIni(ldi.FullName, "Outputs", "locString_Output_UpdatesPending", SB, constString_Output_UpdatesPending)
-                    locString_Output_UpdatesSelected = readIni(ldi.FullName, "Outputs", "locString_Output_UpdatesSelected", SB, constString_Output_UpdatesSelected)
-                    locString_Output_UpdatesSuccessful = readIni(ldi.FullName, "Outputs", "locString_Output_UpdatesSuccessful", SB, constString_Output_UpdatesSuccessful)
-                    locString_Output_UpdatingFiles = readIni(ldi.FullName, "Outputs", "locString_Output_UpdatingFiles", SB, constString_Output_UpdatingFiles)
-                    locString_Output_UpdatingSelectedFiles = readIni(ldi.FullName, "Outputs", "locString_Output_UpdatingSelectedFiles", SB, constString_Output_UpdatingSelectedFiles)
-
-                    ' GUI
-                    locString_GUI_BaseSeperator = readIni(ldi.FullName, "GUI", "locString_GUI_BaseSeperator", SB, constString_GUI_BaseSeperator)
-                    locString_GUI_Change = readIni(ldi.FullName, "GUI", "locString_GUI_Change", SB, constString_GUI_Change)
-                    changeFilepathButton.Text = locString_GUI_Change
-                    locString_GUI_CheckForUpdates = readIni(ldi.FullName, "GUI", "locString_GUI_CheckForUpdates", SB, constString_GUI_CheckForUpdates)
-                    locString_GUI_Checking = readIni(ldi.FullName, "GUI", "locString_GUI_Checking", SB, constString_GUI_Checking)
-                    locString_GUI_CPSeperator = readIni(ldi.FullName, "GUI", "locString_GUI_CPSeperator", SB, constString_GUI_CPSeperator)
-                    locString_GUI_DeselectAll = readIni(ldi.FullName, "GUI", "locString_GUI_DeselectAll", SB, constString_GUI_DeselectAll)
-                    deselectAllButton.Text = locString_GUI_DeselectAll
-                    locString_GUI_Exit = readIni(ldi.FullName, "GUI", "locString_GUI_Exit", SB, constString_GUI_Exit)
-                    exitButton.Text = locString_GUI_Exit
-                    locString_GUI_LastChecked = readIni(ldi.FullName, "GUI", "locString_GUI_LastChecked", SB, constString_GUI_LastChecked)
-                    lastCheckedBox.Text = locString_GUI_LastChecked
-                    locString_GUI_Modified = readIni(ldi.FullName, "GUI", "locString_GUI_Modified", SB, constString_GUI_Modified)
-                    locString_GUI_Never = readIni(ldi.FullName, "GUI", "locString_GUI_Never", SB, constString_GUI_Never)
-                    locString_GUI_SelectAll = readIni(ldi.FullName, "GUI", "locString_GUI_SelectAll", SB, constString_GUI_SelectAll)
-                    selectAllButton.Text = locString_GUI_SelectAll
-                    locString_GUI_Update = readIni(ldi.FullName, "GUI", "locString_GUI_Update", SB, constString_GUI_Update)
-                    locString_GUI_UpdateSelected = readIni(ldi.FullName, "GUI", "locString_GUI_UpdateSelected", SB, constString_GUI_UpdateSelected)
-                    locString_GUI_Updating = readIni(ldi.FullName, "GUI", "locString_GUI_Updating", SB, constString_GUI_Updating)
-                    locString_GUI_UpdatingFilesAt = readIni(ldi.FullName, "GUI", "locString_GUI_UpdatingFilesAt", SB, constString_GUI_UpdatingFilesAt)
-                    updatePathLabel.Text = locString_GUI_UpdatingFilesAt & " " & homeDirectory.FullName
-                    locString_GUI_CustomContent = readIni(ldi.FullName, "GUI", "locString_GUI_CustomContent", SB, constString_GUI_CustomContent)
-                    customCheckBox.Text = locString_GUI_CustomContent
-                    locString_GUI_AutoLaunch = readIni(ldi.FullName, "GUI", "locString_GUI_AutoLaunch", SB, constString_GUI_AutoLaunch)
-                    LaunchGameCheckbox.Text = locString_GUI_AutoLaunch
-                    locString_GUI_FileCleanup = readIni(ldi.FullName, "GUI", "locString_GUI_FileCleanup", SB, constString_GUI_FileCleanup)
-                    cleanupCheckBox.Text = locString_GUI_FileCleanup
-                    locString_GUI_FileReverts = readIni(ldi.FullName, "GUI", "locString_GUI_FileReverts", SB, constString_GUI_FileReverts)
-                    revertCheckBox.Text = locString_GUI_FileReverts
-                    locString_GUI_SelectACP = readIni(ldi.FullName, "GUI", "locString_GUI_SelectACP", SB, constString_GUI_SelectACP)
-                    locString_GUI_Apply = readIni(ldi.FullName, "GUI", "locString_GUI_Apply", SB, constString_GUI_Apply)
-                    locString_GUI_Other = readIni(ldi.FullName, "GUI", "locString_GUI_Other", SB, constString_GUI_Other)
-                    If (ChangeCPForm IsNot Nothing) Then
-                        ChangeCP.SelectCPLabel.Text = locString_GUI_SelectACP
-                        ChangeCP.ChangeCPApply.Text = locString_GUI_Apply
-                        ChangeCP.CPOtherRadioButton.Text = locString_GUI_Other
-                    End If
-
-                    SetUpdateStatus("")
-
-                    ' Toolbars
-                    locString_Toolbar_File = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_File", SB, constString_Toolbar_File)
-                    FileToolStripMenuItem.Text = locString_Toolbar_File
-                    locString_Toolbar_PlayNerfArenaBlast = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_PlayNerfArenaBlast", SB, constString_Toolbar_PlayNerfArenaBlast)
-                    PlayNerfArenaBlastToolStripMenuItem.Text = locString_Toolbar_PlayNerfArenaBlast
-                    locString_Toolbar_ChangeDirectory = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_ChangeDirectory", SB, constString_Toolbar_ChangeDirectory)
-                    ChangeBaseDirectoryToolStripMenuItem.Text = locString_Toolbar_ChangeDirectory
-                    locString_Toolbar_CheckForUpdates = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_CheckForUpdates", SB, constString_Toolbar_CheckForUpdates)
-                    CheckForUpdatesToolStripMenuItem.Text = locString_Toolbar_CheckForUpdates
-                    locString_Toolbar_SelectAll = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_SelectAll", SB, constString_Toolbar_SelectAll)
-                    SelectAllToolStripMenuItem.Text = locString_Toolbar_SelectAll
-                    locString_Toolbar_DeselectAll = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_DeselectAll", SB, constString_Toolbar_DeselectAll)
-                    DeselectAllToolStripMenuItem.Text = locString_Toolbar_DeselectAll
-                    locString_Toolbar_GetCP = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_GetCP", SB, constString_Toolbar_GetCP)
-                    GetLatestCommunityPackToolStripMenuItem.Text = locString_Toolbar_GetCP
-                    locString_Toolbar_Exit = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_Exit", SB, constString_Toolbar_Exit)
-                    ExitToolStripMenuItem.Text = locString_Toolbar_Exit
-                    locString_Toolbar_Options = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_Options", SB, constString_Toolbar_Options)
-                    OptionsToolStripMenuItem.Text = locString_Toolbar_Options
-                    locString_Toolbar_Language = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_Language", SB, constString_Toolbar_Language)
-                    LanguageToolStripMenuItem.Text = locString_Toolbar_Language
-                    locString_Toolbar_OpenDirectory = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_OpenDirectory", SB, constString_Toolbar_OpenDirectory)
-                    OpenGameDirectoryToolStripMenuItem.Text = locString_Toolbar_OpenDirectory
-                    locString_Toolbar_Version = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_Version", SB, constString_Toolbar_Version)
-                    VersionToolStripMenuItem.Text = locString_Toolbar_Version
-                    locString_Toolbar_CheckVersion = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_CheckVersion", SB, constString_Toolbar_CheckVersion)
-                    CheckForNewVersionToolStripMenuItem.Text = locString_Toolbar_CheckVersion
-                    locString_Toolbar_Changelog = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_Changelog", SB, constString_Toolbar_Changelog)
-                    ViewChangelogToolStripMenuItem.Text = locString_Toolbar_Changelog
-                    locString_Toolbar_Help = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_Help", SB, constString_Toolbar_Help)
-                    HelpToolStripMenuItem.Text = locString_Toolbar_Help
-                    locString_Toolbar_ViewHelp = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_ViewHelp", SB, constString_Toolbar_ViewHelp)
-                    ViewHelpToolStripMenuItem.Text = locString_Toolbar_ViewHelp
-                    locString_Toolbar_Website = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_Website", SB, constString_Toolbar_Website)
-                    VisitWebsiteToolStripMenuItem.Text = locString_Toolbar_Website
-                    locString_Toolbar_About = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_About", SB, constString_Toolbar_About)
-                    AboutToolStripMenuItem.Text = locString_Toolbar_About
-                    locString_Toolbar_AdvancedOptions = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_AdvancedOptions", SB, constString_Toolbar_AdvancedOptions)
-                    AdvancedToolStripMenuItem.Text = locString_Toolbar_AdvancedOptions
-                    locString_Toolbar_AdvancedEnable = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_AdvancedEnable", SB, constString_Toolbar_AdvancedEnable)
-                    locString_Toolbar_AdvancedDisable = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_AdvancedDisable", SB, constString_Toolbar_AdvancedDisable)
-                    If (AdvancedMode) Then
-                        AdvancedModeToolStripMenuItem.Text = locString_Toolbar_AdvancedDisable
-                    Else
-                        AdvancedModeToolStripMenuItem.Text = locString_Toolbar_AdvancedEnable
-                    End If
-                    locString_Toolbar_UpdateID = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_UpdateID", SB, constString_Toolbar_UpdateID)
-                    ShowLatestUpdateIDToolStripMenuItem.Text = locString_Toolbar_UpdateID
-                    locString_Toolbar_ChangeCP = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_ChangeCP", SB, constString_Toolbar_ChangeCP)
-                    ChangeCommunityPackToolStripMenuItem.Text = locString_Toolbar_ChangeCP
-
-                    ' Log
-                    locString_Log_BootAdvanced = readIni(ldi.FullName, "Log", "locString_Log_BootAdvanced", SB, constString_Log_BootAdvanced)
-                    locString_Log_BootSuccess = readIni(ldi.FullName, "Log", "locString_Log_BootSuccess", SB, constString_Log_BootSuccess)
-                    locString_Log_ChangeCPType = readIni(ldi.FullName, "Log", "locString_Log_ChangeCPType", SB, constString_Log_ChangeCPType)
-                    locString_Log_CheckingForBaseUpdates = readIni(ldi.FullName, "Log", "locString_Log_CheckingForBaseUpdates", SB, constString_Log_CheckingForBaseUpdates)
-                    locString_Log_CheckingForCPUpdates = readIni(ldi.FullName, "Log", "locString_Log_CheckingForCPUpdates", SB, constString_Log_CheckingForCPUpdates)
-                    locString_Log_CheckingForUpdates = readIni(ldi.FullName, "Log", "locString_Log_CheckingForUpdates", SB, constString_Log_CheckingForUpdates)
-                    locString_Log_CPDetected = readIni(ldi.FullName, "Log", "locString_Log_CPDetected", SB, constString_Log_CPDetected)
-                    locString_Log_CPNotDetected = readIni(ldi.FullName, "Log", "locString_Log_CPNotDetected", SB, constString_Log_CPNotDetected)
-                    locString_Log_CPUnknown = readIni(ldi.FullName, "Log", "locString_Log_CPUnknown", SB, constString_Log_CPUnknown)
-                    locString_Log_CreateFolder = readIni(ldi.FullName, "Log", "locString_Log_CreateFolder", SB, constString_Log_CreateFolder)
-                    locString_Log_DeleteEmptyFolder = readIni(ldi.FullName, "Log", "locString_Log_DeleteEmptyFolder", SB, constString_Log_DeleteEmptyFolder)
-                    locString_Log_DeleteFile = readIni(ldi.FullName, "Log", "locString_Log_DeleteFile", SB, constString_Log_DeleteFile)
-                    locString_Log_DeleteFullFolder = readIni(ldi.FullName, "Log", "locString_Log_DeleteFullFolder", SB, constString_Log_DeleteFullFolder)
-                    locString_Log_DetectedNABLangEnglish = readIni(ldi.FullName, "Log", "locString_Log_DetectedNABLangEnglish", SB, constString_Log_DetectedNABLangEnglish)
-                    locString_Log_DetectedNABLangGerman = readIni(ldi.FullName, "Log", "locString_Log_DetectedNABLangGerman", SB, constString_Log_DetectedNABLangGerman)
-                    locString_Log_DetectedNABLangItalian = readIni(ldi.FullName, "Log", "locString_Log_DetectedNABLangItalian", SB, constString_Log_DetectedNABLangItalian)
-                    locString_Log_DetectedNABLangUnknown = readIni(ldi.FullName, "Log", "locString_Log_DetectedNABLangUnknown", SB, constString_Log_DetectedNABLangUnknown)
-                    locString_Log_DetectingCP = readIni(ldi.FullName, "Log", "locString_Log_DetectingCP", SB, constString_Log_DetectingCP)
-                    locString_Log_DetectingEngine = readIni(ldi.FullName, "Log", "locString_Log_DetectingEngine", SB, constString_Log_DetectingEngine)
-                    locString_Log_DownloadingNewVersion = readIni(ldi.FullName, "Log", "locString_Log_DownloadingNewVersion", SB, constString_Log_DownloadingNewVersion)
-                    locString_Log_DownloadNewFile = readIni(ldi.FullName, "Log", "locString_Log_DownloadNewFile", SB, constString_Log_DownloadNewFile)
-                    locString_Log_DownloadUpdatedFile = readIni(ldi.FullName, "Log", "locString_Log_DownloadUpdatedFile", SB, constString_Log_DownloadUpdatedFile)
-                    locString_Log_EngineError = readIni(ldi.FullName, "Log", "locString_Log_EngineError", SB, constString_Log_EngineError)
-                    locString_Log_EngineImproved = readIni(ldi.FullName, "Log", "locString_Log_EngineImproved", SB, constString_Log_EngineImproved)
-                    locString_Log_EngineStandard = readIni(ldi.FullName, "Log", "locString_Log_EngineStandard", SB, constString_Log_EngineStandard)
-                    locString_Log_EngineUnknown = readIni(ldi.FullName, "Log", "locString_Log_EngineUnknown", SB, constString_Log_EngineUnknown)
-                    locString_Log_ErrorChecking = readIni(ldi.FullName, "Log", "locString_Log_ErrorChecking", SB, constString_Log_ErrorChecking)
-                    locString_Log_ErrorDownloading = readIni(ldi.FullName, "Log", "locString_Log_ErrorDownloading", SB, constString_Log_ErrorDownloading)
-                    locString_Log_ErrorLoadingConfig = readIni(ldi.FullName, "Log", "locString_Log_ErrorLoadingConfig", SB, constString_Log_ErrorLoadingConfig)
-                    locString_Log_ErrorSavingConfig = readIni(ldi.FullName, "Log", "locString_Log_ErrorSavingConfig", SB, constString_Log_ErrorSavingConfig)
-                    locString_Log_ExitNoUpdate = readIni(ldi.FullName, "Log", "locString_Log_ExitNoUpdate", SB, constString_Log_ExitNoUpdate)
-                    locString_Log_ExitMidUpdate = readIni(ldi.FullName, "Log", "locString_Log_ExitMidUpdate", SB, constString_Log_ExitMidUpdate)
-                    locString_Log_FoundUpdate = readIni(ldi.FullName, "Log", "locString_Log_FoundUpdate", SB, constString_Log_FoundUpdate)
-                    locString_Log_FoundUpdates = readIni(ldi.FullName, "Log", "locString_Log_FoundUpdates", SB, constString_Log_FoundUpdates)
-                    locString_Log_IniNotLocated = readIni(ldi.FullName, "Log", "locString_Log_IniNotLocated", SB, constString_Log_IniNotLocated)
-                    locString_Log_InstanceUpdater = readIni(ldi.FullName, "Log", "locString_Log_InstanceUpdater", SB, constString_Log_InstanceUpdater)
-                    locString_Log_LangNotSet = readIni(ldi.FullName, "Log", "locString_Log_LangNotSet", SB, constString_Log_LangNotSet)
-                    locString_Log_LangNotSetDef = readIni(ldi.FullName, "Log", "locString_Log_LangNotSetDef", SB, constString_Log_LangNotSetDef)
-                    locString_Log_LangSet = readIni(ldi.FullName, "Log", "locString_Log_LangSet", SB, constString_Log_LangSet)
-                    locString_Log_LogClose = readIni(ldi.FullName, "Log", "locString_Log_LogClose", SB, constString_Log_LogClose)
-                    locString_Log_LogOpen = readIni(ldi.FullName, "Log", "locString_Log_LogOpen", SB, constString_Log_LogOpen)
-                    locString_Log_NewVersion = readIni(ldi.FullName, "Log", "locString_Log_NewVersion", SB, constString_Log_NewVersion)
-                    locString_Log_NoGameExeWarning = readIni(ldi.FullName, "Log", "locString_Log_NoGameExeWarning", SB, constString_Log_NoGameExeWarning)
-                    locString_Log_LaunchGame = readIni(ldi.FullName, "Log", "locString_Log_LaunchGame", SB, constString_Log_LaunchGame)
-                    locString_Log_LaunchGameSuccess = readIni(ldi.FullName, "Log", "locString_Log_LaunchGameSuccess", SB, constString_Log_LaunchGameSuccess)
-                    locString_Log_NoNewVersion = readIni(ldi.FullName, "Log", "locString_Log_NoNewVersion", SB, constString_Log_NoNewVersion)
-                    locString_Log_NoNewUpdates = readIni(ldi.FullName, "Log", "locString_Log_NoNewUpdates", SB, constString_Log_NoNewUpdates)
-                    locString_Log_PathChanged = readIni(ldi.FullName, "Log", "locString_Log_PathChanged", SB, constString_Log_PathChanged)
-                    locString_Log_RefreshFile = readIni(ldi.FullName, "Log", "locString_Log_RefreshFile", SB, constString_Log_RefreshFile)
-                    locString_Log_ServerNoResponse = readIni(ldi.FullName, "Log", "locString_log_ServerNoResponse", SB, constString_log_ServerNoResponse)
-                    locString_Log_Shutdown = readIni(ldi.FullName, "Log", "locString_Log_Shutdown", SB, constString_Log_Shutdown)
-                    locString_Log_UpdateFile = readIni(ldi.FullName, "Log", "locString_Log_UpdateFile", SB, constString_Log_UpdateFile)
-                    locString_Log_UpdaterUpdateFailBat = readIni(ldi.FullName, "Log", "locString_Log_UpdaterUpdateFailBat", SB, constString_Log_UpdaterUpdateFailBat)
-                    locString_Log_UpdateServerNoResponse = readIni(ldi.FullName, "Log", "locString_Log_UpdateServerNoResponse", SB, constString_Log_UpdateServerNoResponse)
-                    locString_Log_UpdatesWereSuccessful = readIni(ldi.FullName, "Log", "locString_Log_UpdatesWereSuccessful", SB, constString_Log_UpdatesWereSuccessful)
-                    locString_Log_UpdatingFiles = readIni(ldi.FullName, "Log", "locString_Log_UpdatingFiles", SB, constString_Log_UpdatingFiles)
-                    locString_Log_UpdatingSelectedFiles = readIni(ldi.FullName, "Log", "locString_Log_UpdatingSelectedFiles", SB, constString_Log_UpdatingSelectedFiles)
-                    Exit For
+                ' GUI
+                locString_GUI_BaseSeperator = readIni(ldi.FullName, "GUI", "locString_GUI_BaseSeperator", SB, constString_GUI_BaseSeperator)
+                locString_GUI_Change = readIni(ldi.FullName, "GUI", "locString_GUI_Change", SB, constString_GUI_Change)
+                changeFilepathButton.Text = locString_GUI_Change
+                locString_GUI_CheckForUpdates = readIni(ldi.FullName, "GUI", "locString_GUI_CheckForUpdates", SB, constString_GUI_CheckForUpdates)
+                locString_GUI_Checking = readIni(ldi.FullName, "GUI", "locString_GUI_Checking", SB, constString_GUI_Checking)
+                locString_GUI_CPSeperator = readIni(ldi.FullName, "GUI", "locString_GUI_CPSeperator", SB, constString_GUI_CPSeperator)
+                locString_GUI_DeselectAll = readIni(ldi.FullName, "GUI", "locString_GUI_DeselectAll", SB, constString_GUI_DeselectAll)
+                deselectAllButton.Text = locString_GUI_DeselectAll
+                locString_GUI_Exit = readIni(ldi.FullName, "GUI", "locString_GUI_Exit", SB, constString_GUI_Exit)
+                exitButton.Text = locString_GUI_Exit
+                locString_GUI_LastChecked = readIni(ldi.FullName, "GUI", "locString_GUI_LastChecked", SB, constString_GUI_LastChecked)
+                lastCheckedBox.Text = locString_GUI_LastChecked
+                locString_GUI_Modified = readIni(ldi.FullName, "GUI", "locString_GUI_Modified", SB, constString_GUI_Modified)
+                locString_GUI_Never = readIni(ldi.FullName, "GUI", "locString_GUI_Never", SB, constString_GUI_Never)
+                locString_GUI_SelectAll = readIni(ldi.FullName, "GUI", "locString_GUI_SelectAll", SB, constString_GUI_SelectAll)
+                selectAllButton.Text = locString_GUI_SelectAll
+                locString_GUI_Update = readIni(ldi.FullName, "GUI", "locString_GUI_Update", SB, constString_GUI_Update)
+                locString_GUI_UpdateSelected = readIni(ldi.FullName, "GUI", "locString_GUI_UpdateSelected", SB, constString_GUI_UpdateSelected)
+                locString_GUI_Updating = readIni(ldi.FullName, "GUI", "locString_GUI_Updating", SB, constString_GUI_Updating)
+                locString_GUI_UpdatingFilesAt = readIni(ldi.FullName, "GUI", "locString_GUI_UpdatingFilesAt", SB, constString_GUI_UpdatingFilesAt)
+                updatePathLabel.Text = locString_GUI_UpdatingFilesAt & " " & homeDirectory.FullName
+                locString_GUI_CustomContent = readIni(ldi.FullName, "GUI", "locString_GUI_CustomContent", SB, constString_GUI_CustomContent)
+                customCheckBox.Text = locString_GUI_CustomContent
+                locString_GUI_AutoLaunch = readIni(ldi.FullName, "GUI", "locString_GUI_AutoLaunch", SB, constString_GUI_AutoLaunch)
+                LaunchGameCheckbox.Text = locString_GUI_AutoLaunch
+                locString_GUI_FileCleanup = readIni(ldi.FullName, "GUI", "locString_GUI_FileCleanup", SB, constString_GUI_FileCleanup)
+                cleanupCheckBox.Text = locString_GUI_FileCleanup
+                locString_GUI_FileReverts = readIni(ldi.FullName, "GUI", "locString_GUI_FileReverts", SB, constString_GUI_FileReverts)
+                revertCheckBox.Text = locString_GUI_FileReverts
+                locString_GUI_SelectACP = readIni(ldi.FullName, "GUI", "locString_GUI_SelectACP", SB, constString_GUI_SelectACP)
+                locString_GUI_Apply = readIni(ldi.FullName, "GUI", "locString_GUI_Apply", SB, constString_GUI_Apply)
+                locString_GUI_Other = readIni(ldi.FullName, "GUI", "locString_GUI_Other", SB, constString_GUI_Other)
+                If (ChangeCPForm IsNot Nothing) Then
+                    ChangeCP.SelectCPLabel.Text = locString_GUI_SelectACP
+                    ChangeCP.ChangeCPApply.Text = locString_GUI_Apply
+                    ChangeCP.CPOtherRadioButton.Text = locString_GUI_Other
                 End If
-            Next LFI
-        End Sub
 
-        Private Sub CheckboxLanguage(lang As String)
-            Dim LTSI As ToolStripItem
-            Dim LMI As ToolStripMenuItem
+                SetUpdateStatus("")
 
-            If (lang = "International English") Then
-                For Each LTSI In LanguageToolStripMenuItem.DropDownItems
-                    If TypeOf (LTSI) Is ToolStripMenuItem Then
-                        LMI = CType(LTSI, ToolStripMenuItem)
-                        LMI.Checked = (LTSI.Text = lang)
-                    End If
-                Next LTSI
-            Else
-                For Each LTSI In LanguageToolStripMenuItem.DropDownItems
-                    If TypeOf (LTSI) Is ToolStripMenuItem Then
-                        LMI = CType(LTSI, ToolStripMenuItem)
-                        LMI.Checked = (LTSI.Text = lang)
-                    End If
-                Next
+                ' Toolbars
+                locString_Toolbar_File = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_File", SB, constString_Toolbar_File)
+                FileToolStripMenuItem.Text = locString_Toolbar_File
+                locString_Toolbar_PlayNerfArenaBlast = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_PlayNerfArenaBlast", SB, constString_Toolbar_PlayNerfArenaBlast)
+                PlayNerfArenaBlastToolStripMenuItem.Text = locString_Toolbar_PlayNerfArenaBlast
+                locString_Toolbar_ChangeDirectory = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_ChangeDirectory", SB, constString_Toolbar_ChangeDirectory)
+                ChangeBaseDirectoryToolStripMenuItem.Text = locString_Toolbar_ChangeDirectory
+                locString_Toolbar_CheckForUpdates = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_CheckForUpdates", SB, constString_Toolbar_CheckForUpdates)
+                CheckForUpdatesToolStripMenuItem.Text = locString_Toolbar_CheckForUpdates
+                locString_Toolbar_SelectAll = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_SelectAll", SB, constString_Toolbar_SelectAll)
+                SelectAllToolStripMenuItem.Text = locString_Toolbar_SelectAll
+                locString_Toolbar_DeselectAll = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_DeselectAll", SB, constString_Toolbar_DeselectAll)
+                DeselectAllToolStripMenuItem.Text = locString_Toolbar_DeselectAll
+                locString_Toolbar_GetCP = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_GetCP", SB, constString_Toolbar_GetCP)
+                GetLatestCommunityPackToolStripMenuItem.Text = locString_Toolbar_GetCP
+                locString_Toolbar_Exit = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_Exit", SB, constString_Toolbar_Exit)
+                ExitToolStripMenuItem.Text = locString_Toolbar_Exit
+                locString_Toolbar_Options = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_Options", SB, constString_Toolbar_Options)
+                OptionsToolStripMenuItem.Text = locString_Toolbar_Options
+                locString_Toolbar_Language = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_Language", SB, constString_Toolbar_Language)
+                LanguageToolStripMenuItem.Text = locString_Toolbar_Language
+                locString_Toolbar_OpenDirectory = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_OpenDirectory", SB, constString_Toolbar_OpenDirectory)
+                OpenGameDirectoryToolStripMenuItem.Text = locString_Toolbar_OpenDirectory
+                locString_Toolbar_Version = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_Version", SB, constString_Toolbar_Version)
+                VersionToolStripMenuItem.Text = locString_Toolbar_Version
+                locString_Toolbar_CheckVersion = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_CheckVersion", SB, constString_Toolbar_CheckVersion)
+                CheckForNewVersionToolStripMenuItem.Text = locString_Toolbar_CheckVersion
+                locString_Toolbar_Changelog = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_Changelog", SB, constString_Toolbar_Changelog)
+                ViewChangelogToolStripMenuItem.Text = locString_Toolbar_Changelog
+                locString_Toolbar_Help = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_Help", SB, constString_Toolbar_Help)
+                HelpToolStripMenuItem.Text = locString_Toolbar_Help
+                locString_Toolbar_ViewHelp = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_ViewHelp", SB, constString_Toolbar_ViewHelp)
+                ViewHelpToolStripMenuItem.Text = locString_Toolbar_ViewHelp
+                locString_Toolbar_Website = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_Website", SB, constString_Toolbar_Website)
+                VisitWebsiteToolStripMenuItem.Text = locString_Toolbar_Website
+                locString_Toolbar_About = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_About", SB, constString_Toolbar_About)
+                AboutToolStripMenuItem.Text = locString_Toolbar_About
+                locString_Toolbar_AdvancedOptions = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_AdvancedOptions", SB, constString_Toolbar_AdvancedOptions)
+                AdvancedToolStripMenuItem.Text = locString_Toolbar_AdvancedOptions
+                locString_Toolbar_AdvancedEnable = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_AdvancedEnable", SB, constString_Toolbar_AdvancedEnable)
+                locString_Toolbar_AdvancedDisable = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_AdvancedDisable", SB, constString_Toolbar_AdvancedDisable)
+                If (AdvancedMode) Then
+                    AdvancedModeToolStripMenuItem.Text = locString_Toolbar_AdvancedDisable
+                Else
+                    AdvancedModeToolStripMenuItem.Text = locString_Toolbar_AdvancedEnable
+                End If
+                locString_Toolbar_UpdateID = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_UpdateID", SB, constString_Toolbar_UpdateID)
+                ShowLatestUpdateIDToolStripMenuItem.Text = locString_Toolbar_UpdateID
+                locString_Toolbar_ChangeCP = readIni(ldi.FullName, "Toolbars", "locString_Toolbar_ChangeCP", SB, constString_Toolbar_ChangeCP)
+                ChangeCommunityPackToolStripMenuItem.Text = locString_Toolbar_ChangeCP
+
+                ' Log
+                locString_Log_BootAdvanced = readIni(ldi.FullName, "Log", "locString_Log_BootAdvanced", SB, constString_Log_BootAdvanced)
+                locString_Log_BootSuccess = readIni(ldi.FullName, "Log", "locString_Log_BootSuccess", SB, constString_Log_BootSuccess)
+                locString_Log_ChangeCPType = readIni(ldi.FullName, "Log", "locString_Log_ChangeCPType", SB, constString_Log_ChangeCPType)
+                locString_Log_CheckingForBaseUpdates = readIni(ldi.FullName, "Log", "locString_Log_CheckingForBaseUpdates", SB, constString_Log_CheckingForBaseUpdates)
+                locString_Log_CheckingForCPUpdates = readIni(ldi.FullName, "Log", "locString_Log_CheckingForCPUpdates", SB, constString_Log_CheckingForCPUpdates)
+                locString_Log_CheckingForUpdates = readIni(ldi.FullName, "Log", "locString_Log_CheckingForUpdates", SB, constString_Log_CheckingForUpdates)
+                locString_Log_CPDetected = readIni(ldi.FullName, "Log", "locString_Log_CPDetected", SB, constString_Log_CPDetected)
+                locString_Log_CPNotDetected = readIni(ldi.FullName, "Log", "locString_Log_CPNotDetected", SB, constString_Log_CPNotDetected)
+                locString_Log_CPUnknown = readIni(ldi.FullName, "Log", "locString_Log_CPUnknown", SB, constString_Log_CPUnknown)
+                locString_Log_CreateFolder = readIni(ldi.FullName, "Log", "locString_Log_CreateFolder", SB, constString_Log_CreateFolder)
+                locString_Log_DeleteEmptyFolder = readIni(ldi.FullName, "Log", "locString_Log_DeleteEmptyFolder", SB, constString_Log_DeleteEmptyFolder)
+                locString_Log_DeleteFile = readIni(ldi.FullName, "Log", "locString_Log_DeleteFile", SB, constString_Log_DeleteFile)
+                locString_Log_DeleteFullFolder = readIni(ldi.FullName, "Log", "locString_Log_DeleteFullFolder", SB, constString_Log_DeleteFullFolder)
+                locString_Log_DetectedNABLangEnglish = readIni(ldi.FullName, "Log", "locString_Log_DetectedNABLangEnglish", SB, constString_Log_DetectedNABLangEnglish)
+                locString_Log_DetectedNABLangGerman = readIni(ldi.FullName, "Log", "locString_Log_DetectedNABLangGerman", SB, constString_Log_DetectedNABLangGerman)
+                locString_Log_DetectedNABLangItalian = readIni(ldi.FullName, "Log", "locString_Log_DetectedNABLangItalian", SB, constString_Log_DetectedNABLangItalian)
+                locString_Log_DetectedNABLangUnknown = readIni(ldi.FullName, "Log", "locString_Log_DetectedNABLangUnknown", SB, constString_Log_DetectedNABLangUnknown)
+                locString_Log_DetectingCP = readIni(ldi.FullName, "Log", "locString_Log_DetectingCP", SB, constString_Log_DetectingCP)
+                locString_Log_DetectingEngine = readIni(ldi.FullName, "Log", "locString_Log_DetectingEngine", SB, constString_Log_DetectingEngine)
+                locString_Log_DownloadingNewVersion = readIni(ldi.FullName, "Log", "locString_Log_DownloadingNewVersion", SB, constString_Log_DownloadingNewVersion)
+                locString_Log_DownloadNewFile = readIni(ldi.FullName, "Log", "locString_Log_DownloadNewFile", SB, constString_Log_DownloadNewFile)
+                locString_Log_DownloadUpdatedFile = readIni(ldi.FullName, "Log", "locString_Log_DownloadUpdatedFile", SB, constString_Log_DownloadUpdatedFile)
+                locString_Log_EngineError = readIni(ldi.FullName, "Log", "locString_Log_EngineError", SB, constString_Log_EngineError)
+                locString_Log_EngineImproved = readIni(ldi.FullName, "Log", "locString_Log_EngineImproved", SB, constString_Log_EngineImproved)
+                locString_Log_EngineStandard = readIni(ldi.FullName, "Log", "locString_Log_EngineStandard", SB, constString_Log_EngineStandard)
+                locString_Log_EngineUnknown = readIni(ldi.FullName, "Log", "locString_Log_EngineUnknown", SB, constString_Log_EngineUnknown)
+                locString_Log_ErrorChecking = readIni(ldi.FullName, "Log", "locString_Log_ErrorChecking", SB, constString_Log_ErrorChecking)
+                locString_Log_ErrorDownloading = readIni(ldi.FullName, "Log", "locString_Log_ErrorDownloading", SB, constString_Log_ErrorDownloading)
+                locString_Log_ErrorLoadingConfig = readIni(ldi.FullName, "Log", "locString_Log_ErrorLoadingConfig", SB, constString_Log_ErrorLoadingConfig)
+                locString_Log_ErrorSavingConfig = readIni(ldi.FullName, "Log", "locString_Log_ErrorSavingConfig", SB, constString_Log_ErrorSavingConfig)
+                locString_Log_ExitNoUpdate = readIni(ldi.FullName, "Log", "locString_Log_ExitNoUpdate", SB, constString_Log_ExitNoUpdate)
+                locString_Log_ExitMidUpdate = readIni(ldi.FullName, "Log", "locString_Log_ExitMidUpdate", SB, constString_Log_ExitMidUpdate)
+                locString_Log_FoundUpdate = readIni(ldi.FullName, "Log", "locString_Log_FoundUpdate", SB, constString_Log_FoundUpdate)
+                locString_Log_FoundUpdates = readIni(ldi.FullName, "Log", "locString_Log_FoundUpdates", SB, constString_Log_FoundUpdates)
+                locString_Log_IniNotLocated = readIni(ldi.FullName, "Log", "locString_Log_IniNotLocated", SB, constString_Log_IniNotLocated)
+                locString_Log_InstanceUpdater = readIni(ldi.FullName, "Log", "locString_Log_InstanceUpdater", SB, constString_Log_InstanceUpdater)
+                locString_Log_LangNotSet = readIni(ldi.FullName, "Log", "locString_Log_LangNotSet", SB, constString_Log_LangNotSet)
+                locString_Log_LangNotSetDef = readIni(ldi.FullName, "Log", "locString_Log_LangNotSetDef", SB, constString_Log_LangNotSetDef)
+                locString_Log_LangSet = readIni(ldi.FullName, "Log", "locString_Log_LangSet", SB, constString_Log_LangSet)
+                locString_Log_LogClose = readIni(ldi.FullName, "Log", "locString_Log_LogClose", SB, constString_Log_LogClose)
+                locString_Log_LogOpen = readIni(ldi.FullName, "Log", "locString_Log_LogOpen", SB, constString_Log_LogOpen)
+                locString_Log_NewVersion = readIni(ldi.FullName, "Log", "locString_Log_NewVersion", SB, constString_Log_NewVersion)
+                locString_Log_NoGameExeWarning = readIni(ldi.FullName, "Log", "locString_Log_NoGameExeWarning", SB, constString_Log_NoGameExeWarning)
+                locString_Log_LaunchGame = readIni(ldi.FullName, "Log", "locString_Log_LaunchGame", SB, constString_Log_LaunchGame)
+                locString_Log_LaunchGameSuccess = readIni(ldi.FullName, "Log", "locString_Log_LaunchGameSuccess", SB, constString_Log_LaunchGameSuccess)
+                locString_Log_NoNewVersion = readIni(ldi.FullName, "Log", "locString_Log_NoNewVersion", SB, constString_Log_NoNewVersion)
+                locString_Log_NoNewUpdates = readIni(ldi.FullName, "Log", "locString_Log_NoNewUpdates", SB, constString_Log_NoNewUpdates)
+                locString_Log_PathChanged = readIni(ldi.FullName, "Log", "locString_Log_PathChanged", SB, constString_Log_PathChanged)
+                locString_Log_RefreshFile = readIni(ldi.FullName, "Log", "locString_Log_RefreshFile", SB, constString_Log_RefreshFile)
+                locString_Log_ServerNoResponse = readIni(ldi.FullName, "Log", "locString_log_ServerNoResponse", SB, constString_log_ServerNoResponse)
+                locString_Log_Shutdown = readIni(ldi.FullName, "Log", "locString_Log_Shutdown", SB, constString_Log_Shutdown)
+                locString_Log_UpdateFile = readIni(ldi.FullName, "Log", "locString_Log_UpdateFile", SB, constString_Log_UpdateFile)
+                locString_Log_UpdaterUpdateFailBat = readIni(ldi.FullName, "Log", "locString_Log_UpdaterUpdateFailBat", SB, constString_Log_UpdaterUpdateFailBat)
+                locString_Log_UpdateServerNoResponse = readIni(ldi.FullName, "Log", "locString_Log_UpdateServerNoResponse", SB, constString_Log_UpdateServerNoResponse)
+                locString_Log_UpdatesWereSuccessful = readIni(ldi.FullName, "Log", "locString_Log_UpdatesWereSuccessful", SB, constString_Log_UpdatesWereSuccessful)
+                locString_Log_UpdatingFiles = readIni(ldi.FullName, "Log", "locString_Log_UpdatingFiles", SB, constString_Log_UpdatingFiles)
+                locString_Log_UpdatingSelectedFiles = readIni(ldi.FullName, "Log", "locString_Log_UpdatingSelectedFiles", SB, constString_Log_UpdatingSelectedFiles)
+
+                ' Language
+                locString_Language_Name = readIni(ldi.FullName, "Language", "locString_Language_Name", SB, constString_Language_Name)
+
+                Exit For
             End If
-        End Sub
+        Next LFI
+    End Sub
 
-        Private Sub SetLanguage(Lang As String, ReloadonFail As Boolean)
-            Dim LanguageDirectory As DirectoryInfo = New DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory(), "languages", Lang + ".lang"))
+    Private Sub CheckboxLanguage(lang As String)
+        Dim LTSI As ToolStripItem
+        Dim LMI As ToolStripMenuItem
 
-            If ((Lang = "") Or (Lang = "International English")) Then
-                Lang = "International English"
-                UpdateSettings("Language", "International English")
+        If (lang = "International English") Then
+            For Each LTSI In LanguageToolStripMenuItem.DropDownItems
+                If TypeOf (LTSI) Is ToolStripMenuItem Then
+                    LMI = CType(LTSI, ToolStripMenuItem)
+                    LMI.Checked = (LTSI.Text = lang)
+                End If
+            Next LTSI
+        Else
+            For Each LTSI In LanguageToolStripMenuItem.DropDownItems
+                If TypeOf (LTSI) Is ToolStripMenuItem Then
+                    LMI = CType(LTSI, ToolStripMenuItem)
+                    LMI.Checked = (LTSI.Text = lang)
+                End If
+            Next
+        End If
+    End Sub
+
+    Private Sub SetLanguage(Lang As String, locLang As String, ReloadonFail As Boolean)
+        Dim LanguageDirectory As DirectoryInfo = New DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory(), "languages", Lang + ".lang"))
+
+        If ((Lang = "") Or (Lang = "International English")) Then
+            Lang = "International English"
+            UpdateSettings("Language", "International English")
+            Log(locString_Log_LangSet.Replace("<lang>", Lang), True)
+            LoadLanguageStrings("International English")
+            CheckboxLanguage("International English")
+        Else
+            If (My.Computer.FileSystem.FileExists(LanguageDirectory.FullName)) Then
+                UpdateSettings("Language", Lang)
                 Log(locString_Log_LangSet.Replace("<lang>", Lang), True)
+                LoadLanguageStrings(Lang)
+                CheckboxLanguage(Lang)
+            ElseIf (ReloadonFail) Then
+                UpdateSettings("Language", "International English")
+                Log(locString_Log_LangNotSetDef.Replace("<lang>", Lang), True)
                 LoadLanguageStrings("International English")
                 CheckboxLanguage("International English")
             Else
-                If (My.Computer.FileSystem.FileExists(LanguageDirectory.FullName)) Then
-                    UpdateSettings("Language", Lang)
-                    Log(locString_Log_LangSet.Replace("<lang>", Lang), True)
-                    LoadLanguageStrings(Lang)
-                    CheckboxLanguage(Lang)
-                ElseIf (ReloadonFail) Then
-                    UpdateSettings("Language", "International English")
-                    Log(locString_Log_LangNotSetDef.Replace("<lang>", Lang), True)
-                    LoadLanguageStrings("International English")
-                    CheckboxLanguage("International English")
-                Else
-                    Log(locString_Log_LangNotSet.Replace("<lang>", Lang), True)
-                End If
+                Log(locString_Log_LangNotSet.Replace("<lang>", Lang), True)
             End If
-        End Sub
+        End If
+    End Sub
 
-        Private Sub InternationalEnglishDefaultToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles InternationalEnglishDefaultToolStripMenuItem.Click
-            SetLanguage("International English", False)
-        End Sub
+    Private Sub InternationalEnglishDefaultToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles InternationalEnglishDefaultToolStripMenuItem.Click
+        SetLanguage("International English", , False)
+    End Sub
 
-        Private Function SanitizeVariants(InputDir As String) As String
-            Return InputDir.Replace("Full\", "").Replace("Lite\", "").Replace("Minimal\", "").Replace("Archive\", "").Replace("Beta\", "")
-        End Function
+    Private Function SanitizeVariants(InputDir As String) As String
+        Return InputDir.Replace("Full\", "").Replace("Lite\", "").Replace("Minimal\", "").Replace("Archive\", "").Replace("Beta\", "")
+    End Function
 
-        Private Function CheckVariantString(InputFolder As String) As Boolean
-            If (InputFolder = "Full") Or (InputFolder = "Lite") Or (InputFolder = "Minimal") Or (InputFolder = "Archive") Or (InputFolder = "Beta") Then
+    Private Function CheckVariantString(InputFolder As String) As Boolean
+        If (InputFolder = "Full") Or (InputFolder = "Lite") Or (InputFolder = "Minimal") Or (InputFolder = "Archive") Or (InputFolder = "Beta") Then
+            Return True
+        End If
+        Return False
+    End Function
+
+    Private Function RelevantVariant(VariantType As String, FolderVariant As String) As Boolean
+        If (VariantType = "Archive") Then
+            If (FolderVariant = "Full") Then
+                Return True
+            ElseIf (FolderVariant = "Lite") Then
+                Return True
+            ElseIf (FolderVariant = "Beta") Then
+                Return False
+            ElseIf (FolderVariant = "Archive") Then
+                Return True
+            ElseIf (FolderVariant = "Minimal") Then
+                Return True
+            ElseIf (FolderVariant Like "archive-*.uninstall") Then
+                Return False
+            ElseIf (FolderVariant Like "full-*.uninstall") Then
+                Return False
+            ElseIf (FolderVariant Like "lite-*.uninstall") Then
+                Return False
+            End If
+            Return False
+        ElseIf (VariantType = "Full") Then
+            If (FolderVariant = "Full") Then
+                Return True
+            ElseIf (FolderVariant = "Lite") Then
+                Return True
+            ElseIf (FolderVariant = "Beta") Then
+                Return False
+            ElseIf (FolderVariant = "Archive") Then
+                Return False
+            ElseIf (FolderVariant = "Minimal") Then
+                Return True
+            ElseIf (FolderVariant Like "archive-*.uninstall") Then
+                Return True
+            ElseIf (FolderVariant Like "full-*.uninstall") Then
+                Return False
+            ElseIf (FolderVariant Like "lite-*.uninstall") Then
+                Return False
+            End If
+            Return False
+        ElseIf (VariantType = "Lite") Then
+            If (FolderVariant = "Full") Then
+                Return False
+            ElseIf (FolderVariant = "Lite") Then
+                Return True
+            ElseIf (FolderVariant = "Beta") Then
+                Return False
+            ElseIf (FolderVariant = "Archive") Then
+                Return False
+            ElseIf (FolderVariant = "Minimal") Then
+                Return True
+            ElseIf (FolderVariant Like "archive-*.uninstall") Then
+                Return True
+            ElseIf (FolderVariant Like "full-*.uninstall") Then
+                Return True
+            ElseIf (FolderVariant Like "lite-*.uninstall") Then
+                Return False
+            End If
+            Return False
+        ElseIf (VariantType = "Beta") Then
+            If (FolderVariant = "Full") Then
+                Return True
+            ElseIf (FolderVariant = "Lite") Then
+                Return True
+            ElseIf (FolderVariant = "Beta") Then
+                Return True
+            ElseIf (FolderVariant = "Archive") Then
+                Return False
+            ElseIf (FolderVariant = "Minimal") Then
+                Return True
+            ElseIf (FolderVariant Like "archive-*.uninstall") Then
+                Return True
+            ElseIf (FolderVariant Like "full-*.uninstall") Then
+                Return False
+            ElseIf (FolderVariant Like "lite-*.uninstall") Then
+                Return False
+            End If
+            Return False
+        ElseIf (VariantType = "Minimal") Then
+            If (FolderVariant = "Full") Then
+                Return False
+            ElseIf (FolderVariant = "Lite") Then
+                Return False
+            ElseIf (FolderVariant = "Beta") Then
+                Return False
+            ElseIf (FolderVariant = "Archive") Then
+                Return False
+            ElseIf (FolderVariant = "Minimal") Then
+                Return True
+            ElseIf (FolderVariant Like "archive-*.uninstall") Then
+                Return True
+            ElseIf (FolderVariant Like "full-*.uninstall") Then
+                Return True
+            ElseIf (FolderVariant Like "lite-*.uninstall") Then
                 Return True
             End If
             Return False
-        End Function
-
-        Private Function RelevantVariant(VariantType As String, FolderVariant As String) As Boolean
-            If (VariantType = "Archive") Then
-                If (FolderVariant = "Full") Then
-                    Return True
-                ElseIf (FolderVariant = "Lite") Then
-                    Return True
-                ElseIf (FolderVariant = "Beta") Then
-                    Return False
-                ElseIf (FolderVariant = "Archive") Then
-                    Return True
-                ElseIf (FolderVariant = "Minimal") Then
-                    Return True
-                ElseIf (FolderVariant Like "archive-*.uninstall") Then
-                    Return False
-                ElseIf (FolderVariant Like "full-*.uninstall") Then
-                    Return False
-                ElseIf (FolderVariant Like "lite-*.uninstall") Then
-                    Return False
-                End If
+        ElseIf (VariantType = "") Then
+            If (FolderVariant = "Full") Then
                 Return False
-            ElseIf (VariantType = "Full") Then
-                If (FolderVariant = "Full") Then
-                    Return True
-                ElseIf (FolderVariant = "Lite") Then
-                    Return True
-                ElseIf (FolderVariant = "Beta") Then
-                    Return False
-                ElseIf (FolderVariant = "Archive") Then
-                    Return False
-                ElseIf (FolderVariant = "Minimal") Then
-                    Return True
-                ElseIf (FolderVariant Like "archive-*.uninstall") Then
-                    Return True
-                ElseIf (FolderVariant Like "full-*.uninstall") Then
-                    Return False
-                ElseIf (FolderVariant Like "lite-*.uninstall") Then
-                    Return False
-                End If
+            ElseIf (FolderVariant = "Lite") Then
                 Return False
-            ElseIf (VariantType = "Lite") Then
-                If (FolderVariant = "Full") Then
-                    Return False
-                ElseIf (FolderVariant = "Lite") Then
-                    Return True
-                ElseIf (FolderVariant = "Beta") Then
-                    Return False
-                ElseIf (FolderVariant = "Archive") Then
-                    Return False
-                ElseIf (FolderVariant = "Minimal") Then
-                    Return True
-                ElseIf (FolderVariant Like "archive-*.uninstall") Then
-                    Return True
-                ElseIf (FolderVariant Like "full-*.uninstall") Then
-                    Return True
-                ElseIf (FolderVariant Like "lite-*.uninstall") Then
-                    Return False
-                End If
+            ElseIf (FolderVariant = "Beta") Then
                 Return False
-            ElseIf (VariantType = "Beta") Then
-                If (FolderVariant = "Full") Then
-                    Return True
-                ElseIf (FolderVariant = "Lite") Then
-                    Return True
-                ElseIf (FolderVariant = "Beta") Then
-                    Return True
-                ElseIf (FolderVariant = "Archive") Then
-                    Return False
-                ElseIf (FolderVariant = "Minimal") Then
-                    Return True
-                ElseIf (FolderVariant Like "archive-*.uninstall") Then
-                    Return True
-                ElseIf (FolderVariant Like "full-*.uninstall") Then
-                    Return False
-                ElseIf (FolderVariant Like "lite-*.uninstall") Then
-                    Return False
-                End If
+            ElseIf (FolderVariant = "Archive") Then
                 Return False
-            ElseIf (VariantType = "Minimal") Then
-                If (FolderVariant = "Full") Then
-                    Return False
-                ElseIf (FolderVariant = "Lite") Then
-                    Return False
-                ElseIf (FolderVariant = "Beta") Then
-                    Return False
-                ElseIf (FolderVariant = "Archive") Then
-                    Return False
-                ElseIf (FolderVariant = "Minimal") Then
-                    Return True
-                ElseIf (FolderVariant Like "archive-*.uninstall") Then
-                    Return True
-                ElseIf (FolderVariant Like "full-*.uninstall") Then
-                    Return True
-                ElseIf (FolderVariant Like "lite-*.uninstall") Then
-                    Return True
-                End If
+            ElseIf (FolderVariant = "Minimal") Then
+                Return True
+            ElseIf (FolderVariant Like "archive-*.uninstall") Then
                 Return False
-            ElseIf (VariantType = "") Then
-                If (FolderVariant = "Full") Then
-                    Return False
-                ElseIf (FolderVariant = "Lite") Then
-                    Return False
-                ElseIf (FolderVariant = "Beta") Then
-                    Return False
-                ElseIf (FolderVariant = "Archive") Then
-                    Return False
-                ElseIf (FolderVariant = "Minimal") Then
-                    Return True
-                ElseIf (FolderVariant Like "archive-*.uninstall") Then
-                    Return False
-                ElseIf (FolderVariant Like "full-*.uninstall") Then
-                    Return False
-                ElseIf (FolderVariant Like "lite-*.uninstall") Then
-                    Return False
-                End If
+            ElseIf (FolderVariant Like "full-*.uninstall") Then
+                Return False
+            ElseIf (FolderVariant Like "lite-*.uninstall") Then
                 Return False
             End If
             Return False
-        End Function
+        End If
+        Return False
+    End Function
 
-        Private Sub ChangeCommunityPackToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ChangeCommunityPackToolStripMenuItem.Click
-            If (ChangeCP Is Nothing) Then
-                MessageBox.Show(locString_Caption_ChangeCPWarning, locString_Window_Warning, MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
-                ChangeCP = New ChangeCPForm()
-                ChangeCP.Show()
-            End If
-        End Sub
+    Private Sub ChangeCommunityPackToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ChangeCommunityPackToolStripMenuItem.Click
+        If (ChangeCP Is Nothing) Then
+            MessageBox.Show(locString_Caption_ChangeCPWarning, locString_Window_Warning, MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
+            ChangeCP = New ChangeCPForm()
+            ChangeCP.Show()
+        End If
+    End Sub
 
-        Public Sub CPVariantChanged(CPVariant As String)
-            updateFilesTreeView.Nodes.Clear()
-            cpVariantString = CPVariant
-            writeINI(Path.Combine(homeDirectory.FullName, "System\CommunityPack.ini"), "Community Pack", "Variant", CPVariant)
-            Log(locString_Log_ChangeCPType.Replace("<var>", CPVariant), True)
-            SetUpdateStatus("Ready")
-            updateSuccess = True
-            updateDiff = 0
-            outputTextbox.Text = locString_Output_UpdaterReady.Replace("<app>", locString_Window_UpdaterName)
-            querying = False
-            DoUpdate(querying)
-            updateButton.Enabled = True
-        End Sub
+    Public Sub CPVariantChanged(CPVariant As String)
+        updateFilesTreeView.Nodes.Clear()
+        cpVariantString = CPVariant
+        writeINI(Path.Combine(homeDirectory.FullName, "System\CommunityPack.ini"), "Community Pack", "Variant", CPVariant)
+        Log(locString_Log_ChangeCPType.Replace("<var>", CPVariant), True)
+        SetUpdateStatus("Ready")
+        updateSuccess = True
+        updateDiff = 0
+        outputTextbox.Text = locString_Output_UpdaterReady.Replace("<app>", locString_Window_UpdaterName)
+        querying = False
+        DoUpdate(querying)
+        updateButton.Enabled = True
+    End Sub
 
-        Private Sub ViewLogToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ViewLogToolStripMenuItem.Click
-            If (LogViewer Is Nothing) Then
-                LogViewer = New LogViewerForm()
-                LogViewer.Show()
-            End If
-        End Sub
+    Private Sub ViewLogToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ViewLogToolStripMenuItem.Click
+        If (LogViewer Is Nothing) Then
+            LogViewer = New LogViewerForm()
+            LogViewer.Show()
+        End If
+    End Sub
 
-        Private Sub PlayNerfArenaBlastToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles PlayNerfArenaBlastToolStripMenuItem.Click
-            Launch_Game()
-        End Sub
+    Private Sub PlayNerfArenaBlastToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles PlayNerfArenaBlastToolStripMenuItem.Click
+        Launch_Game()
+    End Sub
 
-        Private Function Launch_Game() As Boolean
-            Log(locString_Log_LaunchGame, True)
-            If (My.Computer.FileSystem.FileExists(Path.Combine(homeDirectory.FullName, "System\Nerf.exe"))) Then
-                If (Process.Start(Path.Combine(homeDirectory.FullName, "System\Nerf.exe")) IsNot Nothing) Then
-                    Log(locString_Log_LaunchGameSuccess.Replace("<dir>", Path.Combine(homeDirectory.FullName, "System\Nerf.exe")), True)
-                    Return True
-                Else
-                    Return False
-                End If
+    Private Function Launch_Game() As Boolean
+        Log(locString_Log_LaunchGame, True)
+        If (My.Computer.FileSystem.FileExists(Path.Combine(homeDirectory.FullName, "System\Nerf.exe"))) Then
+            If (Process.Start(Path.Combine(homeDirectory.FullName, "System\Nerf.exe")) IsNot Nothing) Then
+                Log(locString_Log_LaunchGameSuccess.Replace("<dir>", Path.Combine(homeDirectory.FullName, "System\Nerf.exe")), True)
+                Return True
             Else
-                MessageBox.Show(locString_Caption_NoGameExeWarning, locString_Window_GameExeNotFound, MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
-                Log(locString_Log_NoGameExeWarning.Replace("<dir>", Path.Combine(homeDirectory.FullName, "System\Nerf.exe")), True)
                 Return False
             End If
-        End Function
+        Else
+            MessageBox.Show(locString_Caption_NoGameExeWarning, locString_Window_GameExeNotFound, MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
+            Log(locString_Log_NoGameExeWarning.Replace("<dir>", Path.Combine(homeDirectory.FullName, "System\Nerf.exe")), True)
+            Return False
+        End If
+    End Function
 
-        Private Sub LaunchGameCheckbox_CheckedChanged(sender As Object, e As EventArgs) Handles LaunchGameCheckbox.CheckedChanged
-            If (LaunchGameCheckbox.Checked) Then
-                AutoLaunch = 1
-                UpdateSettings("AutoLaunch", "1")
-            Else
-                AutoLaunch = 0
-                UpdateSettings("AutoLaunch", "0")
-            End If
-        End Sub
-        Private Function CreateMD5Sum(ByVal filename As String) As String
-            Using md5 As MD5 = MD5.Create()
+    Private Sub LaunchGameCheckbox_CheckedChanged(sender As Object, e As EventArgs) Handles LaunchGameCheckbox.CheckedChanged
+        If (LaunchGameCheckbox.Checked) Then
+            AutoLaunch = 1
+            UpdateSettings("AutoLaunch", "1")
+        Else
+            AutoLaunch = 0
+            UpdateSettings("AutoLaunch", "0")
+        End If
+    End Sub
+    Private Function CreateMD5Sum(ByVal filename As String) As String
+        Using md5 As MD5 = MD5.Create()
 
-                Using stream = File.OpenRead(filename)
-                    Return BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", String.Empty)
-                End Using
+            Using stream = File.OpenRead(filename)
+                Return BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", String.Empty)
             End Using
-        End Function
-    End Class
+        End Using
+    End Function
+End Class
 
-    Class MyTreeView
+Class MyTreeView
     Inherits TreeView
     Protected Overrides Sub WndProc(ByRef m As Message)
         If (m.Msg = 515) Then

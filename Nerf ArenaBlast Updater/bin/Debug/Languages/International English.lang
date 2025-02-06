@@ -1,4 +1,7 @@
-﻿[Windows]
+﻿[Languages]
+locString_Language_Name="International English"
+
+[Windows]
 locString_Window_AboutUpdater="About <app>"
 locString_Window_AdvancedDisable="Disable Advanced Mode?"
 locString_Window_AdvancedEnable="Enable Advanced Mode?"
@@ -180,7 +183,7 @@ locString_Log_PathChanged="Game path changed to <dir>."
 locString_Log_RefreshFile="Refreshing <dir>."
 locString_Log_ServerNoResponse="Error: Could not reach the update server at <url>."
 locString_Log_Shutdown="<app> shutting down."
-locString_Log_UpdateFile="Updating file <dir>."
+locString_Log_UpdateFile="Updating file <dir>: <olddate> -> <newdate>."
 locString_Log_UpdaterUpdateFailBat="Error: Could not update the <app>. Missing bat file."
 locString_Log_UpdateServerNoResponse="Warning: Could not reach the update server while checking for new versions."
 locString_Log_UpdatesWereSuccessful="Updates were successful."
