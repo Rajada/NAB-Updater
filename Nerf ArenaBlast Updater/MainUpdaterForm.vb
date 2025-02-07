@@ -38,7 +38,7 @@ Public Class UpdaterMainForm
     Private querying As Boolean = False
     Private nodesToDelete As New List(Of TreeNode)
     Private filesToDelete As New List(Of String)
-    Private updaterVersion As String = "3.9296"
+    Private updaterVersion As String = "3.9297"
     Private updateDiff As Integer = 0
     Private newVersion As Boolean = False
     Private updateCount As Integer = 0
@@ -58,6 +58,7 @@ Public Class UpdaterMainForm
     Private silentClose As Boolean = False
     Private Upgrading As Boolean = False
     Private DupClosing As Boolean = False
+    Private numErrors As Integer = 0
 
     ' Strings
     ' Windows
@@ -70,6 +71,7 @@ Public Class UpdaterMainForm
     Const constString_Window_ConfigNotRead As String = "Unable to Read <app> Configuration File"
     Const constString_Window_DeleteFolder As String = "Delete Folder?"
     Const constString_Window_EngineDetectionFailure As String = "Error Detecting Engine Version"
+    Const constString_Window_ErrorDeleting = "Error Deleting"
     Const constString_Window_ErrorDownloading As String = "Error Downloading File"
     Const constString_Window_ErrorUpdating As String = "Error Updating"
     Const constString_Window_ExitUpdater As String = "Exit <app>?"
@@ -84,6 +86,7 @@ Public Class UpdaterMainForm
     Const constString_Window_UpdateCheckCancelled As String = "Update Check Cancelled"
     Const constString_Window_UpdateCheckComplete As String = "Update Check Complete"
     Const constString_Window_UpdateComplete As String = "Update Complete"
+    Const constString_Window_UpdateCompleteErrors As String = "Update Completed with Errors"
     Const constString_Window_UpdateID As String = "Latest Update ID"
     Const constString_Window_UpdaterName As String = "Nerf ArenaBlast Updater"
     Const constString_Window_UpdaterRunning As String = "<app> Already Running"
@@ -102,7 +105,10 @@ Public Class UpdaterMainForm
     Const constString_Caption_DetectedNABCritical As String = "We have detected that Nerf ArenaBlast is currently running. It is highly recommended that you close Nerf ArenaBlast before updating to ensure updates are applied correctly. Click OK to ignore this warning or click Cancel to abort updating."
     Const constString_Caption_EngineDetectionFailure As String = "There was an error automatically detecting the version of Nerf ArenaBlast you are running. It is important to specify if you are running a standard Nerf ArenaBlast Community Pack install or the latest Nerf ArenaBlast beta. Are you updating a standard Community Pack install?"
     Const constString_Caption_ErrorChecking As String = "Error checking for updates. Check has been cancelled."
+    Const constString_Caption_ErrorCreating As String = "Error creating <file>."
+    Const constString_Caption_ErrorDeleting As String = "Error deleting <file>."
     Const constString_Caption_ErrorDownloading As String = "Error downloading file <url>."
+    Const constString_Caption_ErrorUpdating As String = "Error updating file <file>."
     Const constString_Caption_ErrorUpdatingUpdater As String = "There was an error while updating the <app>. Please try again."
     Const constString_Caption_ErrorReport As String = "An error report follows."
     Const constString_Caption_ExitNoUpdate As String = "Are you sure you want to exit? The game will not be updated."
@@ -117,6 +123,8 @@ Public Class UpdaterMainForm
     Const constString_Caption_ServerNoResponse As String = "The update server did not respond at <url>. The URL may be wrong, the host may be down, or you may need to check your internet connection."
     Const constString_Caption_UpdateID As String = "Your update ID is:"
     Const constString_Caption_UpdateServerNoResponse As String = "The update server did not respond while checking for new versions. The URL may be wrong, the host may be down, or you may need to check your internet connection."
+    Const constString_Caption_UpdateCompleteError As String = "Updates were completed with <num> error."
+    Const constString_Caption_UpdateCompleteErrors As String = "Updates were completed with <num> errors."
     Const constString_Caption_UpdatesWereSuccessful As String = "Updates were successful."
     Const constString_Caption_UpdaterForceClose As String = "In order to ensure update success, please only run one instance of the <app> at a time. This program will now close."
     Const constString_Caption_UpdatingAborted As String = "Updating has been aborted."
@@ -133,7 +141,10 @@ Public Class UpdaterMainForm
     Const constString_Output_Refreshing As String = "Refreshing"
     Const constString_Output_ServerError As String = "Server error!"
     Const constString_Output_UpdateAvailable As String = "update available"
+    Const constString_Output_UpdateError As String = "<num> error while updating."
+    Const constString_Output_UpdateErrors As String = "<num> errors while updating."
     Const constString_Output_UpdaterReady As String = "<app> is ready to go."
+    Const constString_Output_UpdatesAborted As String = "Updating aborted."
     Const constString_Output_UpdatesAvailable As String = "updates available"
     Const constString_Output_UpdatesPending As String = "updates pending"
     Const constString_Output_UpdatesSelected As String = "updates selected"
@@ -218,6 +229,8 @@ Public Class UpdaterMainForm
     Const constString_Log_EngineStandard As String = "Standard engine version detected."
     Const constString_Log_EngineUnknown As String = "Warning: Unknown engine version <ver> detected."
     Const constString_Log_ErrorChecking As String = "Error: Error checking for updates."
+    Const constString_Log_ErrorCreating As String = "Error: Could not create <file>."
+    Const constString_Log_ErrorDeleting As String = "Error: Could not delete <file>."
     Const constString_Log_ErrorDownloading As String = "Error: Could not download file <url>."
     Const constString_Log_ErrorLoadingConfig As String = "Error: Could not read <app> configuration settings for loading."
     Const constString_Log_ErrorSavingConfig As String = "Error: Could not read <app> configuration settings for saving."
@@ -232,6 +245,7 @@ Public Class UpdaterMainForm
     Const constString_Log_LangSet As String = "Setting language to <lang>."
     Const constString_Log_LogClose As String = "Log closed <date> at <time>."
     Const constString_Log_LogOpen As String = "Log opened <date> at <time>."
+    Const constString_Log_NABRunning As String = "Warning: Nerf ArenaBlast was detected running."
     Const constString_Log_NewVersion As String = "Found a new version (<ver1>), current version (<ver2>)."
     Const constString_Log_NoGameExeWarning As String = "Error: Could not find the game executable file at <dir>. Game launch aborted."
     Const constString_Log_LaunchGame As String = "Launching game..."
@@ -240,8 +254,11 @@ Public Class UpdaterMainForm
     Const constString_Log_NoNewUpdates As String = "No new updates available at this time."
     Const constString_Log_PathChanged As String = "Game path changed to <dir>."
     Const constString_Log_RefreshFile As String = "Refreshing <dir>."
-    Const constString_log_ServerNoResponse As String = "Error: Could not reach the update server at <url>."
+    Const constString_Log_ServerNoResponse As String = "Error: Could not reach the update server at <url>."
     Const constString_Log_Shutdown As String = "<app> shutting down."
+    Const constString_Log_UpdateAborted As String = "Updating aborted."
+    Const constString_Log_UpdateError As String = "Error: Updating completed with <num> error."
+    Const constString_Log_UpdateErrors As String = "Error: Updating completed with <num> errors."
     Const constString_Log_UpdateFile As String = "Updating file <dir>: <olddate> -> <newdate>."
     Const constString_Log_UpdaterUpdateFailBat As String = "Error: Could not update the <app>. Missing bat file."
     Const constString_Log_UpdateServerNoResponse As String = "Warning: Could not reach the update server while checking for new versions."
@@ -261,6 +278,7 @@ Public Class UpdaterMainForm
     Private locString_Window_ConfigNotRead As String = constString_Window_ConfigNotRead
     Private locString_Window_DeleteFolder As String = constString_Window_DeleteFolder
     Private locString_Window_EngineDetectionFailure As String = constString_Window_EngineDetectionFailure
+    Private locString_Window_ErrorDeleting As String = constString_Window_ErrorDeleting
     Private locString_Window_ErrorDownloading As String = constString_Window_ErrorDownloading
     Private locString_Window_ErrorUpdating As String = constString_Window_ErrorUpdating
     Private locString_Window_ExitUpdater As String = constString_Window_ExitUpdater
@@ -275,6 +293,7 @@ Public Class UpdaterMainForm
     Private locString_Window_UpdateCheckCancelled As String = constString_Window_UpdateCheckCancelled
     Private locString_Window_UpdateCheckComplete As String = constString_Window_UpdateCheckComplete
     Private locString_Window_UpdateComplete As String = constString_Window_UpdateComplete
+    Private locString_Window_UpdateCompleteErrors As String = constString_Window_UpdateCompleteErrors
     Private locString_Window_UpdateID As String = constString_Window_UpdateID
     Private locString_Window_UpdaterName As String = constString_Window_UpdaterName
     Private locString_Window_UpdaterRunning As String = constString_Window_UpdaterRunning
@@ -293,8 +312,11 @@ Public Class UpdaterMainForm
     Private locString_Caption_DetectedNABCritical As String = constString_Caption_DetectedNABCritical
     Private locString_Caption_EngineDetectionFailure As String = constString_Caption_EngineDetectionFailure
     Private locString_Caption_ErrorChecking As String = constString_Caption_ErrorChecking
+    Private locString_Caption_ErrorCreating As String = constString_Caption_ErrorCreating
+    Private locString_Caption_ErrorDeleting As String = constString_Caption_ErrorDeleting
     Private locString_Caption_ErrorDownloading As String = constString_Caption_ErrorDownloading
     Private locString_Caption_ErrorReport As String = constString_Caption_ErrorReport
+    Private locString_Caption_ErrorUpdating As String = constString_Caption_ErrorUpdating
     Private locString_Caption_ErrorUpdatingUpdater As String = constString_Caption_ErrorUpdatingUpdater
     Private locString_Caption_ExitNoUpdate As String = constString_Caption_ExitNoUpdate
     Private locString_Caption_ExitMidUpdate As String = constString_Caption_ExitMidUpdate
@@ -306,6 +328,8 @@ Public Class UpdaterMainForm
     Private locString_Caption_NoNewVersion As String = constString_Caption_NoNewVersion
     Private locString_Caption_RevertWarning As String = constString_Caption_RevertWarning
     Private locString_Caption_ServerNoResponse As String = constString_Caption_ServerNoResponse
+    Private locString_Caption_UpdateCompleteError As String = constString_Caption_UpdateCompleteError
+    Private locString_Caption_UpdateCompleteErrors As String = constString_Caption_UpdateCompleteErrors
     Private locString_Caption_UpdateID As String = constString_Caption_UpdateID
     Private locString_Caption_UpdateServerNoResponse As String = constString_Caption_UpdateServerNoResponse
     Private locString_Caption_UpdatesWereSuccessful As String = constString_Caption_UpdatesWereSuccessful
@@ -324,7 +348,10 @@ Public Class UpdaterMainForm
     Private locString_Output_Refreshing As String = constString_Output_Refreshing
     Private locString_Output_ServerError As String = constString_Output_ServerError
     Private locString_Output_UpdateAvailable As String = constString_Output_UpdateAvailable
+    Private locString_Output_UpdateError As String = constString_Output_UpdateError
+    Private locString_Output_UpdateErrors As String = constString_Output_UpdateErrors
     Private locString_Output_UpdaterReady As String = constString_Output_UpdaterReady
+    Private locString_Output_UpdatesAborted As String = constString_Output_UpdatesAborted
     Private locString_Output_UpdatesAvailable As String = constString_Output_UpdatesAvailable
     Private locString_Output_UpdatesPending As String = constString_Output_UpdatesPending
     Private locString_Output_UpdatesSelected As String = constString_Output_UpdatesSelected
@@ -409,6 +436,8 @@ Public Class UpdaterMainForm
     Private locString_Log_EngineStandard As String = constString_Log_EngineStandard
     Private locString_Log_EngineUnknown As String = constString_Log_EngineUnknown
     Private locString_Log_ErrorChecking As String = constString_Log_ErrorChecking
+    Private locString_Log_ErrorCreating As String = constString_Log_ErrorCreating
+    Private locString_Log_ErrorDeleting As String = constString_Log_ErrorDeleting
     Private locString_Log_ErrorDownloading As String = constString_Log_ErrorDownloading
     Private locString_Log_ErrorLoadingConfig As String = constString_Log_ErrorLoadingConfig
     Private locString_Log_ErrorSavingConfig As String = constString_Log_ErrorSavingConfig
@@ -423,6 +452,7 @@ Public Class UpdaterMainForm
     Private locString_Log_LangSet As String = constString_Log_LangSet
     Private locString_Log_LogClose As String = constString_Log_LogClose
     Private locString_Log_LogOpen As String = constString_Log_LogOpen
+    Private locString_Log_NABRunning As String = constString_Log_NABRunning
     Private locString_Log_NewVersion As String = constString_Log_NewVersion
     Private locString_Log_NoGameExeWarning As String = constString_Log_NoGameExeWarning
     Private locString_Log_LaunchGame As String = constString_Log_LaunchGame
@@ -433,6 +463,9 @@ Public Class UpdaterMainForm
     Private locString_Log_RefreshFile As String = constString_Log_RefreshFile
     Private locString_Log_ServerNoResponse As String = constString_log_ServerNoResponse
     Private locString_Log_Shutdown As String = constString_Log_Shutdown
+    Private locString_Log_UpdateAborted As String = constString_Log_UpdateAborted
+    Private locString_Log_UpdateError As String = constString_Log_UpdateError
+    Private locString_Log_UpdateErrors As String = constString_Log_UpdateErrors
     Private locString_Log_UpdateFile As String = constString_Log_UpdateFile
     Private locString_Log_UpdaterUpdateFailBat As String = constString_Log_UpdaterUpdateFailBat
     Private locString_Log_UpdateServerNoResponse As String = constString_Log_UpdateServerNoResponse
@@ -480,10 +513,12 @@ Public Class UpdaterMainForm
     Public Function CheckNABRunning(isCritical As Boolean) As Boolean
         If (CheckForProcess("Nerf") > 0) Then
             If (isCritical) Then
+                Log(locString_Log_NABRunning, True, Color.Orange)
                 If (MessageBox.Show(locString_Caption_DetectedNABCritical, locString_Window_NABRunning, MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation) = DialogResult.Cancel) Then
                     Return True
                 End If
             Else
+                Log(locString_Log_NABRunning, True, Color.Orange)
                 MessageBox.Show(locString_Caption_DetectedNAB, locString_Window_NABRunning, MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
             End If
         End If
@@ -545,7 +580,7 @@ Public Class UpdaterMainForm
         Else
             If (updateDiff > 0) Then
                 If (MessageBox.Show(locString_Caption_ExitMidUpdate, locString_Window_ExitUpdater.Replace("<app>", locString_Window_UpdaterName), MessageBoxButtons.YesNo, MessageBoxIcon.None) = DialogResult.Yes) Then
-                    Log(locString_Log_ExitMidUpdate, True)
+                    Log(locString_Log_ExitMidUpdate, True, Color.Orange)
                     Close()
                     Exit Sub
                 End If
@@ -623,7 +658,7 @@ Public Class UpdaterMainForm
         Try
             InitialAppend = CInt(ConfigurationManager.AppSettings("InitialAppend"))
         Catch err As ConfigurationErrorsException
-            Log(locString_Log_ErrorLoadingConfig.Replace("<app>", locString_Window_UpdaterName), True)
+            Log(locString_Log_ErrorLoadingConfig.Replace("<app>", locString_Window_UpdaterName), True, Color.Red)
         End Try
 
         Log(locString_Log_LogOpen.Replace("<date>", thisDate.ToShortDateString).Replace("<time>", thisTime.ToShortTimeString), CBool(InitialAppend))
@@ -639,7 +674,7 @@ Public Class UpdaterMainForm
                 Process.Start(Path.Combine(Directory.GetCurrentDirectory, "update.bat"))
             Else
                 MessageBox.Show(locString_Caption_ErrorUpdatingUpdater.Replace("<app>", locString_Window_UpdaterName), locString_Window_ErrorUpdating, MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
-                Log(locString_Log_UpdaterUpdateFailBat.Replace("<app>", locString_Window_UpdaterName), True)
+                Log(locString_Log_UpdaterUpdateFailBat.Replace("<app>", locString_Window_UpdaterName), True, Color.Red)
             End If
         End If
     End Sub
@@ -681,7 +716,7 @@ Public Class UpdaterMainForm
 
         If (Not silentClose) Then
             Log(locString_Log_Shutdown.Replace("<app>", locString_Window_UpdaterName), True)
-            Log(locString_Log_LogClose.Replace("<date>", thisDate.ToShortDateString).Replace("<time>", thisTime.ToShortTimeString) + Environment.NewLine, True)
+            Log(locString_Log_LogClose.Replace("<date>", thisDate.ToShortDateString).Replace("<time>", thisTime.ToShortTimeString), True)
         End If
     End Sub
 
@@ -724,7 +759,7 @@ Public Class UpdaterMainForm
         Try
             myWebClient.DownloadFile(downPath, filePath)
         Catch ex As Exception
-            Log(locString_Log_UpdateServerNoResponse, True)
+            Log(locString_Log_UpdateServerNoResponse, True, Color.Orange)
             If (ex.InnerException IsNot Nothing) Then
                 MessageBox.Show(locString_Caption_UpdateServerNoResponse & ControlChars.NewLine & ControlChars.NewLine & locString_Caption_ErrorReport & ControlChars.NewLine & ControlChars.NewLine & ex.InnerException.Message, locString_Window_ServerNoResponse, MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
             Else
@@ -826,7 +861,7 @@ Public Class UpdaterMainForm
             lang = "Italian"
             Log(locString_Log_DetectedNABLangItalian, True)
         Else
-            Log(locString_Log_DetectedNABLangUnknown.Replace("<lang>", tempLang.ToString), True)
+            Log(locString_Log_DetectedNABLangUnknown.Replace("<lang>", tempLang.ToString), True, Color.Orange)
         End If
 
         Return lang
@@ -867,7 +902,7 @@ Public Class UpdaterMainForm
                 AutoLaunch = CInt(ConfigurationManager.AppSettings("AutoLaunch"))
                 SetLanguage(ConfigurationManager.AppSettings("Language"), True)
             Catch e As ConfigurationErrorsException
-                Log(locString_Log_ErrorLoadingConfig.Replace("<app>", locString_Window_UpdaterName), True)
+                Log(locString_Log_ErrorLoadingConfig.Replace("<app>", locString_Window_UpdaterName), True, Color.Red)
                 MessageBox.Show(locString_Caption_ConfigNotRead.Replace("<app>", locString_Window_UpdaterName), locString_Window_ConfigNotRead.Replace("<app>", locString_Window_UpdaterName), MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
                 Close()
                 Exit Sub
@@ -877,7 +912,7 @@ Public Class UpdaterMainForm
 
     Private Sub CheckIniLocation(sender As Object, e As EventArgs)
         While (Not (File.Exists(iniDirectory.FullName)) And Not (Aborting))
-            Log(locString_Log_IniNotLocated.Replace("<dir>", iniDirectory.FullName), True)
+            Log(locString_Log_IniNotLocated.Replace("<dir>", iniDirectory.FullName), True, Color.Orange)
             MessageBox.Show(locString_Caption_IniNotLocated.Replace("<dir>", iniDirectory.FullName), locString_Window_IniNotFound, MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
             ShowGamePathSelector(sender, e)
         End While
@@ -919,7 +954,7 @@ Public Class UpdaterMainForm
             UpdateSettings("CommunityQueryURL", onlineCustomDirectory)
             GetLatestCommunityPackToolStripMenuItem.Enabled = True
         ElseIf (engineVersion.ToString = "ERROR") Then
-            Log(locString_Log_EngineError, True)
+            Log(locString_Log_EngineError, True, Color.Red)
             engineVersionNumber = -1
             GetLatestCommunityPackToolStripMenuItem.Enabled = False
 
@@ -939,7 +974,7 @@ Public Class UpdaterMainForm
                 GetLatestCommunityPackToolStripMenuItem.Enabled = True
             End If
         Else
-            Log(locString_Log_EngineUnknown.Replace("<ver>", engineVersion.ToString), True)
+            Log(locString_Log_EngineUnknown.Replace("<ver>", engineVersion.ToString), True, Color.Orange)
             engineVersionNumber = 0
             GetLatestCommunityPackToolStripMenuItem.Enabled = False
 
@@ -978,7 +1013,7 @@ Public Class UpdaterMainForm
             cpVariant = readIni(Path.Combine(homeDirectory.FullName, "System\CommunityPack.ini"), "Community Pack", "Variant", sb, "ERROR")
 
             If (cpVersion = "ERROR") Then
-                Log(locString_Log_CPUnknown, True)
+                Log(locString_Log_CPUnknown, True, Color.Orange)
                 hasCP = False
                 cpVersionString = ""
                 cpVariantString = ""
@@ -1022,7 +1057,7 @@ Public Class UpdaterMainForm
             configFile.Save(ConfigurationSaveMode.Modified)
             ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name)
         Catch e As ConfigurationErrorsException
-            Log(locString_Log_ErrorSavingConfig.Replace("<app>", locString_Window_UpdaterName), True)
+            Log(locString_Log_ErrorSavingConfig.Replace("<app>", locString_Window_UpdaterName), True, Color.Red)
             MessageBox.Show(locString_Caption_ConfigNotFound.Replace("<app>", locString_Window_UpdaterName), locString_Window_ConfigNotFound.Replace("<app>", locString_Window_UpdaterName), MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
         End Try
     End Sub
@@ -1117,6 +1152,7 @@ Public Class UpdaterMainForm
             outputTextbox.Text = locString_Output_CheckingForUpdates
             Log(locString_Log_CheckingForUpdates, True)
             updateCount = 0
+            numErrors = 0
             querying = True
             DoUpdate(querying)
             updateProgressBar.Maximum = 1
@@ -1126,6 +1162,7 @@ Public Class UpdaterMainForm
             QueryGameFiles(sender, e)
         ElseIf (updateStatus = "Update") Then
             If (CheckNABRunning(True)) Then
+                Log(locString_Log_UpdateAborted, True)
                 MessageBox.Show(locString_Caption_UpdatingAborted, locString_Window_UpdateAborted, MessageBoxButtons.OK, MessageBoxIcon.None)
             Else
                 If (ChangeCP IsNot Nothing) Then
@@ -1145,32 +1182,50 @@ Public Class UpdaterMainForm
                 CheckForUpdatesToolStripMenuItem.Enabled = False
                 ChangeCommunityPackToolStripMenuItem.Enabled = False
                 CopyFilesOver()
-                updateSuccess = True
+                If numErrors <= 0 Then
+                    updateSuccess = True
+                    Log(locString_Log_UpdatesWereSuccessful, True)
+                    MessageBox.Show(locString_Caption_UpdatesWereSuccessful, locString_Window_UpdateComplete, MessageBoxButtons.OK, MessageBoxIcon.None)
+                    outputTextbox.Text = locString_Output_UpdatesSuccessful
+
+                    If (AutoLaunch > 0) Then
+                        PlayNerfArenaBlastToolStripMenuItem.Enabled = False
+                        If (Launch_Game()) Then
+                            Close()
+                        Else
+                            PlayNerfArenaBlastToolStripMenuItem.Enabled = True
+                        End If
+                    Else
+                        PlayNerfArenaBlastToolStripMenuItem.Enabled = True
+                    End If
+                Else
+                    updateSuccess = False
+
+                    If (numErrors = 1) Then
+                        Log(locString_Log_UpdateError.Replace("<num>", CStr(numErrors)), True, Color.Red)
+                        MessageBox.Show(locString_Caption_UpdateCompleteError.Replace("<num>", CStr(numErrors)), locString_Window_UpdateCompleteErrors, MessageBoxButtons.OK, MessageBoxIcon.None)
+                        outputTextbox.Text = locString_Output_UpdateError.Replace("<num>", CStr(numErrors))
+                    Else
+                        Log(locString_Log_UpdateErrors.Replace("<num>", CStr(numErrors)), True, Color.Red)
+                        MessageBox.Show(locString_Caption_UpdateCompleteErrors.Replace("<num>", CStr(numErrors)), locString_Window_UpdateCompleteErrors, MessageBoxButtons.OK, MessageBoxIcon.None)
+                        outputTextbox.Text = locString_Output_UpdateErrors.Replace("<num>", CStr(numErrors))
+                    End If
+
+                    PlayNerfArenaBlastToolStripMenuItem.Enabled = True
+                End If
+
                 'writeINI(iniDirectory.ToString, "Update", "UpdateID", "")
                 'Log("Update ID is " + "", True)
                 SetUpdateStatus("Ready")
                 updateButton.Enabled = True
                 CheckForUpdatesToolStripMenuItem.Enabled = True
                 ChangeCommunityPackToolStripMenuItem.Enabled = True
-                Log(locString_Log_UpdatesWereSuccessful, True)
-                MessageBox.Show(locString_Caption_UpdatesWereSuccessful, locString_Window_UpdateComplete, MessageBoxButtons.OK, MessageBoxIcon.None)
-                outputTextbox.Text = locString_Output_UpdatesSuccessful
+
                 updateProgressBar.Value = 0
                 selectAllButton.Enabled = False
                 SelectAllToolStripMenuItem.Enabled = False
                 deselectAllButton.Enabled = False
                 DeselectAllToolStripMenuItem.Enabled = False
-
-                If (AutoLaunch > 0) Then
-                    PlayNerfArenaBlastToolStripMenuItem.Enabled = False
-                    If (Launch_Game()) Then
-                        Close()
-                    Else
-                        PlayNerfArenaBlastToolStripMenuItem.Enabled = True
-                    End If
-                Else
-                    PlayNerfArenaBlastToolStripMenuItem.Enabled = True
-                End If
             End If
         End If
     End Sub
@@ -1268,7 +1323,7 @@ Public Class UpdaterMainForm
                                     Try
                                         myWebClient.DownloadFile(entry.Url, Path.Combine(Directory.GetCurrentDirectory(), "temp", entry.FileName))
                                     Catch ex As Exception
-                                        Log(locString_Log_ServerNoResponse.Replace("<url>", parentNode.Tag.ToString), True)
+                                        Log(locString_Log_ServerNoResponse.Replace("<url>", parentNode.Tag.ToString), True, Color.Red)
                                         If (ex.InnerException IsNot Nothing) Then
                                             MessageBox.Show(locString_Caption_ServerNoResponse.Replace("<url>", parentNode.Tag.ToString) & ControlChars.NewLine & ControlChars.NewLine & locString_Caption_ErrorReport & ControlChars.NewLine & ControlChars.NewLine & ex.InnerException.Message, locString_Window_ServerNoResponse, MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
                                         Else
@@ -1410,7 +1465,7 @@ Public Class UpdaterMainForm
             End If
 
         Catch ex As HttpRequestException
-            Log(locString_Log_ServerNoResponse.Replace("<url>", parentNode.Tag.ToString), True)
+            Log(locString_Log_ServerNoResponse.Replace("<url>", parentNode.Tag.ToString), True, Color.Red)
             If (ex.InnerException IsNot Nothing) Then
                 MessageBox.Show(locString_Caption_ServerNoResponse.Replace("<url>", parentNode.Tag.ToString) & ControlChars.NewLine & ControlChars.NewLine & locString_Caption_ErrorReport & ControlChars.NewLine & ControlChars.NewLine & ex.InnerException.Message, locString_Window_ServerNoResponse, MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
             Else
@@ -1537,7 +1592,7 @@ Public Class UpdaterMainForm
             DoUpdate(querying)
             SetUpdateStatus("Ready")
             updateSuccess = True
-            Log(locString_Log_ErrorChecking, True)
+            Log(locString_Log_ErrorChecking, True, Color.Red)
             MessageBox.Show(locString_Caption_ErrorChecking, locString_Window_UpdateCheckCancelled, MessageBoxButtons.OK, MessageBoxIcon.None)
             outputTextbox.Text = locString_Output_ErrorChecking
             updateDiff = 0
@@ -1728,28 +1783,56 @@ Public Class UpdaterMainForm
                             If (My.Computer.FileSystem.FileExists(actualPath)) Then
                                 outputTextbox.Text = locString_Output_DeletingFile & ControlChars.NewLine & ControlChars.NewLine & node.Text
                                 Log(locString_Log_DeleteFile.Replace("<dir>", actualPath), True)
-                                My.Computer.FileSystem.DeleteFile(actualPath)
+                                Try
+                                    My.Computer.FileSystem.DeleteFile(actualPath)
+                                    node.ForeColor = Color.DarkRed
+                                Catch e As Exception
+                                    Log(locString_Log_ErrorDeleting.Replace("<file>", actualPath), True, Color.Red)
+                                    node.ForeColor = Color.Purple
+                                    numErrors += 1
+                                    MessageBox.Show(locString_Caption_ErrorDeleting.Replace("<file>", actualPath) & ControlChars.NewLine & ControlChars.NewLine & locString_Caption_ErrorReport & ControlChars.NewLine & ControlChars.NewLine & e.ToString, locString_Window_ErrorDeleting, MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1)
+                                End Try
                             End If
-                            node.ForeColor = Color.DarkRed
                         Else
                             outputTextbox.Text = locString_Output_DeletingDirectory & ControlChars.NewLine & ControlChars.NewLine & node.Text
                             If (actualDirectoryInfo.EnumerateFiles().Any() <> False) Or (actualDirectoryInfo.EnumerateDirectories().Any() <> False) Then
                                 If (MessageBox.Show(locString_Caption_FolderDeletionWarning.Replace("<dir>", actualPath), locString_Window_DeleteFolder, MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) = DialogResult.Yes) Then
-                                    Log(locString_Log_DeleteFullFolder.Replace("<dir>", actualPath), True)
-                                    My.Computer.FileSystem.DeleteDirectory(actualPath, DeleteDirectoryOption.DeleteAllContents)
-                                    node.ForeColor = Color.DarkRed
+                                    Log(locString_Log_DeleteFullFolder.Replace("<dir>", actualPath), True, Color.Orange)
+                                    Try
+                                        My.Computer.FileSystem.DeleteDirectory(actualPath, DeleteDirectoryOption.DeleteAllContents)
+                                        node.ForeColor = Color.DarkRed
+                                    Catch e As Exception
+                                        Log(locString_Log_ErrorDeleting.Replace("<file>", actualPath), True, Color.Red)
+                                        node.ForeColor = Color.Purple
+                                        numErrors += 1
+                                        MessageBox.Show(locString_Caption_ErrorDeleting.Replace("<file>", actualPath) & ControlChars.NewLine & ControlChars.NewLine & locString_Caption_ErrorReport & ControlChars.NewLine & ControlChars.NewLine & e.ToString, locString_Window_ErrorDeleting, MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1)
+                                    End Try
                                 End If
                             Else
                                 Log(locString_Log_DeleteEmptyFolder.Replace("<dir>", actualPath), True)
-                                My.Computer.FileSystem.DeleteDirectory(actualPath, DeleteDirectoryOption.DeleteAllContents)
-                                node.ForeColor = Color.DarkRed
+                                Try
+                                    My.Computer.FileSystem.DeleteDirectory(actualPath, DeleteDirectoryOption.DeleteAllContents)
+                                    node.ForeColor = Color.DarkRed
+                                Catch e As Exception
+                                    Log(locString_Log_ErrorDeleting.Replace("<file>", actualPath), True, Color.Red)
+                                    node.ForeColor = Color.Purple
+                                    numErrors += 1
+                                    MessageBox.Show(locString_Caption_ErrorDeleting.Replace("<file>", actualPath) & ControlChars.NewLine & ControlChars.NewLine & locString_Caption_ErrorReport & ControlChars.NewLine & ControlChars.NewLine & e.ToString, locString_Window_ErrorDeleting, MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1)
+                                End Try
                             End If
                         End If
                     Else
-                        Try
-                            If Not (My.Computer.FileSystem.DirectoryExists(actualPath.Substring(0, actualPath.LastIndexOf("\")))) Then
+                        'Try
+                        If Not (My.Computer.FileSystem.DirectoryExists(actualPath.Substring(0, actualPath.LastIndexOf("\")))) Then
                                 Log(locString_Log_CreateFolder.Replace("<dir>", actualPath), True)
+                            Try
                                 My.Computer.FileSystem.CreateDirectory(actualPath.Substring(0, actualPath.LastIndexOf("\")))
+                            Catch e As Exception
+                                Log(locString_Log_ErrorCreating.Replace("<file>", actualPath), True, Color.Red)
+                                node.ForeColor = Color.Purple
+                                numErrors += 1
+                                MessageBox.Show(locString_Caption_ErrorCreating.Replace("<file>", actualPath) & ControlChars.NewLine & ControlChars.NewLine & locString_Caption_ErrorReport & ControlChars.NewLine & ControlChars.NewLine & e.ToString, locString_Window_ErrorUpdating, MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1)
+                            End Try
                             End If
 
                             If (node.ForeColor = Color.Blue) Then
@@ -1764,6 +1847,7 @@ Public Class UpdaterMainForm
                             End If
 
                             outputTextbox.Text = locString_Output_DownloadingFile & ControlChars.NewLine & ControlChars.NewLine & node.Text
+                        Try
                             myWebClient.DownloadFile(actualOnlinePath, actualPath)
                             Dim fileData() = Split(CStr(node.Tag), "?")
                             RestoreFileInfo(actualPath, fileData(0), fileData(1), node)
@@ -1773,12 +1857,26 @@ Public Class UpdaterMainForm
                                 If (My.Computer.FileSystem.FileExists(actualPath.Replace("Default.ini", "Nerf.ini"))) Then
                                     Log(locString_Log_DeleteFile.Replace("<dir>", actualPath), True)
                                     outputTextbox.Text = locString_Output_DeletingFile & ControlChars.NewLine & ControlChars.NewLine & "Nerf.ini"
-                                    My.Computer.FileSystem.DeleteFile(actualPath.Replace("Default.ini", "Nerf.ini"))
+                                    Try
+                                        My.Computer.FileSystem.DeleteFile(actualPath.Replace("Default.ini", "Nerf.ini"))
+                                    Catch e As Exception
+                                        Log(locString_Log_ErrorDeleting.Replace("<file>", actualPath), True, Color.Red)
+                                        node.ForeColor = Color.Purple
+                                        numErrors += 1
+                                        MessageBox.Show(locString_Caption_ErrorDeleting.Replace("<file>", actualPath) & ControlChars.NewLine & ControlChars.NewLine & locString_Caption_ErrorReport & ControlChars.NewLine & ControlChars.NewLine & e.ToString, locString_Window_ErrorDeleting, MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1)
+                                    End Try
                                 End If
                                 If (My.Computer.FileSystem.FileExists(actualPath)) Then
                                     Log(locString_Log_RefreshFile.Replace("<dir>", actualPath), True)
                                     outputTextbox.Text = locString_Output_Refreshing & ControlChars.NewLine & ControlChars.NewLine & "Nerf.ini"
-                                    My.Computer.FileSystem.CopyFile(actualPath, actualPath.Replace("Default.ini", "Nerf.ini"))
+                                    Try
+                                        My.Computer.FileSystem.CopyFile(actualPath, actualPath.Replace("Default.ini", "Nerf.ini"))
+                                    Catch e As Exception
+                                        Log(locString_Log_ErrorCreating.Replace("<file>", actualPath), True, Color.Red)
+                                        node.ForeColor = Color.Purple
+                                        numErrors += 1
+                                        MessageBox.Show(locString_Caption_ErrorUpdating.Replace("<file>", actualPath) & ControlChars.NewLine & ControlChars.NewLine & locString_Caption_ErrorReport & ControlChars.NewLine & ControlChars.NewLine & e.ToString, locString_Window_ErrorUpdating, MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1)
+                                    End Try
                                 End If
                                 'ElseIf (node.Text Like ("DefUser.ini*")) Then
                                 '  Log("Deleting User.ini", True)
@@ -1796,11 +1894,23 @@ Public Class UpdaterMainForm
                             node.ForeColor = Color.Green
                             Log(locString_Log_UpdateFile.Replace("<dir>", actualPath).Replace("<olddate>", oldFileDate).Replace("<newdate>", CStr(Date.ParseExact(fileData(1), "yyyy-MM-dd HH:mm", New Globalization.CultureInfo("en-US")))), True)
                         Catch e As Exception
-                            Log(locString_Log_ErrorDownloading.Replace("<url>", actualOnlinePath), True)
+                            Log(locString_Log_ErrorDownloading.Replace("<url>", actualOnlinePath), True, Color.Red)
+                            node.ForeColor = Color.Purple
+                            numErrors += 1
                             MessageBox.Show(locString_Caption_ErrorDownloading.Replace("<url>", actualOnlinePath) & ControlChars.NewLine & ControlChars.NewLine & locString_Caption_ErrorReport & ControlChars.NewLine & ControlChars.NewLine & e.ToString, locString_Window_ErrorDownloading, MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1)
-                            myWebClient.Dispose()
-                            Updating = False
+                            'myWebClient.Dispose()
+                            'updateSuccess = False
+                            'Updating = False
+                            'Aborting = True
                         End Try
+
+                        ' Catch e As Exception
+                        '     Log(locString_Log_ErrorDownloading.Replace("<url>", actualOnlinePath), True)
+                        '  node.ForeColor = Color.Purple
+                        '  MessageBox.Show(locString_Caption_ErrorDownloading.Replace("<url>", actualOnlinePath) & ControlChars.NewLine & ControlChars.NewLine & locString_Caption_ErrorReport & ControlChars.NewLine & ControlChars.NewLine & e.ToString, locString_Window_ErrorDownloading, MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1)
+                        '  myWebClient.Dispose()
+                        '  Updating = False
+                        ' End Try
                     End If
                     myWebClient.Dispose()
                     updateProgressBar.PerformStep()
@@ -2112,21 +2222,27 @@ Public Class UpdaterMainForm
         End If
     End Sub
 
-    Public Sub Log(Info As String, Append As Boolean)
+    Public Sub Log(Info As String, Append As Boolean, Optional ByVal lineColor As Color = Nothing)
         Using LogWriter As New StreamWriter(logDirectory, Append)
             LogWriter.WriteLine(Info)
             LogWriter.Flush()
             LogWriter.Close()
         End Using
 
+        If (lineColor = Nothing) Then
+            lineColor = Color.Black
+        End If
+
         If LogViewer IsNot Nothing Then
             If (Append) Then
-                LogViewer.logtext.Text += Info & Environment.NewLine
+                LogViewer.logtext.SelectionColor = lineColor
+                LogViewer.logtext.AppendText(Info & Environment.NewLine)
             Else
                 LogViewer.logtext.Text = Nothing
-                LogViewer.logtext.Text += Info & Environment.NewLine
+                LogViewer.logtext.SelectionColor = lineColor
+                LogViewer.logtext.AppendText(Info & Environment.NewLine)
             End If
-        End If
+            End If
     End Sub
 
     Private Sub AdvancedModeToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles AdvancedModeToolStripMenuItem.Click
@@ -2299,6 +2415,7 @@ Public Class UpdaterMainForm
                 locString_Window_ConfigNotRead = readIni(ldi.FullName, "Windows", "locString_Window_ConfigNotRead", SB, constString_Window_ConfigNotRead)
                 locString_Window_DeleteFolder = readIni(ldi.FullName, "Windows", "locString_Window_DeleteFolder", SB, constString_Window_DeleteFolder)
                 locString_Window_EngineDetectionFailure = readIni(ldi.FullName, "Windows", "locString_Window_EngineDetectionFailure", SB, constString_Window_EngineDetectionFailure)
+                locString_Window_ErrorDeleting = readIni(ldi.FullName, "Windows", "locString_Window_ErrorDeleting", SB, constString_Window_ErrorDeleting)
                 locString_Window_ErrorDownloading = readIni(ldi.FullName, "Windows", "locString_Window_ErrorDownloading", SB, constString_Window_ErrorDownloading)
                 locString_Window_ErrorUpdating = readIni(ldi.FullName, "Windows", "locString_Window_ErrorUpdating", SB, constString_Window_ErrorUpdating)
                 locString_Window_ExitUpdater = readIni(ldi.FullName, "Windows", "locString_Window_ExitUpdater", SB, constString_Window_ExitUpdater)
@@ -2313,6 +2430,7 @@ Public Class UpdaterMainForm
                 locString_Window_UpdateCheckCancelled = readIni(ldi.FullName, "Windows", "locString_Window_UpdateCheckCancelled", SB, constString_Window_UpdateCheckCancelled)
                 locString_Window_UpdateCheckComplete = readIni(ldi.FullName, "Windows", "locString_Window_UpdateCheckComplete", SB, constString_Window_UpdateCheckComplete)
                 locString_Window_UpdateComplete = readIni(ldi.FullName, "Windows", "locString_Window_UpdateComplete", SB, constString_Window_UpdateComplete)
+                locString_Window_UpdateCompleteErrors = readIni(ldi.FullName, "Windows", "locString_Window_UpdateCompleteErrors", SB, constString_Window_UpdateCompleteErrors)
                 locString_Window_UpdateID = readIni(ldi.FullName, "Windows", "locString_Window_UpdateID", SB, constString_Window_UpdateID)
                 locString_Window_UpdaterName = readIni(ldi.FullName, "Windows", "locString_Window_UpdaterName", SB, constString_Window_UpdaterName)
                 Me.Text = locString_Window_UpdaterName + " " + updaterVersion
@@ -2332,6 +2450,8 @@ Public Class UpdaterMainForm
                 locString_Caption_DetectedNABCritical = readIni(ldi.FullName, "Captions", "locString_Caption_DetectedNABCritical", SB, constString_Caption_DetectedNABCritical)
                 locString_Caption_EngineDetectionFailure = readIni(ldi.FullName, "Captions", "locString_Caption_EngineDetectionFailure", SB, constString_Caption_EngineDetectionFailure)
                 locString_Caption_ErrorChecking = readIni(ldi.FullName, "Captions", "locString_Caption_ErrorChecking", SB, constString_Caption_ErrorChecking)
+                locString_Caption_ErrorCreating = readIni(ldi.FullName, "Captions", "locString_Caption_ErrorCreating", SB, constString_Caption_ErrorCreating)
+                locString_Caption_ErrorDeleting = readIni(ldi.FullName, "Captions", "locString_Caption_ErrorDeleting", SB, constString_Caption_ErrorDeleting)
                 locString_Caption_ErrorDownloading = readIni(ldi.FullName, "Captions", "locString_Caption_ErrorDownloading", SB, constString_Caption_ErrorDownloading)
                 locString_Caption_ErrorReport = readIni(ldi.FullName, "Captions", "locString_Caption_ErrorReport", SB, constString_Caption_ErrorReport)
                 locString_Caption_ErrorUpdatingUpdater = readIni(ldi.FullName, "Captions", "locString_Caption_ErrorUpdatingUpdater", SB, constString_Caption_ErrorUpdatingUpdater)
@@ -2345,6 +2465,8 @@ Public Class UpdaterMainForm
                 locString_Caption_NoNewVersion = readIni(ldi.FullName, "Captions", "locString_Caption_NoNewVersion", SB, constString_Caption_NoNewVersion)
                 locString_Caption_RevertWarning = readIni(ldi.FullName, "Captions", "locString_Caption_RevertWarning", SB, constString_Caption_RevertWarning)
                 locString_Caption_ServerNoResponse = readIni(ldi.FullName, "Captions", "locString_Caption_ServerNoResponse", SB, constString_Caption_ServerNoResponse)
+                locString_Caption_UpdateCompleteError = readIni(ldi.FullName, "Captions", "locString_Caption_UpdateCompleteError", SB, constString_Caption_UpdateCompleteError)
+                locString_Caption_UpdateCompleteErrors = readIni(ldi.FullName, "Captions", "locString_Caption_UpdateCompleteErrors", SB, constString_Caption_UpdateCompleteErrors)
                 locString_Caption_UpdateID = readIni(ldi.FullName, "Captions", "locString_Caption_UpdateID", SB, constString_Caption_UpdateID)
                 locString_Caption_UpdateServerNoResponse = readIni(ldi.FullName, "Captions", "locString_Caption_UpdateServerNoResponse", SB, constString_Caption_UpdateServerNoResponse)
                 locString_Caption_UpdatesWereSuccessful = readIni(ldi.FullName, "Captions", "locString_Caption_UpdatesWereSuccessful", SB, constString_Caption_UpdatesWereSuccessful)
@@ -2362,8 +2484,11 @@ Public Class UpdaterMainForm
                 locString_Output_NoNewVersion = readIni(ldi.FullName, "Outputs", "locString_Output_NoNewVersion", SB, constString_Output_NoNewVersion)
                 locString_Output_Refreshing = readIni(ldi.FullName, "Outputs", "locString_Output_Refreshing", SB, constString_Output_Refreshing)
                 locString_Output_ServerError = readIni(ldi.FullName, "Outputs", "locString_Output_ServerError", SB, constString_Output_ServerError)
+                locString_Output_UpdateError = readIni(ldi.FullName, "Outputs", "locString_Output_UpdateError", SB, constString_Output_UpdateError)
+                locString_Output_UpdateErrors = readIni(ldi.FullName, "Outputs", "locString_Output_UpdateErrors", SB, constString_Output_UpdateErrors)
                 locString_Output_UpdateAvailable = readIni(ldi.FullName, "Outputs", "locString_Output_UpdateAvailable", SB, constString_Output_UpdateAvailable)
                 locString_Output_UpdaterReady = readIni(ldi.FullName, "Outputs", "locString_Output_UpdaterReady", SB, constString_Output_UpdaterReady)
+                locString_Output_UpdatesAborted = readIni(ldi.FullName, "Outputs", "locString_Output_UpdatesAborted", SB, constString_Output_UpdatesAborted)
                 locString_Output_UpdatesAvailable = readIni(ldi.FullName, "Outputs", "locString_Output_UpdatesAvailable", SB, constString_Output_UpdatesAvailable)
                 locString_Output_UpdatesPending = readIni(ldi.FullName, "Outputs", "locString_Output_UpdatesPending", SB, constString_Output_UpdatesPending)
                 locString_Output_UpdatesSelected = readIni(ldi.FullName, "Outputs", "locString_Output_UpdatesSelected", SB, constString_Output_UpdatesSelected)
@@ -2491,6 +2616,8 @@ Public Class UpdaterMainForm
                 locString_Log_EngineStandard = readIni(ldi.FullName, "Log", "locString_Log_EngineStandard", SB, constString_Log_EngineStandard)
                 locString_Log_EngineUnknown = readIni(ldi.FullName, "Log", "locString_Log_EngineUnknown", SB, constString_Log_EngineUnknown)
                 locString_Log_ErrorChecking = readIni(ldi.FullName, "Log", "locString_Log_ErrorChecking", SB, constString_Log_ErrorChecking)
+                locString_Log_ErrorCreating = readIni(ldi.FullName, "Log", "locString_Log_ErrorCreating", SB, constString_Log_ErrorCreating)
+                locString_Log_ErrorDeleting = readIni(ldi.FullName, "Log", "locString_Log_ErrorDeleting", SB, constString_Log_ErrorDeleting)
                 locString_Log_ErrorDownloading = readIni(ldi.FullName, "Log", "locString_Log_ErrorDownloading", SB, constString_Log_ErrorDownloading)
                 locString_Log_ErrorLoadingConfig = readIni(ldi.FullName, "Log", "locString_Log_ErrorLoadingConfig", SB, constString_Log_ErrorLoadingConfig)
                 locString_Log_ErrorSavingConfig = readIni(ldi.FullName, "Log", "locString_Log_ErrorSavingConfig", SB, constString_Log_ErrorSavingConfig)
@@ -2505,6 +2632,7 @@ Public Class UpdaterMainForm
                 locString_Log_LangSet = readIni(ldi.FullName, "Log", "locString_Log_LangSet", SB, constString_Log_LangSet)
                 locString_Log_LogClose = readIni(ldi.FullName, "Log", "locString_Log_LogClose", SB, constString_Log_LogClose)
                 locString_Log_LogOpen = readIni(ldi.FullName, "Log", "locString_Log_LogOpen", SB, constString_Log_LogOpen)
+                locString_Log_NABRunning = readIni(ldi.FullName, "Log", "locString_Log_NABRunning", SB, constString_Log_NABRunning)
                 locString_Log_NewVersion = readIni(ldi.FullName, "Log", "locString_Log_NewVersion", SB, constString_Log_NewVersion)
                 locString_Log_NoGameExeWarning = readIni(ldi.FullName, "Log", "locString_Log_NoGameExeWarning", SB, constString_Log_NoGameExeWarning)
                 locString_Log_LaunchGame = readIni(ldi.FullName, "Log", "locString_Log_LaunchGame", SB, constString_Log_LaunchGame)
@@ -2515,6 +2643,9 @@ Public Class UpdaterMainForm
                 locString_Log_RefreshFile = readIni(ldi.FullName, "Log", "locString_Log_RefreshFile", SB, constString_Log_RefreshFile)
                 locString_Log_ServerNoResponse = readIni(ldi.FullName, "Log", "locString_log_ServerNoResponse", SB, constString_log_ServerNoResponse)
                 locString_Log_Shutdown = readIni(ldi.FullName, "Log", "locString_Log_Shutdown", SB, constString_Log_Shutdown)
+                locString_Log_UpdateAborted = readIni(ldi.FullName, "Log", "locString_Log_UpdateAborted", SB, constString_Log_UpdateAborted)
+                locString_Log_UpdateError = readIni(ldi.FullName, "Log", "locString_Log_UpdateError", SB, constString_Log_UpdateError)
+                locString_Log_UpdateErrors = readIni(ldi.FullName, "Log", "locString_Log_UpdateErrors", SB, constString_Log_UpdateErrors)
                 locString_Log_UpdateFile = readIni(ldi.FullName, "Log", "locString_Log_UpdateFile", SB, constString_Log_UpdateFile)
                 locString_Log_UpdaterUpdateFailBat = readIni(ldi.FullName, "Log", "locString_Log_UpdaterUpdateFailBat", SB, constString_Log_UpdaterUpdateFailBat)
                 locString_Log_UpdateServerNoResponse = readIni(ldi.FullName, "Log", "locString_Log_UpdateServerNoResponse", SB, constString_Log_UpdateServerNoResponse)
@@ -2551,19 +2682,23 @@ Public Class UpdaterMainForm
         End If
     End Sub
 
-    Private Sub SetLanguage(Lang As String, locLang As String, ReloadonFail As Boolean)
+    Private Sub SetLanguage(Lang As String, ReloadonFail As Boolean)
         Dim LanguageDirectory As DirectoryInfo = New DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory(), "languages", Lang + ".lang"))
+        Dim localizedLanguageName As String
+        Dim SB As StringBuilder = New StringBuilder(255)
 
         If ((Lang = "") Or (Lang = "International English")) Then
             Lang = "International English"
+            localizedLanguageName = Lang
             UpdateSettings("Language", "International English")
-            Log(locString_Log_LangSet.Replace("<lang>", Lang), True)
+            Log(locString_Log_LangSet.Replace("<lang>", localizedLanguageName), True)
             LoadLanguageStrings("International English")
             CheckboxLanguage("International English")
         Else
             If (My.Computer.FileSystem.FileExists(LanguageDirectory.FullName)) Then
+                localizedLanguageName = readIni(LanguageDirectory.FullName, "Language", "locString_Language_Name", SB, Lang)
                 UpdateSettings("Language", Lang)
-                Log(locString_Log_LangSet.Replace("<lang>", Lang), True)
+                Log(locString_Log_LangSet.Replace("<lang>", localizedLanguageName), True)
                 LoadLanguageStrings(Lang)
                 CheckboxLanguage(Lang)
             ElseIf (ReloadonFail) Then
@@ -2578,7 +2713,7 @@ Public Class UpdaterMainForm
     End Sub
 
     Private Sub InternationalEnglishDefaultToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles InternationalEnglishDefaultToolStripMenuItem.Click
-        SetLanguage("International English", , False)
+        SetLanguage("International English", False)
     End Sub
 
     Private Function SanitizeVariants(InputDir As String) As String
@@ -2737,6 +2872,8 @@ Public Class UpdaterMainForm
         If (LogViewer Is Nothing) Then
             LogViewer = New LogViewerForm()
             LogViewer.Show()
+        Else
+            LogViewer.Show()
         End If
     End Sub
 
@@ -2755,7 +2892,7 @@ Public Class UpdaterMainForm
             End If
         Else
             MessageBox.Show(locString_Caption_NoGameExeWarning, locString_Window_GameExeNotFound, MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
-            Log(locString_Log_NoGameExeWarning.Replace("<dir>", Path.Combine(homeDirectory.FullName, "System\Nerf.exe")), True)
+            Log(locString_Log_NoGameExeWarning.Replace("<dir>", Path.Combine(homeDirectory.FullName, "System\Nerf.exe")), True, Color.Red)
             Return False
         End If
     End Function

@@ -34,17 +34,25 @@ Partial Class LogViewerForm
         Me.logtext.TabIndex = 0
         Me.logtext.Text = ""
         '
-        'Log
+        'LogViewerForm
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(584, 361)
         Me.Controls.Add(Me.logtext)
+        Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
-        Me.Name = "Log"
+        Me.MaximizeBox = False
+        Me.MinimizeBox = False
+        Me.Name = "LogViewerForm"
+        Me.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide
         Me.Text = "Log"
         Me.ResumeLayout(False)
 
+    End Sub
+
+    Private Sub log_Closed(sender As Object, e As EventArgs) Handles Me.Closed
+        UpdaterMainForm.LogViewer = Nothing
     End Sub
 
     Friend WithEvents logtext As RichTextBox

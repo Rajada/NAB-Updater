@@ -1,5 +1,13 @@
 ﻿Please provide feedback and report any bugs at https://www.nerfarena.net
 
+3.9297:
+
+- Added the ability to catch and log issues deleting and adding new directories and files.
+- Adjusted program logic to not abort entirely when a file error is encountered. The program will attempt other updates before reporting the number of errors encountered.
+- Fixed a bug where log and changelog windows would not reopen after being closed once.
+- Fixed certain fixed size windows being resizable.
+- Improved logging.
+
 3.9296:
 
 - Fixed a bug that caused language loading to fail.

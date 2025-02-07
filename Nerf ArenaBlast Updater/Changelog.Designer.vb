@@ -17,11 +17,11 @@ Partial Class ChangelogForm
   'Required by the Windows Form Designer
   Private components As System.ComponentModel.IContainer
 
-  'NOTE: The following procedure is required by the Windows Form Designer
-  'It can be modified using the Windows Form Designer.  
-  'Do not modify it using the code editor.
-  <System.Diagnostics.DebuggerStepThrough()>
-  Private Sub InitializeComponent()
+    'NOTE: The following procedure is required by the Windows Form Designer
+    'It can be modified using the Windows Form Designer.  
+    'Do not modify it using the code editor.
+    <System.Diagnostics.DebuggerStepThrough()>
+    Private Sub InitializeComponent()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(ChangelogForm))
         Me.ChangelogTextbox = New System.Windows.Forms.RichTextBox()
         Me.SuspendLayout()
@@ -44,7 +44,7 @@ Partial Class ChangelogForm
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(580, 357)
         Me.Controls.Add(Me.ChangelogTextbox)
-        Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D
+        Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.MaximizeBox = False
         Me.MaximumSize = New System.Drawing.Size(600, 400)
@@ -54,6 +54,10 @@ Partial Class ChangelogForm
         Me.Text = "Changelog"
         Me.ResumeLayout(False)
 
+    End Sub
+
+    Private Sub Changelog_Closed(sender As Object, e As EventArgs) Handles Me.Closed
+        UpdaterMainForm.Changelog = Nothing
     End Sub
 
     Friend WithEvents ChangelogTextbox As RichTextBox
