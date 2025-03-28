@@ -38,7 +38,7 @@ Public Class UpdaterMainForm
     Private querying As Boolean = False
     Private nodesToDelete As New List(Of TreeNode)
     Private filesToDelete As New List(Of String)
-    Private updaterVersion As String = "3.9297"
+    Private updaterVersion As String = "3.931"
     Private updateDiff As Integer = 0
     Private newVersion As Boolean = False
     Private updateCount As Integer = 0
@@ -175,6 +175,7 @@ Public Class UpdaterMainForm
     Const constString_GUI_SelectACP As String = "Select a Community Pack type below"
     Const constString_GUI_Apply As String = "Apply"
     Const constString_GUI_Other As String = "Other"
+    Const constString_GUI_Donate As String = "Donate"
 
     ' Toolbars
     Const constString_Toolbar_File As String = "&File"
@@ -382,6 +383,7 @@ Public Class UpdaterMainForm
     Private locString_GUI_SelectACP As String = constString_GUI_SelectACP
     Private locString_GUI_Apply As String = constString_GUI_Apply
     Private locString_GUI_Other As String = constString_GUI_Other
+    Private locString_GUI_Donate As String = constString_GUI_Donate
 
     ' Toolbars
     Private locString_Toolbar_File As String = constString_Toolbar_File
@@ -1833,22 +1835,21 @@ Public Class UpdaterMainForm
                                 numErrors += 1
                                 MessageBox.Show(locString_Caption_ErrorCreating.Replace("<file>", actualPath) & ControlChars.NewLine & ControlChars.NewLine & locString_Caption_ErrorReport & ControlChars.NewLine & ControlChars.NewLine & e.ToString, locString_Window_ErrorUpdating, MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1)
                             End Try
-                            End If
-
-                            If (node.ForeColor = Color.Blue) Then
-                                Log(locString_Log_DownloadUpdatedFile.Replace("<url>", actualOnlinePath), True)
-                            ElseIf (node.ForeColor = Color.Orange) Then
+End If
+If (node.ForeColor = Color.Blue) Then
+Log(locString_Log_DownloadUpdatedFile.Replace("<url>", actualOnlinePath), True)
+ElseIf (node.ForeColor = Color.Orange) Then
                                 Log(locString_Log_DownloadNewFile.Replace("<url>", actualOnlinePath), True)
                             End If
 
                             If (My.Computer.FileSystem.FileExists(actualPath)) Then
-                                infoReader = My.Computer.FileSystem.GetFileInfo(actualPath)
-                                oldFileDate = CStr(infoReader.LastWriteTime)
-                            End If
+infoReader = My.Computer.FileSystem.GetFileInfo(actualPath)
+oldFileDate = CStr(infoReader.LastWriteTime)
+End If
 
                             outputTextbox.Text = locString_Output_DownloadingFile & ControlChars.NewLine & ControlChars.NewLine & node.Text
                         Try
-                            myWebClient.DownloadFile(actualOnlinePath, actualPath)
+myWebClient.DownloadFile(actualOnlinePath, actualPath)
                             Dim fileData() = Split(CStr(node.Tag), "?")
                             RestoreFileInfo(actualPath, fileData(0), fileData(1), node)
 
@@ -1930,6 +1931,7 @@ Public Class UpdaterMainForm
         Dim actualDate As Date
         Date.TryParse(stringDate, actualDate)
         File.SetLastWriteTime(actualPath, actualDate)
+        Log("Setting file write time to " & stringDate & " -> " & CStr(actualDate) & " for node " & node.Name, True)
         node.Tag = fileName
     End Sub
 
@@ -2529,6 +2531,8 @@ Public Class UpdaterMainForm
                 locString_GUI_SelectACP = readIni(ldi.FullName, "GUI", "locString_GUI_SelectACP", SB, constString_GUI_SelectACP)
                 locString_GUI_Apply = readIni(ldi.FullName, "GUI", "locString_GUI_Apply", SB, constString_GUI_Apply)
                 locString_GUI_Other = readIni(ldi.FullName, "GUI", "locString_GUI_Other", SB, constString_GUI_Other)
+                locString_GUI_Donate = readIni(ldi.FullName, "GUI", "locString_GUI_Donate", SB, constString_GUI_Donate)
+                donateLinkLabel.Text = locString_GUI_Donate
                 If (ChangeCPForm IsNot Nothing) Then
                     ChangeCP.SelectCPLabel.Text = locString_GUI_SelectACP
                     ChangeCP.ChangeCPApply.Text = locString_GUI_Apply
@@ -2914,14 +2918,18 @@ Public Class UpdaterMainForm
             End Using
         End Using
     End Function
+
+    Private Sub donateLinkLabel_LinkClicked(sender As Object, e As LinkLabelLinkClickedEventArgs) Handles donateLinkLabel.LinkClicked
+        Process.Start("https://ko-fi.com/rajada")
+    End Sub
 End Class
 
 Class MyTreeView
     Inherits TreeView
     Protected Overrides Sub WndProc(ByRef m As Message)
         If (m.Msg = 515) Then
-            m.Msg = 513
-        End If
+m.Msg = 513
+End If
         Try
             MyBase.WndProc(m)
         Catch ex As NullReferenceException

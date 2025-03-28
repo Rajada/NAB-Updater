@@ -1,4 +1,4 @@
-﻿[Language]
+[Language]
 locString_Language_Name="International English"
 
 [Windows]
@@ -60,7 +60,7 @@ locString_Caption_NoGameExeWarning="Could not find the game executable file. Ple
 locString_Caption_FolderDeletionWarning="<dir> is a folder that contains other files. Are you sure you want to delete it?"
 locString_Caption_NoNewUpdates="No new updates available at this time."
 locString_Caption_NoNewVersion="No new version available at this time."
-locString_Caption_RevertWarning="This option shows all files on your system that are considered up to date by the server. Typically, this is every file, and there may be significant delay listing them all. If you have files you have modified or updated on purpose, you will lose the work you did to them when reverting to the server's version. Use caution, and only check files you are sure you want to revert. For your protection, the revertable files will not be checked by default."
+locString_Caption_RevertWarning="This option shows all files on your system that are newer than those on the server. If you have modified many files there may be a significant delay listing them all. If you have files you have modified or updated on purpose, you will lose the work you did to them when reverting to the server's version. Use caution, and only check files you are sure you want to revert. For your protection, these files will not be checked by default."
 locString_Caption_ServerNoResponse="The update server did not respond at <url>. The URL may be wrong, the host may be down, or you may need to check your internet connection."
 locString_Caption_UpdateCompleteError="Updates were completed with <num> error."
 locString_Caption_UpdateCompleteErrors="Updates were completed with <num> errors."
@@ -116,6 +116,7 @@ locString_GUI_AutoLaunch="Auto-Launch Game"
 locString_GUI_SelectACP="Select a Community Pack type below"
 locString_GUI_Apply="Apply"
 locString_GUI_Other="Other"
+locString_GUI_Donate="Donate"
 
 [Toolbars]
 locString_Toolbar_File="&File"

@@ -69,6 +69,7 @@ Partial Class UpdaterMainForm
         Me.outputTextbox = New System.Windows.Forms.Label()
         Me.updateFilesTreeView = New Nerf_ArenaBlast_Updater.MyTreeView()
         Me.LaunchGameCheckbox = New System.Windows.Forms.CheckBox()
+        Me.donateLinkLabel = New System.Windows.Forms.LinkLabel()
         Me.MenuStrip1.SuspendLayout()
         Me.lastCheckedBox.SuspendLayout()
         Me.SuspendLayout()
@@ -329,12 +330,19 @@ Partial Class UpdaterMainForm
         Me.LaunchGameCheckbox.Name = "LaunchGameCheckbox"
         Me.LaunchGameCheckbox.UseVisualStyleBackColor = True
         '
+        'donateLinkLabel
+        '
+        resources.ApplyResources(Me.donateLinkLabel, "donateLinkLabel")
+        Me.donateLinkLabel.Name = "donateLinkLabel"
+        Me.donateLinkLabel.TabStop = True
+        '
         'UpdaterMainForm
         '
         Me.AcceptButton = Me.updateButton
         resources.ApplyResources(Me, "$this")
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.CancelButton = Me.exitButton
+        Me.Controls.Add(Me.donateLinkLabel)
         Me.Controls.Add(Me.LaunchGameCheckbox)
         Me.Controls.Add(Me.outputTextbox)
         Me.Controls.Add(Me.revertCheckBox)
@@ -410,4 +418,5 @@ Partial Class UpdaterMainForm
     Friend WithEvents ViewLogToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents PlayNerfArenaBlastToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents LaunchGameCheckbox As CheckBox
+    Friend WithEvents donateLinkLabel As LinkLabel
 End Class
