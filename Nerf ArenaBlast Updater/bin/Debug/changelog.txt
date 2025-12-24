@@ -1,5 +1,18 @@
 ﻿Please provide feedback and report any bugs at https://www.nerfarena.net
 
+3.941:
+
+- If language string loading fails due to encoding differences, the fallback English strings are now used to prevent gibberish strings from being loaded.
+
+3.94:
+
+- Fixed cutoff language strings due to maximum length being too short.
+- Fixed file revert option showing .ini files as candidates for reverting.
+
+3.93:
+
+- Linux compatibility fixes.
+
 3.9297:
 
 - Added the ability to catch and log issues deleting and adding new directories and files.

@@ -38,7 +38,7 @@ Public Class UpdaterMainForm
     Private querying As Boolean = False
     Private nodesToDelete As New List(Of TreeNode)
     Private filesToDelete As New List(Of String)
-    Private updaterVersion As String = "3.931"
+    Private updaterVersion As String = "3.941"
     Private updateDiff As Integer = 0
     Private newVersion As Boolean = False
     Private updateCount As Integer = 0
@@ -1414,7 +1414,7 @@ Public Class UpdaterMainForm
                                 tempDiff = DateDiff("n", TimeZoneInfo.ConvertTime(infoReader.LastWriteTime, TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time")), DTModified)
                             End If
 
-                            If (revertCheckBox.Checked) AndAlso (My.Computer.FileSystem.FileExists(tempFilePath)) AndAlso (tempDiff < 0) Then
+                            If (revertCheckBox.Checked) AndAlso (My.Computer.FileSystem.FileExists(tempFilePath)) AndAlso (tempDiff < 0) AndAlso Not (entry.FileName Like "*.ini") Then
                                 If (Not parentNode.Nodes.ContainsKey(entry.FileName + " (" + entry.FileSize + "B)")) Then
                                     updateProgressBar.Maximum += 1
                                     Dim fileNode As TreeNode = Nothing
@@ -2388,10 +2388,20 @@ myWebClient.DownloadFile(actualOnlinePath, actualPath)
     End Sub
 
     Private Sub LoadLanguageStrings(Lang As String)
+        Dim testldi As New DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory().ToString, "languages"))
         Dim ldi As New DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory().ToString, "languages"))
         Dim FileArray As FileInfo() = ldi.GetFiles()
         Dim LFI As FileInfo
-        Dim SB As New StringBuilder(255)
+        Dim SB As New StringBuilder(1024)
+        Dim teststr As String
+
+        testldi = New DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory().ToString, "languages", "International English.lang"))
+        teststr = readIni(testldi.FullName, "Windows", "locString_Window_AboutUpdater", SB, "FAIL")
+
+        If (teststr <> constString_Window_AboutUpdater) Then
+            Lang = ""
+            Log("Error: Language format load failure. Fallback English strings loaded.", True)
+        End If
 
         For Each LFI In FileArray
             If (LFI.Name Like (Lang + ".lang")) Then
@@ -2645,7 +2655,7 @@ myWebClient.DownloadFile(actualOnlinePath, actualPath)
                 locString_Log_NoNewUpdates = readIni(ldi.FullName, "Log", "locString_Log_NoNewUpdates", SB, constString_Log_NoNewUpdates)
                 locString_Log_PathChanged = readIni(ldi.FullName, "Log", "locString_Log_PathChanged", SB, constString_Log_PathChanged)
                 locString_Log_RefreshFile = readIni(ldi.FullName, "Log", "locString_Log_RefreshFile", SB, constString_Log_RefreshFile)
-                locString_Log_ServerNoResponse = readIni(ldi.FullName, "Log", "locString_log_ServerNoResponse", SB, constString_log_ServerNoResponse)
+                locString_Log_ServerNoResponse = readIni(ldi.FullName, "Log", "locString_log_ServerNoResponse", SB, constString_Log_ServerNoResponse)
                 locString_Log_Shutdown = readIni(ldi.FullName, "Log", "locString_Log_Shutdown", SB, constString_Log_Shutdown)
                 locString_Log_UpdateAborted = readIni(ldi.FullName, "Log", "locString_Log_UpdateAborted", SB, constString_Log_UpdateAborted)
                 locString_Log_UpdateError = readIni(ldi.FullName, "Log", "locString_Log_UpdateError", SB, constString_Log_UpdateError)
